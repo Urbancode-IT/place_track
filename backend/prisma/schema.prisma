@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           Role     @default(TRAINER)
+  phone          String?
+  createdAt      DateTime @default(now())
+  interviews     InterviewTrainer[]
+  notifications  Notification[]
+}
+
+enum Role {
+  ADMIN
+  TRAINER
+  STUDENT
+}
+
+model Student {
+  id         String    @id @default(uuid())
+  name       String
+  email      String?
+  phone      String?
+  course     Course
+  batchId    String?
+  resumeUrl  String?
+  photoUrl   String?
+  selfIntro  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  interviews Interview[]
+  qaEntries  QAEntry[]
+}
+
+enum Course {
+  FSD
+  SDET
+  BI_DS
+  NETWORKING
+  AWS
+  JAVA
+  REACT
+}
+
+model Interview {
+  id            String             @id @default(uuid())
+  studentId     String
+  student       Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  company       String
+  round         String
+  date          DateTime
+  timeSlot      String
+  hrNumber      String?
+  room          String?
+  status        InterviewStatus    @default(SCHEDULED)
+  comments      String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime          @updatedAt
+  trainers      InterviewTrainer[]
+  notifications Notification[]
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  SHORTLISTED
+  SELECTED
+  REJECTED
+  AWAITING_RESPONSE
+  RESCHEDULED
+  NO_RESPONSE
+}
+
+model InterviewTrainer {
+  id          String    @id @default(uuid())
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  trainerId   String
+  trainer     User      @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  notifiedAt  DateTime?
+  @@unique([interviewId, trainerId])
+}
+
+model QAEntry {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String?
+  category  String?
+  status    QAStatus @default(PENDING)
+  createdAt DateTime @default(now())
+}
+
+enum QAStatus {
+  PREPARED
+  NEEDS_WORK
+  PENDING
+}
+
+model Notification {
+  id          String     @id @default(uuid())
+  type        String
+  message     String
+  channel     String
+  toUserId    String?
+  toUser      User?      @relation(fields: [toUserId], references: [id], onDelete: SetNull)
+  interviewId String?
+  interview   Interview? @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+  sentAt      DateTime   @default(now())
+  status      String     @default("SENT")
+  read        Boolean    @default(false)
+}

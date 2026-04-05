@@ -1,0 +1,219 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #06080F;
+  --bg2: #0A0D18;
+  --bg3: #0E1222;
+  --panel: rgba(255,255,255,0.03);
+  --panel-border: rgba(255,255,255,0.07);
+
+  --cyan: #00D4FF;
+  --cyan-dim: rgba(0,212,255,0.15);
+  --cyan-glow: rgba(0,212,255,0.4);
+
+  --green: #00FFA3;
+  --green-dim: rgba(0,255,163,0.12);
+
+  --orange: #FF6B35;
+  --orange-dim: rgba(255,107,53,0.12);
+
+  --pink: #FF3D82;
+  --pink-dim: rgba(255,61,130,0.12);
+
+  --yellow: #FFD60A;
+  --yellow-dim: rgba(255,214,10,0.12);
+
+  --violet: #9B5DFF;
+  --violet-dim: rgba(155,93,255,0.15);
+
+  --text: #F0F2FF;
+  --text2: #7B82A8;
+  --text3: #3D4466;
+  --border: rgba(255,255,255,0.06);
+
+  /* Trainer Center / portal-style (match reference) */
+  --tc-bg: #1E1E2D;
+  --tc-panel: #252536;
+  --tc-panel-hover: rgba(255,255,255,0.04);
+  --tc-primary: #3699FF;
+  --tc-primary-dim: rgba(54,153,255,0.15);
+  --tc-green: #50CD89;
+  --tc-green-dim: rgba(80,205,137,0.15);
+  --tc-yellow: #FFC700;
+  --tc-red: #F1416C;
+  --tc-red-dim: rgba(241,65,108,0.15);
+}
+
+:root[data-theme='light'] {
+  --bg: #f3f4f6;
+  --bg2: #ffffff;
+  --bg3: #e5e7eb;
+  --panel: #ffffff;
+  --panel-border: rgba(15,23,42,0.08);
+
+  --text: #020617;
+  --text2: #4b5563;
+  --text3: #9ca3af;
+  --border: rgba(15,23,42,0.12);
+}
+
+@layer utilities {
+  /* App theme tokens mapped to Tailwind-like class names used in components */
+  .bg-canvas { background-color: var(--bg); }
+  .text-muted { color: var(--text2); }
+
+  .border-border { border-color: var(--border); }
+
+  /* Glassmorphism primitives */
+  .glass-surface {
+    background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .glass-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--text);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Dark theme: native date/datetime calendar glyph is often black-on-dark — make it visible */
+  input[type='date'].glass-input,
+  input[type='datetime-local'].glass-input {
+    color-scheme: dark;
+  }
+
+  /* Cyan calendar icon (matches --cyan / time picker); replaces default low-contrast glyph */
+  input[type='date'].glass-input::-webkit-calendar-picker-indicator,
+  input[type='datetime-local'].glass-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    margin: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300D4FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  :root[data-theme='light'] input[type='date'].glass-input,
+  :root[data-theme='light'] input[type='datetime-local'].glass-input {
+    color-scheme: light;
+  }
+
+  :root[data-theme='light'] input[type='date'].glass-input::-webkit-calendar-picker-indicator,
+  :root[data-theme='light'] input[type='datetime-local'].glass-input::-webkit-calendar-picker-indicator {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%233699FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+  }
+
+  /* Ensure native select dropdown/options remain readable in dark UI */
+  select.glass-input {
+    color-scheme: dark;
+  }
+  select.glass-input option,
+  select.glass-input optgroup {
+    background-color: var(--tc-panel);
+    color: var(--text);
+  }
+
+  :root[data-theme='light'] select.glass-input {
+    color-scheme: light;
+  }
+  :root[data-theme='light'] select.glass-input option,
+  :root[data-theme='light'] select.glass-input optgroup {
+    background-color: #ffffff;
+    color: #020617;
+  }
+
+  .bg-primary { background-color: var(--tc-primary); }
+  .text-primary { color: var(--tc-primary); }
+  .ring-primary { --tw-ring-color: var(--tc-primary); }
+
+  .bg-danger { background-color: var(--tc-red); }
+  .text-danger { color: var(--tc-red); }
+  .ring-danger { --tw-ring-color: var(--tc-red); }
+  .border-danger { border-color: var(--tc-red); }
+
+  /* Toasts & alerts (Toast.jsx) */
+  .bg-success { background-color: var(--tc-green); }
+  .bg-warning { background-color: var(--tc-yellow); color: #1a1a1a; }
+  .bg-info { background-color: var(--cyan); color: #06080f; }
+
+  @keyframes toast-pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .toast-pop-in {
+    animation: toast-pop-in 0.22s ease-out;
+  }
+
+  /* Scroll still works; bar hidden (Chrome / Firefox / Edge / old IE) */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(ellipse 800px 600px at 10% 20%, rgba(0,212,255,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 600px 500px at 90% 80%, rgba(155,93,255,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 400px 400px at 50% 50%, rgba(0,255,163,0.02) 0%, transparent 60%);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+  }
+}
+
