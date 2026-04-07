@@ -38,7 +38,7 @@ npm run db:seed
 npm run dev
 ```
 
-Backend runs at **http://localhost:5000**.
+Backend runs at **http://localhost:5001**.
 
 ### 2. Frontend
 

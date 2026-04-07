@@ -9,18 +9,27 @@ dotenv.config({ path: path.join(backendRoot, '.env') });
 const { Pool } = pg;
 
 const dbConfig = {
-  host: '127.0.0.1',
-  port: 5432,
-  user: 'postgres',
-  password: 'admin@123',
-  database: 'Placement_Tracking',
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: Number(process.env.DB_PORT) || 5432,
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'admin@123',
+  database: process.env.DB_NAME || 'Placement_Tracking',
   max: 10,
   idleTimeoutMillis: 30000,
 };
 
-console.log('DB CONFIG =>', dbConfig);
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 10,
+      idleTimeoutMillis: 30000,
+    })
+  : new Pool(dbConfig);
 
-const pool = new Pool(dbConfig);
+console.log(
+  'DB CONFIG =>',
+  process.env.DATABASE_URL ? '(using DATABASE_URL)' : dbConfig,
+);
 
 try {
   const test = await pool.query('SELECT current_user, current_database()');

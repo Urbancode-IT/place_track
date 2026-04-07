@@ -35,7 +35,9 @@ export default function Login() {
     } catch (err) {
       if (!err.response) {
         setError(
-          'Cannot reach the API. Start the backend server (from the backend folder: npm run dev). It must listen on port 5000 — the dev frontend proxies /api to http://localhost:5000.'
+          import.meta.env.DEV
+            ? 'Cannot reach the API. Start the backend (npm run dev in backend) on port 5001; the dev server proxies /api there.'
+            : 'Cannot reach the API. Confirm the Render backend is up and VITE_API_URL matches your API URL.',
         );
         return;
       }

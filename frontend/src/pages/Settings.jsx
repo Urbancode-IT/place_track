@@ -43,7 +43,7 @@ export default function Settings() {
         )}
 
         {isError && (
-          <p className="text-sm text-[var(--pink)]">Could not load mail status. Is the backend running on port 5000?</p>
+          <p className="text-sm text-[var(--pink)]">Could not load mail status. Is the backend running on port 5001?</p>
         )}
 
         {!isLoading && !isError && mail && (
