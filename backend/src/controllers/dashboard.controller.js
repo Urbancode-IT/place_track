@@ -42,17 +42,21 @@ export async function getStats(req, res, next) {
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
 
-    const [totalR, todayR, shortR, placedR] = await Promise.all([
-      query('SELECT COUNT(*)::int as c FROM "Student"'),
-      query('SELECT COUNT(*)::int as c FROM "Interview" WHERE date >= $1 AND date <= $2 AND status != $3', [todayStart, todayEnd, 'REJECTED']),
-      query('SELECT COUNT(*)::int as c FROM "Interview" WHERE status = $1', ['SHORTLISTED']),
-      query('SELECT COUNT(*)::int as c FROM "Interview" WHERE status = $1 AND date >= $2 AND date <= $3', ['SELECTED', monthStart, monthEnd]),
-    ]);
+    const r = await query(
+      `SELECT 
+        (SELECT COUNT(*)::int FROM "Student") as total_students,
+        (SELECT COUNT(*)::int FROM "Interview" WHERE date >= $1 AND date <= $2 AND status != $3) as today_interviews,
+        (SELECT COUNT(*)::int FROM "Interview" WHERE status = $4) as shortlisted,
+        (SELECT COUNT(*)::int FROM "Interview" WHERE status = $5 AND date >= $6 AND date <= $7) as placed_this_month`,
+      [todayStart, todayEnd, 'REJECTED', 'SHORTLISTED', 'SELECTED', monthStart, monthEnd]
+    );
+
+    const stats = r.rows[0] || {};
     return success(res, {
-      totalStudents: totalR.rows[0]?.c ?? 0,
-      todayInterviews: todayR.rows[0]?.c ?? 0,
-      shortlisted: shortR.rows[0]?.c ?? 0,
-      placedThisMonth: placedR.rows[0]?.c ?? 0,
+      totalStudents: stats.total_students ?? 0,
+      todayInterviews: stats.today_interviews ?? 0,
+      shortlisted: stats.shortlisted ?? 0,
+      placedThisMonth: stats.placed_this_month ?? 0,
     });
   } catch (err) {
     if (err.code === '42P01') {

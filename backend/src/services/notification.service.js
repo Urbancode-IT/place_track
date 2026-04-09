@@ -20,8 +20,10 @@ export async function notifyTrainersForInterview(interviewId, trainerIds, interv
     return;
   }
 
-  const promises = [];
+  const emailPromises = [];
+  const dbPromises = [];
   let emailAttemptCount = 0;
+
   for (const t of trainers) {
     const data = {
       studentName: interviewData.studentName,
@@ -35,16 +37,21 @@ export async function notifyTrainersForInterview(interviewId, trainerIds, interv
     const em = t.email && String(t.email).trim();
     if (em) {
       emailAttemptCount += 1;
-      promises.push(sendInterviewScheduled(em, t.name, data).catch((e) => console.error('Email error:', e)));
+      emailPromises.push(sendInterviewScheduled(em, t.name, data).catch((e) => console.error('Email error:', e)));
     } else {
       console.warn(`[mail] notifyTrainersForInterview: user "${t.name}" (${t.id}) has no email — SMTP send skipped`);
     }
-    await query(
-      `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status) VALUES ($1, $2, $3, $4, $5, $6)`,
-      ['INTERVIEW_ASSIGNED', `Interview scheduled: ${interviewData.studentName} - ${interviewData.company}`, 'EMAIL', t.id, interviewId, 'SENT']
+    dbPromises.push(
+      query(
+        `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status) VALUES ($1, $2, $3, $4, $5, $6)`,
+        ['INTERVIEW_ASSIGNED', `Interview scheduled: ${interviewData.studentName} - ${interviewData.company}`, 'EMAIL', t.id, interviewId, 'SENT']
+      )
     );
   }
-  await Promise.all(promises);
+
+  // Run all email sends and DB inserts in parallel
+  await Promise.all([...emailPromises, ...dbPromises]);
+
   if (trainers.length && emailAttemptCount === 0) {
     console.warn(
       `[mail] notifyTrainersForInterview: interview ${interviewId} — ${trainers.length} recipient(s) but none have an email in the database`
@@ -62,13 +69,14 @@ export async function notifyTrainersForInterview(interviewId, trainerIds, interv
     }
   ).catch(() => {});
 
-  for (const t of trainers) {
-    await query(
+  const pushDbPromises = trainers.map((t) =>
+    query(
       `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status)
        VALUES ($1, $2, $3, $4, $5, $6)`,
       ['INTERVIEW_ASSIGNED', `Interview scheduled: ${interviewData.studentName} - ${interviewData.company}`, 'PUSH', t.id, interviewId, 'SENT']
-    );
-  }
+    )
+  );
+  await Promise.all(pushDbPromises);
 
   const io = getIO();
   for (const t of trainers) {

@@ -8,4 +8,5 @@ export const publicSelfInterviewApi = {
   apply: (body) => publicApi.post('/public/self-interview/apply', body),
   getMeta: (token) => publicApi.get(`/public/self-interview/${token}`),
   submit: (token, body) => publicApi.put(`/public/self-interview/${token}`, body),
+  registerStudent: (body) => publicApi.post('/public/students', body),
 };

@@ -18,40 +18,56 @@ export default function Dashboard() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const dashboardReady = hydrated && !!accessToken;
 
+  const queryOptions = {
+    enabled: dashboardReady,
+    staleTime: 1000 * 60 * 2, // 2 minutes - data remains fresh longer
+    refetchOnWindowFocus: false, // Don't refetch every time user switches tabs
+  };
+
   const { data: pendingData } = useQuery({
     queryKey: ['dashboard', 'pending-self-submits'],
     queryFn: () => dashboardApi.pendingSelfSubmits().then((r) => r.data),
-    enabled: dashboardReady,
+    ...queryOptions,
   });
   const { data: pendingFinishData } = useQuery({
     queryKey: ['dashboard', 'pending-interview-finishes'],
     queryFn: () => dashboardApi.pendingInterviewFinishes().then((r) => r.data),
-    enabled: dashboardReady,
+    ...queryOptions,
   });
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: () => dashboardApi.stats().then((r) => r.data),
-    enabled: dashboardReady,
+    ...queryOptions,
   });
   const { data: todayData } = useQuery({
     queryKey: ['dashboard', 'today'],
     queryFn: () => dashboardApi.today().then((r) => r.data),
-    enabled: dashboardReady,
+    ...queryOptions,
+    staleTime: 1000 * 60, // Today's list is more sensitive (1 min)
   });
   const { data: activityData } = useQuery({
     queryKey: ['dashboard', 'activity'],
     queryFn: () => dashboardApi.activity().then((r) => r.data),
-    enabled: dashboardReady,
+    ...queryOptions,
   });
   const { data: analyticsData } = useQuery({
     queryKey: ['dashboard', 'analytics'],
     queryFn: () => dashboardApi.analytics().then((r) => r.data),
-    enabled: dashboardReady,
+    ...queryOptions,
+    staleTime: 1000 * 60 * 10, // Analytics can be much staler
   });
 
   useSocket({
-    'interview:created': () => qc.invalidateQueries({ queryKey: ['dashboard'] }),
-    'interview:updated': () => qc.invalidateQueries({ queryKey: ['dashboard'] }),
+    'interview:created': () => {
+      qc.invalidateQueries({ queryKey: ['dashboard', 'today'] });
+      qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+      qc.invalidateQueries({ queryKey: ['dashboard', 'activity'] });
+    },
+    'interview:updated': () => {
+      qc.invalidateQueries({ queryKey: ['dashboard', 'today'] });
+      qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+      qc.invalidateQueries({ queryKey: ['dashboard', 'activity'] });
+    },
   });
 
   const pendingCount = pendingData?.data?.count ?? 0;

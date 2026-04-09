@@ -15,8 +15,12 @@ import {
   publicHonestReviewCommonSubmitSchema,
 } from '../validators/honestReview.validator.js';
 import * as honestCtrl from '../controllers/publicHonestReview.controller.js';
+import { createStudentSchema } from '../validators/student.validator.js';
+import { publicCreateStudent } from '../controllers/publicStudent.controller.js';
 
 const router = Router();
+
+router.post('/students', validate(createStudentSchema), publicCreateStudent);
 
 router.post('/interview-finish/preview', validate(publicFinishPreviewSchema), finishCtrl.previewFinish);
 router.post('/interview-finish/apply', validate(publicFinishApplySchema), finishCtrl.applyFinishOpen);

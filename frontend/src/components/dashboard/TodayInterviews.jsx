@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_COLORS } from '@/utils/constants';
@@ -41,11 +42,30 @@ function TrashIcon({ className }) {
   );
 }
 
-export function TodayInterviews({ interviews }) {
+export function TodayInterviews({ interviews: initialInterviews }) {
   const role = useAuthStore((s) => s.user?.role);
   const canDelete = role === 'ADMIN' || role === 'TRAINER';
   const del = useDeleteInterview();
   const addToast = useNotificationStore((s) => s.addToast);
+  const [filterCourse, setFilterCourse] = useState('ALL');
+
+  const filteredInterviews = initialInterviews?.filter((i) => {
+    if (filterCourse === 'ALL') return true;
+    return (i.student?.course || i.course) === filterCourse;
+  });
+
+  // Detect student-time clashes (on filtered set or total? Usually total is safer for clashes)
+  const clashes = new Set();
+  const seen = new Map();
+  (initialInterviews || []).forEach((i) => {
+    const key = `${i.studentId}-${String(i.timeSlot).trim()}`;
+    if (seen.has(key)) {
+      clashes.add(i.id);
+      clashes.add(seen.get(key));
+    } else {
+      seen.set(key, i.id);
+    }
+  });
 
   const handleDelete = (i) => {
     const name = i.student?.name || 'this student';
@@ -67,6 +87,8 @@ export function TodayInterviews({ interviews }) {
     });
   };
 
+  const courses = ['ALL', 'FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'];
+
   return (
     <div
       className="rounded-2xl overflow-hidden flex flex-col glass-surface"
@@ -75,19 +97,34 @@ export function TodayInterviews({ interviews }) {
         className="flex items-center justify-between px-5 py-3"
         style={{ borderBottom: '1px solid var(--border)' }}
       >
-        <div className="flex items-center gap-2">
-          <span
-            className="w-2 h-2 rounded-full"
-            style={{ background: 'var(--green)' }}
-          />
-          <span className="font-syne text-[13px] font-semibold text-[var(--text)]">
-            Today&apos;s Live Interview Board
-          </span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--green)' }}
+            />
+            <span className="font-syne text-[13px] font-semibold text-[var(--text)]">
+              Today&apos;s Live Interview Board
+            </span>
+          </div>
+
+          <select
+            value={filterCourse}
+            onChange={(e) => setFilterCourse(e.target.value)}
+            className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[var(--cyan)] focus:outline-none focus:border-[var(--cyan)] transition-all cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
+          >
+            {courses.map((c) => (
+              <option key={c} value={c} className="bg-[#0f172a] text-white">
+                {c === 'ALL' ? '⚡ ALL COURSES' : c}
+              </option>
+            ))}
+          </select>
         </div>
-        <span className="font-mono text-[10px] text-[var(--text3)]">
-          {interviews?.length || 0} scheduled
+        <span className="font-mono text-[9px] text-[var(--text3)] uppercase tracking-widest bg-[rgba(255,255,255,0.03)] px-2 py-0.5 rounded-full">
+          {filteredInterviews?.length || 0} OF {initialInterviews?.length || 0}
         </span>
       </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full text-[11px]">
           <thead>
@@ -105,11 +142,16 @@ export function TodayInterviews({ interviews }) {
             </tr>
           </thead>
           <tbody>
-            {interviews?.map((i, idx) => (
-              <tr
-                key={i.id}
-                className="border-t border-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.02)]"
-              >
+            {filteredInterviews?.map((i, idx) => {
+              const isClash = clashes.has(i.id);
+              return (
+                <tr
+                  key={i.id}
+                  className={cn(
+                    "border-t border-[rgba(255,255,255,0.03)] transition-colors",
+                    isClash ? "bg-[rgba(244,63,94,0.1)] hover:bg-[rgba(244,63,94,0.15)]" : "hover:bg-[rgba(255,255,255,0.02)]"
+                  )}
+                >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
@@ -146,7 +188,14 @@ export function TodayInterviews({ interviews }) {
                   </span>
                 </td>
                 <td className="px-4 py-3 font-mono text-[10px] text-[var(--text3)]">
-                  {i.timeSlot || '—'}
+                  <div className="flex flex-col gap-1 items-start">
+                    <span>{i.timeSlot || '—'}</span>
+                    {isClash && (
+                      <span className="px-1.5 py-0.5 rounded text-[8px] bg-[var(--pink)] text-white font-bold animate-pulse">
+                        CLASH
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
@@ -191,12 +240,20 @@ export function TodayInterviews({ interviews }) {
                     </button>
                   </td>
                 )}
-              </tr>
-            ))}
-            {(!interviews || interviews.length === 0) && (
+                </tr>
+              );
+            })}
+            {(!initialInterviews || initialInterviews.length === 0) && (
               <tr>
                 <td colSpan={canDelete ? 6 : 5} className="px-4 py-6 text-center text-[var(--text3)] text-[11px]">
                   No interviews today
+                </td>
+              </tr>
+            )}
+            {initialInterviews?.length > 0 && filteredInterviews?.length === 0 && (
+              <tr>
+                <td colSpan={canDelete ? 6 : 5} className="px-4 py-6 text-center text-[var(--text3)] text-[11px]">
+                  No interviews found for the selected course
                 </td>
               </tr>
             )}

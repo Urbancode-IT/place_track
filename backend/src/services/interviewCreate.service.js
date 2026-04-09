@@ -49,7 +49,10 @@ export async function createInterviewWithTrainers({
     const allT = await query(`SELECT id FROM "User" WHERE role IN ('TRAINER', 'ADMIN')`);
     notifyTrainerIds = allT.rows.map((row) => row.id);
   }
-  await notifyTrainersForInterview(interview.id, notifyTrainerIds, interviewData);
+  // Run notifications in background - don't block the API response
+  notifyTrainersForInterview(interview.id, notifyTrainerIds, interviewData).catch((e) =>
+    console.error('[notify] Background notification failed:', e)
+  );
   emitNewInterview({ ...interview, student, trainers: ids.map((tid) => ({ trainerId: tid })) });
   return { interview, student, trainerIds: ids };
 }

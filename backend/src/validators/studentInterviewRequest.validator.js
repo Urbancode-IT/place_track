@@ -16,6 +16,7 @@ export const publicSubmitSchema = z.object({
   hrNumber: z.string().optional(),
   room: z.string().optional(),
   comments: z.string().optional(),
+  course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT']).optional(),
 });
 
 /** Shared /interview/apply form — student identifies by institute email */

@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 
 const schema = z.object({
-  company: z.string().min(1),
-  round: z.string().min(1),
-  date: z.string().min(1),
-  timeSlot: z.string().min(1),
+  company: z.string().min(1, 'Company is required'),
+  round: z.string().min(1, 'Round is required'),
+  date: z.string().min(1, 'Interview date is required'),
+  timeSlot: z.string().min(1, 'Time slot is required'),
   hrNumber: z.string().optional(),
   room: z.string().optional(),
   comments: z.string().optional(),
@@ -105,9 +105,9 @@ export default function PublicInterviewFill() {
   };
 
   return (
-    <div className="min-h-screen p-6 flex justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+    <div className="min-h-screen p-4 sm:p-6 flex justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <div
-        className="w-full max-w-lg rounded-2xl p-8 space-y-6"
+        className="w-full max-w-lg rounded-2xl p-6 sm:p-8 space-y-6"
         style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
       >
         <div>
@@ -144,7 +144,7 @@ export default function PublicInterviewFill() {
           <div>
             <label className="block text-xs text-[var(--text2)] mb-1">Notes (optional)</label>
             <textarea
-              className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)]"
+              className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)] outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               {...register('comments')}
             />

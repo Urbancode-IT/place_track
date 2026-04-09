@@ -78,6 +78,12 @@ function Icon({ name, className = 'h-5 w-5' }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a7.9 7.9 0 000-6l-1.72.66a6.1 6.1 0 00-1.23-1.23L17.1 6.7a7.9 7.9 0 00-6-2.4l-.34 1.82a6.1 6.1 0 00-1.74.71L7.3 5.6a7.9 7.9 0 00-6 6l1.82.34a6.1 6.1 0 00.71 1.74L2.6 16.7a7.9 7.9 0 006 6l.34-1.82a6.1 6.1 0 001.74-.71l1.72 1.23a7.9 7.9 0 006-6l-1.82-.34a6.1 6.1 0 00-.71-1.74L19.4 15Z" />
         </svg>
       );
+    case 'sync':
+      return (
+        <svg {...common}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+      );
     case 'honestReview':
       return (
         <svg {...common}>
@@ -104,6 +110,7 @@ const secondaryNav = [
   { to: '/reference', icon: 'reference', label: 'Reference' },
   { to: '/notifications', icon: 'notifications', label: 'Notifications' },
   { to: '/analytics', icon: 'analytics', label: 'Analytics', adminOnly: true },
+  { to: '/sync-zen', icon: 'sync', label: 'Sync Zen', adminOnly: true },
   { to: '/settings', icon: 'settings', label: 'Settings' },
 ];
 

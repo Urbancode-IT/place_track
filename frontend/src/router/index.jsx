@@ -22,6 +22,7 @@ import PendingInterviewFinishes from '@/pages/PendingInterviewFinishes';
 import HonestReviewLinkPage from '@/pages/HonestReviewLinkPage';
 import PublicHonestReview from '@/pages/PublicHonestReview';
 import PublicHonestReviewCommon from '@/pages/PublicHonestReviewCommon';
+import SyncZen from '@/pages/SyncZen';
 
 function ProtectedRoute({ children, adminOnly }) {
   const hydrated = useAuthHydrated();
@@ -96,6 +97,7 @@ const routes = [
       { path: 'pending-self-submits', element: <PendingSelfSubmits /> },
       { path: 'pending-interview-finishes', element: <PendingInterviewFinishes /> },
       { path: 'honest-review-link', element: <HonestReviewLinkPage /> },
+      { path: 'sync-zen', element: <SyncZen /> },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

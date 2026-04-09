@@ -7,7 +7,7 @@ import { AppError } from '../middleware/errorHandler.js';
  */
 export async function applyOpen(req, res, next) {
   try {
-    const { studentEmail, company, round, date, timeSlot, hrNumber, room, comments } = req.validated;
+    const { studentEmail, company, round, date, timeSlot, hrNumber, room, comments, course } = req.validated;
     const norm = studentEmail.trim().toLowerCase();
     const dup = await query(
       `SELECT id FROM "Student" WHERE email IS NOT NULL AND LOWER(TRIM(email)) = $1 LIMIT 2`,
@@ -22,9 +22,9 @@ export async function applyOpen(req, res, next) {
     const studentId = dup.rows[0].id;
     await query(
       `INSERT INTO "StudentInterviewRequest" (
-        token, "studentId", company, round, date, "timeSlot", "hrNumber", room, comments, status, "submittedAt"
-      ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, 'SUBMITTED', now())`,
-      [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null]
+        token, "studentId", company, round, date, "timeSlot", "hrNumber", room, comments, course, status, "submittedAt"
+      ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, $9, 'SUBMITTED', now())`,
+      [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null, course || null]
     );
     return success(res, { ok: true }, 'Submitted. Your placement team will review it.');
   } catch (err) {
