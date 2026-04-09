@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -108,6 +108,15 @@ export default function PublicInterviewApply() {
     enabled: !!course,
   });
 
+  const timeConflicts = useMemo(() => {
+    const counts = {};
+    schedQuery.data?.forEach(item => {
+      const t = item.timeSlot?.toLowerCase()?.trim() || 'none';
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    return counts;
+  }, [schedQuery.data]);
+
   const { 
     register: registerReg, 
     handleSubmit: handleSubmitReg, 
@@ -194,25 +203,20 @@ export default function PublicInterviewApply() {
               <p className="text-[10px] text-[var(--text3)]">No interviews scheduled yet for this selection.</p>
             ) : (
               <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
-                {(() => {
-                  const timeCounts = {};
-                  schedQuery.data?.forEach(item => {
-                    const t = item.timeSlot?.toLowerCase()?.trim() || 'none';
-                    timeCounts[t] = (timeCounts[t] || 0) + 1;
-                  });
+                {schedQuery.data?.map((item) => {
+                  const initial = item.studentName?.charAt(0).toUpperCase() || 'S';
+                  const colors = ['bg-emerald-500/20 text-emerald-400', 'bg-purple-500/20 text-purple-400', 'bg-rose-500/20 text-rose-400', 'bg-amber-500/20 text-amber-400'];
+                  const colorClass = colors[item.studentName?.length % colors.length];
+                  
+                  const normalizedTime = item.timeSlot?.toLowerCase()?.trim() || 'none';
+                  const hasConflict = (timeConflicts[normalizedTime] || 0) > 1;
 
-                  return schedQuery.data?.map((item) => {
-                    const initial = item.studentName?.charAt(0).toUpperCase() || 'S';
-                    const colors = ['bg-emerald-500/20 text-emerald-400', 'bg-purple-500/20 text-purple-400', 'bg-rose-500/20 text-rose-400', 'bg-amber-500/20 text-amber-400'];
-                    const colorClass = colors[item.studentName?.length % colors.length];
-                    const hasConflict = timeCounts[item.timeSlot?.toLowerCase()?.trim()] > 1;
-
-                    return (
-                      <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                        hasConflict 
-                          ? 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15 ring-1 ring-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]' 
-                          : 'bg-[rgba(255,255,255,0.03)] border-[var(--border)] hover:bg-[rgba(255,255,255,0.05)]'
-                      }`}>
+                  return (
+                    <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      hasConflict 
+                        ? 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15 ring-1 ring-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]' 
+                        : 'bg-[rgba(255,255,255,0.03)] border-[var(--border)] hover:bg-[rgba(255,255,255,0.05)]'
+                    }`}>
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg border border-white/5 ${colorClass}`}>
                         {initial}
                       </div>
@@ -237,7 +241,7 @@ export default function PublicInterviewApply() {
                       </div>
                     </div>
                   );
-                })()}
+                })}
               </div>
             )}
             <p className="text-[9px] text-[var(--text3)] italic">Schedule updates live as placement team approves requests.</p>

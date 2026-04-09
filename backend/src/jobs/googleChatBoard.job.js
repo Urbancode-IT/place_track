@@ -3,12 +3,12 @@ import { query } from '../config/db.js';
 import { sendToGoogleChat } from '../services/googleChat.service.js';
 
 /**
- * Runs at 10:00 AM daily to post Today's Live Interview Board to Google Chat.
- */
-export function runGoogleChatBoardJob() {
-  // Cron expression: 0 10 * * * (At 10:00:00 AM every day)
-  cron.schedule('0 10 * * *', async () => {
-    console.log('[cron] Running Google Chat Board Job at 10:00 AM');
+   * Runs at 2:00 AM daily to post Today's Live Interview Board to Google Chat.
+   */
+  export function runGoogleChatBoardJob() {
+    // Cron expression: 0 2 * * * (At 2:00:00 AM every day)
+    cron.schedule('0 2 * * *', async () => {
+      console.log('[cron] Running Google Chat Board Job at 2:00 AM');
     
     try {
       const today = new Date();

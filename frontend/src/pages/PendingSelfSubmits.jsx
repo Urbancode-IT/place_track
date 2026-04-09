@@ -16,7 +16,6 @@ export default function PendingSelfSubmits() {
   const addToast = useNotificationStore((s) => s.addToast);
   const [approveRow, setApproveRow] = useState(null);
   const [trainerIds, setTrainerIds] = useState([]);
-  const [room, setRoom] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['self-interview-requests', { status: 'SUBMITTED' }],
@@ -32,8 +31,8 @@ export default function PendingSelfSubmits() {
   const trainers = (trainersRes?.data || []).map((t) => ({ value: t.id, label: t.name }));
 
   const approveMut = useMutation({
-    mutationFn: ({ id, trainerIds: tids, room: roomVal }) =>
-      selfInterviewRequestApi.approve(id, { trainerIds: tids, room: roomVal }),
+    mutationFn: ({ id, trainerIds: tids }) =>
+      selfInterviewRequestApi.approve(id, { trainerIds: tids }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['self-interview-requests'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
@@ -44,7 +43,6 @@ export default function PendingSelfSubmits() {
       });
       setApproveRow(null);
       setTrainerIds([]);
-      setRoom('');
     },
     onError: (e) => addToast({ message: e?.response?.data?.message || 'Approve failed', type: 'error' }),
   });
@@ -61,13 +59,12 @@ export default function PendingSelfSubmits() {
 
   const openApprove = (row) => {
     setTrainerIds([]);
-    setRoom(row.room ? String(row.room) : '');
     setApproveRow(row);
   };
 
   const confirmApprove = () => {
     if (!approveRow) return;
-    approveMut.mutate({ id: approveRow.id, trainerIds, room: room.trim() });
+    approveMut.mutate({ id: approveRow.id, trainerIds });
   };
 
   if (isLoading) {
@@ -148,7 +145,7 @@ export default function PendingSelfSubmits() {
 
       <Modal
         open={Boolean(approveRow)}
-        onClose={() => { setApproveRow(null); setTrainerIds([]); setRoom(''); }}
+        onClose={() => { setApproveRow(null); setTrainerIds([]); }}
         title="Approve submission"
         variant="dark"
       >
@@ -164,15 +161,8 @@ export default function PendingSelfSubmits() {
           onChange={setTrainerIds}
           placeholder="Leave empty to notify all trainers, or select…"
         />
-        <Input
-          label="Room / meeting link (optional)"
-          placeholder="e.g. Lab 2, Zoom link…"
-          value={room}
-          onChange={(e) => setRoom(e.target.value)}
-          className="mt-4"
-        />
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="secondary" onClick={() => { setApproveRow(null); setTrainerIds([]); setRoom(''); }}>
+          <Button variant="secondary" onClick={() => { setApproveRow(null); setTrainerIds([]); }}>
             Cancel
           </Button>
           <Button loading={approveMut.isPending} onClick={confirmApprove}>

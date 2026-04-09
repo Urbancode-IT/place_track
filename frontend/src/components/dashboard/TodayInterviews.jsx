@@ -54,16 +54,20 @@ export function TodayInterviews({ interviews: initialInterviews }) {
     return (i.student?.course || i.course) === filterCourse;
   });
 
-  // Detect student-time clashes (on filtered set or total? Usually total is safer for clashes)
+  // Detect overlapping time slots
   const clashes = new Set();
-  const seen = new Map();
+  const timeCounts = {};
   (initialInterviews || []).forEach((i) => {
-    const key = `${i.studentId}-${String(i.timeSlot).trim()}`;
-    if (seen.has(key)) {
+    const t = String(i.timeSlot || '').toLowerCase().trim();
+    if (t && t !== '—') {
+      timeCounts[t] = (timeCounts[t] || 0) + 1;
+    }
+  });
+
+  (initialInterviews || []).forEach((i) => {
+    const t = String(i.timeSlot || '').toLowerCase().trim();
+    if (timeCounts[t] > 1) {
       clashes.add(i.id);
-      clashes.add(seen.get(key));
-    } else {
-      seen.set(key, i.id);
     }
   });
 
