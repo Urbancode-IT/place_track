@@ -255,7 +255,7 @@ export default function PublicInterviewApply() {
               Cancel
             </Button>
             <Button type="submit" loading={regMut.isPending}>
-              Register Student
+              Register Students
             </Button>
           </div>
         </form>
