@@ -19,9 +19,14 @@ export const publicSubmitSchema = z.object({
   course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT']).optional(),
 });
 
-/** Shared /interview/apply form — student identifies by institute email */
+/** Shared /interview/apply form — student identifies by institute email or phone */
 export const publicApplySchema = publicSubmitSchema.extend({
-  studentEmail: z.string().email(),
+  name: z.string().min(1).max(100).optional(),
+  studentEmail: z.string().email().optional().or(z.literal('')),
+  studentPhone: z.string().min(1).max(20).optional().or(z.literal('')),
+}).refine(data => data.studentEmail || data.studentPhone, {
+  message: "Provide either Email or Phone Number to identify yourself",
+  path: ["studentEmail"]
 });
 
 export const requestIdParamSchema = z.object({

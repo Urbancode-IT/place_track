@@ -24,6 +24,7 @@ router.post('/students', validate(createStudentSchema), publicCreateStudent);
 
 router.post('/interview-finish/preview', validate(publicFinishPreviewSchema), finishCtrl.previewFinish);
 router.post('/interview-finish/apply', validate(publicFinishApplySchema), finishCtrl.applyFinishOpen);
+router.get('/interviews', applyCtrl.listInterviews);
 router.post('/self-interview/apply', validate(publicApplySchema), applyCtrl.applyOpen);
 router.get('/self-interview/:token', validate(tokenParamSchema), ctrl.getByToken);
 router.put(
