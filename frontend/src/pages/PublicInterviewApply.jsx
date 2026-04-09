@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -171,10 +172,17 @@ export default function PublicInterviewApply() {
           <div>
             <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">PlaceTrack</p>
             <h1 className="mt-1 font-syne text-[22px] font-semibold">Interview details</h1>
-            <p className="mt-2 text-sm text-[var(--text2)]">
-              Use your <strong className="text-[var(--text)]">Email or Phone Number</strong> on file. After
-              submit, placement will approve — then it appears on their today&apos;s live board.
-            </p>
+            <div className="flex items-center gap-3 mt-2">
+               <p className="text-sm text-[var(--text2)]">
+                Use your <strong className="text-[var(--text)]">Email or Phone Number</strong> on file.
+              </p>
+              <Link 
+                to="/interview/finish" 
+                className="text-[10px] font-bold text-[var(--cyan)] hover:text-white transition-colors bg-[rgba(0,212,255,0.1)] px-2 py-1 rounded-md border border-[rgba(0,212,255,0.2)]"
+              >
+                Finished? Record Outcome →
+              </Link>
+            </div>
           </div>
           <button
             type="button"

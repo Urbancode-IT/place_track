@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -173,16 +174,22 @@ export default function PublicInterviewFinish() {
         className="w-full max-w-lg rounded-2xl p-8 space-y-6"
         style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
       >
-        <div>
-          <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-          <h1 className="mt-1 font-syne text-[22px] font-semibold">Interview finish</h1>
-          <p className="mt-2 text-sm text-[var(--text2)]">
-            Enter email + company, tap <strong className="text-[var(--text)]">Check interview</strong> to load the row.
-            For most outcomes, add a <strong className="text-[var(--text)]">trainer review</strong> (Good / Bad / Excellent).
-            If you pick <strong className="text-[var(--text)]">Rescheduled</strong>, only the new date and time are required.
-            <strong className="text-[var(--text)]"> Submit</strong> updates the schedule. Tap <strong className="text-[var(--text)]">Edit</strong> on the match card to change trainers; use{' '}
-            <strong className="text-[var(--text)]">Change email or company</strong> if the wrong row was matched.
-          </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
+            <h1 className="mt-1 font-syne text-[22px] font-semibold">Interview finish</h1>
+            <div className="flex items-center gap-3 mt-2">
+              <p className="text-sm text-[var(--text2)]">
+                Record the outcome of your completed interview.
+              </p>
+              <Link 
+                to="/interview/apply" 
+                className="text-[10px] font-bold text-[var(--violet)] hover:text-white transition-colors bg-[rgba(155,93,255,0.1)] px-2 py-1 rounded-md border border-[rgba(155,93,255,0.2)]"
+              >
+                Need to apply? →
+              </Link>
+            </div>
+          </div>
         </div>
 
         <form

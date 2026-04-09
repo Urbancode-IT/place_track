@@ -46,9 +46,9 @@ export async function applyOpen(req, res, next) {
 
     await query(
       `INSERT INTO "StudentInterviewRequest" (
-        token, "studentId", company, round, date, "timeSlot", "hrNumber", room, comments, course, status, "submittedAt"
-      ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, $9, 'SUBMITTED', now())`,
-      [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null, course || null]
+        token, "studentId", company, round, date, "timeSlot", "hrNumber", room, comments, status, "submittedAt"
+      ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, 'SUBMITTED', now())`,
+      [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null]
     );
     return success(res, { ok: true }, 'Submitted. Your placement team will review it.');
   } catch (err) {
@@ -76,7 +76,7 @@ export async function listInterviews(req, res, next) {
       `SELECT r.id, r.company, r.round, r."timeSlot", r.status, s.name as "studentName"
        FROM "StudentInterviewRequest" r
        JOIN "Student" s ON s.id = r."studentId"
-       WHERE r.course = $1 
+       WHERE s.course = $1 
          AND r.date >= $2 AND r.date <= $3
          AND r.status IN ('SUBMITTED', 'APPROVED')
        ORDER BY r."timeSlot" ASC`,
