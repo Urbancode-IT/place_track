@@ -35,8 +35,8 @@ const regSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Valid email is required').optional().or(z.literal('')),
   phone: z.string().min(1, 'Phone is required'),
-  course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'], { 
-    errorMap: () => ({ message: 'Select a course' }) 
+  course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'], {
+    errorMap: () => ({ message: 'Select a course' })
   }),
 });
 
@@ -46,16 +46,20 @@ const schema = z.object({
   studentPhone: z.string().min(1, 'Enter your phone number').optional().or(z.literal('')),
   company: z.string().min(1, 'Company is required'),
   round: z.string().min(1, 'Round is required'),
+  customRound: z.string().optional(),
   date: z.string().min(1, 'Interview date is required'),
   timeSlot: z.string().min(1, 'Time slot is required'),
-  course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'], { 
-    errorMap: () => ({ message: 'Select your course' }) 
+  course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'], {
+    errorMap: () => ({ message: 'Select your course' })
   }),
   hrNumber: z.string().optional(),
   comments: z.string().optional(),
 }).refine(data => data.studentEmail || data.studentPhone, {
   message: "Provide either Email or Phone Number to identify yourself",
   path: ["studentEmail"]
+}).refine(data => data.round !== 'Other' || (data.customRound && data.customRound.trim().length > 0), {
+  message: "Please specify the round name",
+  path: ["customRound"]
 });
 
 /**
@@ -89,6 +93,7 @@ export default function PublicInterviewApply() {
       studentPhone: '',
       company: '',
       round: '',
+      customRound: '',
       date: '',
       timeSlot: '',
       course: '',
@@ -99,6 +104,7 @@ export default function PublicInterviewApply() {
 
   const course = useWatch({ control, name: 'course' });
   const date = useWatch({ control, name: 'date' });
+  const round = useWatch({ control, name: 'round' });
 
   const schedQuery = useQuery({
     queryKey: ['publicInterviews', course, date],
@@ -118,11 +124,11 @@ export default function PublicInterviewApply() {
     return counts;
   }, [schedQuery.data]);
 
-  const { 
-    register: registerReg, 
-    handleSubmit: handleSubmitReg, 
+  const {
+    register: registerReg,
+    handleSubmit: handleSubmitReg,
     reset: resetReg,
-    formState: { errors: errorsReg } 
+    formState: { errors: errorsReg }
   } = useForm({
     resolver: zodResolver(regSchema),
     defaultValues: {
@@ -156,10 +162,16 @@ export default function PublicInterviewApply() {
   }
 
   const onSubmit = (values) => {
-    submitMut.mutate({
+    const payload = {
       ...values,
       date: new Date(values.date).toISOString(),
-    });
+    };
+
+    if (values.round === 'Other') {
+      payload.round = values.customRound;
+    }
+
+    submitMut.mutate(payload);
   };
 
   return (
@@ -173,11 +185,11 @@ export default function PublicInterviewApply() {
             <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">PlaceTrack</p>
             <h1 className="mt-1 font-syne text-[22px] font-semibold">Interview details</h1>
             <div className="flex items-center gap-3 mt-2">
-               <p className="text-sm text-[var(--text2)]">
+              <p className="text-sm text-[var(--text2)]">
                 Use your <strong className="text-[var(--text)]">Email or Phone Number</strong> on file.
               </p>
-              <Link 
-                to="/interview/finish" 
+              <Link
+                to="/interview/finish"
                 className="text-[10px] font-bold text-[var(--cyan)] hover:text-white transition-colors bg-[rgba(0,212,255,0.1)] px-2 py-1 rounded-md border border-[rgba(0,212,255,0.2)]"
               >
                 Finished? Record Outcome →
@@ -188,11 +200,10 @@ export default function PublicInterviewApply() {
             type="button"
             title="View today's schedule"
             onClick={() => setShowShed(!showShed)}
-            className={`p-3 rounded-xl border transition-all mt-2 ${
-              showShed 
-              ? 'bg-[var(--cyan)] border-[var(--cyan)] text-black' 
-              : 'bg-[rgba(255,255,255,0.03)] border-[var(--border)] text-[var(--text2)] hover:text-[var(--cyan)]'
-            }`}
+            className={`p-3 rounded-xl border transition-all mt-2 ${showShed
+                ? 'bg-[var(--cyan)] border-[var(--cyan)] text-black'
+                : 'bg-[rgba(255,255,255,0.03)] border-[var(--border)] text-[var(--text2)] hover:text-[var(--cyan)]'
+              }`}
           >
             <EyeIcon />
           </button>
@@ -215,20 +226,19 @@ export default function PublicInterviewApply() {
                   const initial = item.studentName?.charAt(0).toUpperCase() || 'S';
                   const colors = ['bg-emerald-500/20 text-emerald-400', 'bg-purple-500/20 text-purple-400', 'bg-rose-500/20 text-rose-400', 'bg-amber-500/20 text-amber-400'];
                   const colorClass = colors[item.studentName?.length % colors.length];
-                  
+
                   const normalizedTime = item.timeSlot?.toLowerCase()?.trim() || 'none';
                   const hasConflict = (timeConflicts[normalizedTime] || 0) > 1;
 
                   return (
-                    <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                      hasConflict 
-                        ? 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15 ring-1 ring-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]' 
+                    <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${hasConflict
+                        ? 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15 ring-1 ring-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
                         : 'bg-[rgba(255,255,255,0.03)] border-[var(--border)] hover:bg-[rgba(255,255,255,0.05)]'
-                    }`}>
+                      }`}>
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg border border-white/5 ${colorClass}`}>
                         {initial}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-[var(--text)] truncate">{item.studentName}</p>
                         <p className="text-[11px] text-[var(--text2)] truncate">{item.company} • <span className="text-[var(--text3)]">{course}</span></p>
@@ -240,9 +250,8 @@ export default function PublicInterviewApply() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] font-mono text-[var(--text2)]">{item.timeSlot}</span>
-                          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-widest ${
-                            item.status === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-primary/80 text-white'
-                          }`}>
+                          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-widest ${item.status === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-primary/80 text-white'
+                            }`}>
                             {item.status === 'APPROVED' ? 'READY' : 'PENDING'}
                           </span>
                         </div>
@@ -301,7 +310,7 @@ export default function PublicInterviewApply() {
                 {...register('name')}
                 error={errors.name?.message}
               />
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Your email (optional)"
@@ -321,7 +330,7 @@ export default function PublicInterviewApply() {
               </div>
 
               <Input label="Company" {...register('company')} error={errors.company?.message} />
-              
+
               <div>
                 <label className="block text-xs text-[var(--text2)] mb-1">Round</label>
                 <select
@@ -341,10 +350,20 @@ export default function PublicInterviewApply() {
                   <option value="Manager Round">Manager Round</option>
                   <option value="Screening round">Screening round</option>
                   <option value="AI round">AI round</option>
+                  <option value="Other">Other</option>
                 </select>
                 {errors.round && <p className="mt-1 text-sm text-danger">{errors.round.message}</p>}
               </div>
-              
+
+              {round === 'Other' && (
+                <Input
+                  label="Specify Round Name"
+                  placeholder="e.g. Technical Interview 3"
+                  {...register('customRound')}
+                  error={errors.customRound?.message}
+                />
+              )}
+
               <Input label="HR / contact (optional)" {...register('hrNumber')} />
               <div>
                 <label className="block text-xs text-[var(--text2)] mb-1">Notes (optional)</label>
@@ -382,7 +401,7 @@ export default function PublicInterviewApply() {
             <Input label="Email (optional)" placeholder="email@example.com" {...registerReg('email')} error={errorsReg.email?.message} />
             <Input label="Phone number" placeholder="10 digit number" {...registerReg('phone')} error={errorsReg.phone?.message} />
           </div>
-          
+
           <div>
             <label className="block text-xs text-[var(--text2)] mb-1">Course</label>
             <select

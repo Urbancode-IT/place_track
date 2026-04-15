@@ -49,6 +49,9 @@ function setInputValueAndNotify(el, value) {
   el.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+// Stable counter for generating unique IDs for label/input pairs
+let _timePickerIdCounter = 0;
+
 export const Input = forwardRef(function Input(
   { label, error, className, labelClassName, errorClassName, prefix, showTimeIcon, disabled, ...props },
   ref
@@ -56,8 +59,10 @@ export const Input = forwardRef(function Input(
   const adornment = prefix ?? (showTimeIcon ? <TimeIcon /> : null);
   const interactiveTimePicker = Boolean(showTimeIcon && !prefix);
 
+  // Stable unique ID so <label htmlFor> links to the hidden time input
+  const timePickerId = useRef(`tp-${++_timePickerIdCounter}`).current;
+
   const textRef = useRef(null);
-  const timePickerRef = useRef(null);
 
   const setTextRef = useCallback(
     (el) => {
@@ -68,33 +73,24 @@ export const Input = forwardRef(function Input(
     [ref]
   );
 
-  const openNativeTimePicker = useCallback(() => {
-    if (disabled) return;
-    const el = timePickerRef.current;
-    if (!el) return;
-    try {
-      if (typeof el.showPicker === 'function') {
-        el.showPicker();
-        return;
-      }
-    } catch {
-      /* insecure context or unsupported */
-    }
-    el.focus();
-    el.click();
-  }, [disabled]);
-
   const onNativeTimeChange = useCallback(
     (e) => {
       const v = e.target.value;
-      e.target.value = '';
       if (!v) return;
+      
       const formatted = formatNativeTimeToDisplay(v);
       if (!formatted) return;
+      
       const el = textRef.current;
       if (!el) return;
+      
       const next = mergeTimeSlotText(el.value, formatted);
       setInputValueAndNotify(el, next);
+      
+      // Delay clearing to allow browser to finish event bubbling
+      setTimeout(() => {
+        if (e.target) e.target.value = '';
+      }, 50);
     },
     []
   );
@@ -125,35 +121,48 @@ export const Input = forwardRef(function Input(
         <div className="relative isolate">
           {field}
           {interactiveTimePicker && (
-            <input
-              ref={timePickerRef}
-              type="time"
-              step={60}
-              tabIndex={-1}
-              className="sr-only"
-              aria-hidden
-              onChange={onNativeTimeChange}
-            />
-          )}
-          {interactiveTimePicker ? (
-            <button
-              type="button"
-              disabled={disabled}
+            /*
+             * Hidden native time input — placing it inside a <label> means
+             * tapping the label on mobile (iOS/Android) directly triggers the
+             * native time picker without needing showPicker() or .click(),
+             * both of which are blocked in mobile browsers unless called from
+             * a direct user-interaction handler on the element itself.
+             */
+            <label
+              htmlFor={timePickerId}
               className={cn(
-                'absolute right-1.5 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg',
+                'absolute right-0 top-0 bottom-0 z-10 flex w-12 items-center justify-center rounded-r-lg cursor-pointer overflow-hidden',
                 'text-[var(--cyan)] transition-colors hover:bg-[rgba(0,212,255,0.12)]',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
+                'focus-within:ring-2 focus-within:ring-primary/60',
                 disabled && 'pointer-events-none opacity-40'
               )}
               aria-label="Open time picker"
               onClick={(e) => {
-                e.preventDefault();
-                openNativeTimePicker();
+                // Ensure the hidden input gets triggered on all browsers
+                const input = e.currentTarget.querySelector('input');
+                if (input && typeof input.showPicker === 'function') {
+                  try {
+                    input.showPicker();
+                  } catch (err) {
+                    // Fallback to default label behavior if showPicker fails
+                  }
+                }
               }}
             >
-              <TimeIcon />
-            </button>
-          ) : (
+              <TimeIcon className="pointer-events-none relative z-10" />
+              <input
+                id={timePickerId}
+                type="time"
+                step={60}
+                tabIndex={-1}
+                disabled={disabled}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer p-0 m-0 border-none outline-none z-0"
+                style={{ fontSize: '16px' }} // Prevent iOS zoom
+                onChange={onNativeTimeChange}
+              />
+            </label>
+          )}
+          {!interactiveTimePicker && adornment && (
             <span
               className="pointer-events-none absolute right-3 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center"
               aria-hidden
