@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DeleteInterviewConfirmModal } from '@/components/ui/DeleteInterviewConfirmModal';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_COLORS } from '@/utils/constants';
@@ -49,6 +50,7 @@ export function TodayInterviews({ interviews: initialInterviews }) {
   const del = useDeleteInterview();
   const addToast = useNotificationStore((s) => s.addToast);
   const [filterCourse, setFilterCourse] = useState('ALL');
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const filteredInterviews = initialInterviews?.filter((i) => {
     if (filterCourse === 'ALL') return true;
@@ -72,18 +74,13 @@ export function TodayInterviews({ interviews: initialInterviews }) {
     }
   });
 
-  const handleDelete = (i) => {
-    const name = i.student?.name || 'this student';
-    const company = i.company || 'interview';
-    if (
-      !window.confirm(
-        `Delete interview for ${name} (${company})? This cannot be undone.`
-      )
-    ) {
-      return;
-    }
-    del.mutate(i.id, {
-      onSuccess: () => addToast({ type: 'success', message: 'Interview removed' }),
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    del.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        addToast({ type: 'success', message: 'Interview removed' });
+        setDeleteTarget(null);
+      },
       onError: (e) =>
         addToast({
           type: 'error',
@@ -94,7 +91,12 @@ export function TodayInterviews({ interviews: initialInterviews }) {
 
   const courses = ['ALL', 'FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'];
 
+  const deleteDetail = deleteTarget
+    ? `${deleteTarget.student?.name || 'Student'} · ${deleteTarget.company || '—'} · ${deleteTarget.round || '—'}`
+    : '';
+
   return (
+    <>
     <div
       className="rounded-2xl overflow-hidden flex flex-col glass-surface"
     >
@@ -239,7 +241,7 @@ export function TodayInterviews({ interviews: initialInterviews }) {
                       type="button"
                       title="Delete interview"
                       disabled={del.isPending}
-                      onClick={() => handleDelete(i)}
+                      onClick={() => setDeleteTarget(i)}
                       className={cn(
                         'inline-flex items-center justify-center rounded-lg p-2 transition-colors',
                         'text-[var(--text3)] hover:text-[var(--pink)] hover:bg-[rgba(244,63,94,0.12)]',
@@ -271,5 +273,15 @@ export function TodayInterviews({ interviews: initialInterviews }) {
         </table>
       </div>
     </div>
+
+    <DeleteInterviewConfirmModal
+      open={!!deleteTarget}
+      onClose={() => setDeleteTarget(null)}
+      onConfirm={confirmDelete}
+      isPending={del.isPending}
+      description="This interview will be removed from today’s board and the schedule. This cannot be undone."
+      detail={deleteDetail}
+    />
+    </>
   );
 }

@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { formatDate } from '@/utils/formatDate';
 import { useAuthStore } from '@/store/auth.store';
 import { useNotificationStore } from '@/store/notification.store';
 import { useDeleteInterview } from '@/hooks/useInterviews';
+import { DeleteInterviewConfirmModal } from '@/components/ui/DeleteInterviewConfirmModal';
 import { cn } from '@/utils/helpers';
 
 function TrashIcon({ className }) {
@@ -33,17 +35,15 @@ export function ActivityFeed({ items }) {
   const canDelete = role === 'ADMIN' || role === 'TRAINER';
   const del = useDeleteInterview();
   const addToast = useNotificationStore((s) => s.addToast);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const handleDelete = (a) => {
-    if (
-      !window.confirm(
-        `Delete this interview? It will disappear from the schedule and activity.\n\n${a.message}`
-      )
-    ) {
-      return;
-    }
-    del.mutate(a.id, {
-      onSuccess: () => addToast({ type: 'success', message: 'Interview removed' }),
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    del.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        addToast({ type: 'success', message: 'Interview removed' });
+        setDeleteTarget(null);
+      },
       onError: (e) =>
         addToast({
           type: 'error',
@@ -53,6 +53,7 @@ export function ActivityFeed({ items }) {
   };
 
   return (
+    <>
     <div
       className="rounded-2xl p-4 flex flex-col"
       style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
@@ -78,7 +79,7 @@ export function ActivityFeed({ items }) {
                 type="button"
                 title="Delete interview"
                 disabled={del.isPending}
-                onClick={() => handleDelete(a)}
+                onClick={() => setDeleteTarget(a)}
                 className={cn(
                   'shrink-0 rounded-md p-1.5 transition-colors',
                   'text-[var(--text3)] hover:text-[var(--pink)] hover:bg-[rgba(244,63,94,0.12)]',
@@ -95,5 +96,15 @@ export function ActivityFeed({ items }) {
         )}
       </ul>
     </div>
+
+    <DeleteInterviewConfirmModal
+      open={!!deleteTarget}
+      onClose={() => setDeleteTarget(null)}
+      onConfirm={confirmDelete}
+      isPending={del.isPending}
+      description="It will disappear from the schedule and activity. This cannot be undone."
+      detail={deleteTarget?.message}
+    />
+    </>
   );
 }
