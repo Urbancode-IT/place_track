@@ -167,6 +167,24 @@ export async function sendDailySummary(toEmail, htmlContent) {
   });
 }
 
+/** Same digest as Google Chat daily board — one mail per address */
+export async function sendTomorrowBoardDigest(toEmails, htmlBody, subject) {
+  const list = Array.isArray(toEmails)
+    ? toEmails
+    : String(toEmails)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+  for (const to of list) {
+    await sendMailSafe({
+      from: getDefaultMailFrom(),
+      to,
+      subject,
+      html: htmlBody,
+    });
+  }
+}
+
 function taskMailHtml(toName, { taskTitle, deadline, message, heading }) {
   return `
   <div style="font-family: Arial, sans-serif; line-height: 1.5;">

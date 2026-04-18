@@ -6,6 +6,7 @@ import { createInterviewWithTrainers } from '../services/interviewCreate.service
 import { notifyTrainersForInterview, notifyTrainersInterviewScheduleUpdated } from '../services/notification.service.js';
 import { emitInterviewUpdated } from '../services/socket.service.js';
 import { sendStatusUpdate, sendStudentInterviewRescheduled } from '../services/email.service.js';
+import { notifyGoogleChatInterviewScheduled } from '../services/googleChatInterviewNotify.service.js';
 
 export async function list(req, res, next) {
   try {
@@ -199,6 +200,9 @@ export async function update(req, res, next) {
       if (studentEmail) {
         await sendStudentInterviewRescheduled(studentEmail, after.studentName, interviewData);
       }
+      notifyGoogleChatInterviewScheduled(id).catch((e) =>
+        console.error('[google-chat] interview schedule notify:', e)
+      );
     }
 
     const statusChangedToRescheduled =

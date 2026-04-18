@@ -84,7 +84,7 @@ export default function Login() {
             <span className="font-syne text-lg font-extrabold tracking-tight text-primary">PT</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight">PlaceTrack</h1>
-          <p className="mt-1 text-sm text-muted">Kattraan Technologies</p>
+          <p className="mt-1 text-sm text-muted">urbancode</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

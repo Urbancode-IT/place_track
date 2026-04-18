@@ -35,6 +35,13 @@ app.get('/health', (_, res) =>
     success: true,
     message: 'PlaceTrack API OK',
     mail: getSmtpHealth(),
+    googleChat: {
+      configured: Boolean(process.env.GOOGLE_CHAT_WEBHOOK_URL?.trim()),
+      cronTimezone:
+        process.env.GOOGLE_CHAT_CRON_TZ ||
+        process.env.INTERVIEW_SCHEDULE_TZ ||
+        'Asia/Kolkata',
+    },
   })
 );
 

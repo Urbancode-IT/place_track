@@ -15,7 +15,9 @@
     "db:migrate-trainer-honest-review": "node scripts/migrate-trainer-honest-review.js",
     "db:migrate-student-honest-review": "node scripts/migrate-student-honest-review.js",
     "db:migrate-interview-trainer-review": "node scripts/migrate-interview-trainer-review.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "chat:ping": "node scripts/ping-google-chat.js",
+    "chat:board": "node scripts/run-google-chat-board-once.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

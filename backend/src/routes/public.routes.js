@@ -17,10 +17,15 @@ import {
 import * as honestCtrl from '../controllers/publicHonestReview.controller.js';
 import { createStudentSchema } from '../validators/student.validator.js';
 import { publicCreateStudent } from '../controllers/publicStudent.controller.js';
+import { postGoogleChatBoardCron } from '../controllers/cronGoogleChat.controller.js';
 
 const router = Router();
 
 router.post('/students', validate(createStudentSchema), publicCreateStudent);
+
+/** Scheduled Google Chat board (secret) — for external cron when host sleeps (e.g. Render free tier) */
+router.get('/cron/google-chat-board', postGoogleChatBoardCron);
+router.post('/cron/google-chat-board', postGoogleChatBoardCron);
 
 router.post('/interview-finish/preview', validate(publicFinishPreviewSchema), finishCtrl.previewFinish);
 router.post('/interview-finish/apply', validate(publicFinishApplySchema), finishCtrl.applyFinishOpen);

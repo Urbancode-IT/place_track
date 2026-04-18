@@ -9,10 +9,7 @@ build/
 .next/
 out/
 
-# Env
-.env
-.env.local
-.env.*.local
+
 
 # Logs
 logs/

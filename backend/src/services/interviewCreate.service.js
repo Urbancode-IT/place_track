@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { notifyTrainersForInterview } from './notification.service.js';
 import { emitNewInterview } from './socket.service.js';
+import { notifyGoogleChatInterviewScheduled } from './googleChatInterviewNotify.service.js';
 
 /**
  * Creates an Interview row + optional trainer links. Used by admin/trainer API and self-submit approve flow.
@@ -54,5 +55,10 @@ export async function createInterviewWithTrainers({
     console.error('[notify] Background notification failed:', e)
   );
   emitNewInterview({ ...interview, student, trainers: ids.map((tid) => ({ trainerId: tid })) });
+
+  notifyGoogleChatInterviewScheduled(interview.id).catch((e) =>
+    console.error('[google-chat] interview schedule notify:', e)
+  );
+
   return { interview, student, trainerIds: ids };
 }
