@@ -33,10 +33,11 @@ export function KanbanCard({ interview, columnAccent, onEdit }) {
   const trainers = (interview.trainers || [])
     .map((t) => t?.trainer)
     .filter(Boolean);
+  const pipeline = getEffectiveInterviewStatus(interview);
   const note =
-    interview.status === 'SHORTLISTED'
+    pipeline === 'SHORTLISTED'
       ? 'Cleared - Next round pending'
-      : interview.status === 'SCHEDULED' && interview.notes
+      : pipeline === 'SCHEDULED' && interview.notes
         ? 'Email sent'
         : interview.notes || null;
 

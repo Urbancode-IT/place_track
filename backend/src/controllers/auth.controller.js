@@ -62,19 +62,40 @@ export async function login(req, res, next) {
     }
 
     if (email === 'Uc@gmail.com' && password === 'UCadmin123') {
-      const hashed = await bcrypt.hash('UCadmin123', 10);
-      let rUc = await query('SELECT id, name, email, role, phone FROM "User" WHERE email = $1', [email]);
+      let rUc = await query(
+        'SELECT id, name, email, role, phone, password FROM "User" WHERE email = $1',
+        [email]
+      );
       let ucUser = rUc.rows[0];
       if (!ucUser) {
+        const hashed = await bcrypt.hash('UCadmin123', 10);
         const insert = await query(
           'INSERT INTO "User" (name, email, password, role, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role, phone',
           ['UC', email, hashed, 'ADMIN', null]
         );
         ucUser = insert.rows[0];
       } else {
-        await query('UPDATE "User" SET role = $1, password = $2, name = $3 WHERE id = $4', ['ADMIN', hashed, 'UC', ucUser.id]);
-        rUc = await query('SELECT id, name, email, role, phone FROM "User" WHERE id = $1', [ucUser.id]);
-        ucUser = rUc.rows[0];
+        const pwdOk = ucUser.password && (await bcrypt.compare('UCadmin123', ucUser.password));
+        const needsSync = !pwdOk || ucUser.role !== 'ADMIN' || ucUser.name !== 'UC';
+        if (needsSync) {
+          const hashed = await bcrypt.hash('UCadmin123', 10);
+          await query('UPDATE "User" SET role = $1, password = $2, name = $3 WHERE id = $4', [
+            'ADMIN',
+            hashed,
+            'UC',
+            ucUser.id,
+          ]);
+          rUc = await query('SELECT id, name, email, role, phone FROM "User" WHERE id = $1', [ucUser.id]);
+          ucUser = rUc.rows[0];
+        } else {
+          ucUser = {
+            id: ucUser.id,
+            name: ucUser.name,
+            email: ucUser.email,
+            role: ucUser.role,
+            phone: ucUser.phone,
+          };
+        }
       }
       const accessToken = signAccessToken({ userId: ucUser.id, email: ucUser.email, role: ucUser.role });
       const refreshToken = signRefreshToken({ userId: ucUser.id });
@@ -89,19 +110,35 @@ export async function login(req, res, next) {
     }
 
     if (email === 'siva@gamilcom' && password === 'siva@123') {
-      const hashed = await bcrypt.hash('siva@123', 10);
-      let rSiva = await query('SELECT id, name, email, role, phone FROM "User" WHERE email = $1', [email]);
+      let rSiva = await query(
+        'SELECT id, name, email, role, phone, password FROM "User" WHERE email = $1',
+        [email]
+      );
       let sivaUser = rSiva.rows[0];
       if (!sivaUser) {
+        const hashed = await bcrypt.hash('siva@123', 10);
         const insert = await query(
           'INSERT INTO "User" (name, email, password, role, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role, phone',
           ['Siva', email, hashed, 'ADMIN', null]
         );
         sivaUser = insert.rows[0];
       } else {
-        await query('UPDATE "User" SET role = $1, password = $2 WHERE id = $3', ['ADMIN', hashed, sivaUser.id]);
-        rSiva = await query('SELECT id, name, email, role, phone FROM "User" WHERE id = $1', [sivaUser.id]);
-        sivaUser = rSiva.rows[0];
+        const pwdOk = sivaUser.password && (await bcrypt.compare('siva@123', sivaUser.password));
+        const needsSync = !pwdOk || sivaUser.role !== 'ADMIN';
+        if (needsSync) {
+          const hashed = await bcrypt.hash('siva@123', 10);
+          await query('UPDATE "User" SET role = $1, password = $2 WHERE id = $3', ['ADMIN', hashed, sivaUser.id]);
+          rSiva = await query('SELECT id, name, email, role, phone FROM "User" WHERE id = $1', [sivaUser.id]);
+          sivaUser = rSiva.rows[0];
+        } else {
+          sivaUser = {
+            id: sivaUser.id,
+            name: sivaUser.name,
+            email: sivaUser.email,
+            role: sivaUser.role,
+            phone: sivaUser.phone,
+          };
+        }
       }
       const accessToken = signAccessToken({ userId: sivaUser.id, email: sivaUser.email, role: sivaUser.role });
       const refreshToken = signRefreshToken({ userId: sivaUser.id });

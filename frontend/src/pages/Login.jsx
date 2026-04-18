@@ -20,6 +20,7 @@ export default function Login() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -28,10 +29,13 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     setError('');
+    setIsSubmitting(true);
+    let finishedOnPage = true;
     try {
       const { data: res } = await authApi.login(data);
       setAuth(res.data.user, res.data.accessToken);
       navigate(location.state?.from?.pathname || '/', { replace: true });
+      finishedOnPage = false;
     } catch (err) {
       const networkFail =
         !err.response ||
@@ -67,6 +71,8 @@ export default function Login() {
       } else {
         setError(msg || 'Login failed');
       }
+    } finally {
+      if (finishedOnPage) setIsSubmitting(false);
     }
   };
 
@@ -168,9 +174,10 @@ export default function Login() {
           <Button
             type="submit"
             size="lg"
-            className="w-full shadow-[0_14px_35px_rgba(54,153,255,0.25)] hover:shadow-[0_18px_45px_rgba(54,153,255,0.30)] focus:ring-primary"
+            disabled={isSubmitting}
+            className="w-full shadow-[0_14px_35px_rgba(54,153,255,0.25)] hover:shadow-[0_18px_45px_rgba(54,153,255,0.30)] focus:ring-primary disabled:opacity-60 disabled:pointer-events-none"
           >
-            Sign in
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
           </Button>
 
           <p className="pt-1 text-center text-xs text-muted">

@@ -1,14 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { honestReviewApi } from '@/api/honestReview.api';
 import { useNotificationStore } from '@/store/notification.store';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 
 export default function HonestReviewLinkPage() {
   const addToast = useNotificationStore((s) => s.addToast);
+  const [lastUrl, setLastUrl] = useState('');
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
 
   const commonUrl = useMemo(
     () => (typeof window !== 'undefined' ? `${window.location.origin}/honest-review` : '/honest-review'),
@@ -21,44 +24,32 @@ export default function HonestReviewLinkPage() {
   });
   const recentRows = Array.isArray(listBody?.data) ? listBody.data : [];
 
-  const copy = async () => {
+  const copyLink = async () => {
+    setLastUrl(commonUrl);
     try {
       await navigator.clipboard.writeText(commonUrl);
-      addToast({ message: 'Link copied', type: 'success' });
     } catch {
-      addToast({ message: 'Copy failed — select the link and copy manually', type: 'error' });
+      /* clipboard API / permission */
     }
+    addToast({ message: 'Honest review link copied — share with students', type: 'success' });
+    setCopyModalOpen(true);
   };
 
   return (
+    <>
     <div className="mx-auto max-w-3xl space-y-8 text-[var(--text)]">
       <div>
-        <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">Students</p>
-        <h1 className="mt-1 font-syne text-[22px] font-semibold">Honest review link</h1>
-        <p className="mt-2 text-sm text-[var(--text2)]">
-          One common link for everyone. Students open it, enter the <strong className="text-[var(--text)]">same email</strong> as in their profile, and submit their honest review (no login).
-        </p>
-        <p className="mt-2 text-xs text-[var(--text3)]">
-          Reviews are stored on each student’s profile under <span className="text-[var(--cyan)]">Honest reviews</span>. The list below is a shortcut so you can see recent submissions without opening every profile.
-        </p>
+        <h1 className="font-syne text-[22px] font-semibold">Honest review link</h1>
       </div>
 
-      <div
-        className="rounded-2xl border p-6 space-y-3"
-        style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
-      >
-        <h2 className="font-syne text-lg font-semibold">Copy &amp; share</h2>
-        <p className="text-xs text-[var(--text3)]">Share this in WhatsApp, email, or class group.</p>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            readOnly
-            value={commonUrl}
-            className="flex-1 rounded-lg border border-[var(--border)] bg-[rgba(0,0,0,0.25)] px-3 py-2 text-sm font-mono text-[var(--text)]"
-          />
-          <Button type="button" variant="secondary" onClick={copy}>
-            Copy
-          </Button>
-        </div>
+      <div>
+        <Button
+          type="button"
+          className="!bg-[rgba(0,212,255,0.2)] !text-[var(--text)] border !border-[rgba(0,212,255,0.35)] hover:!bg-[rgba(0,212,255,0.28)]"
+          onClick={copyLink}
+        >
+          Copy review link
+        </Button>
       </div>
 
       <div
@@ -98,5 +89,33 @@ export default function HonestReviewLinkPage() {
         )}
       </div>
     </div>
+
+    <Modal
+      open={copyModalOpen}
+      onClose={() => setCopyModalOpen(false)}
+      title="Link copied"
+      size="sm"
+      variant="dark"
+    >
+      <p className="text-sm text-[var(--text2)]">
+        The honest review page URL is in your clipboard. Students use the same email as their profile — no login
+        required.
+      </p>
+      {lastUrl && (
+        <p className="mt-3 text-[11px] font-mono text-[var(--cyan)] break-all rounded-lg p-2 bg-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.2)]">
+          {lastUrl}
+        </p>
+      )}
+      <div className="mt-5 flex justify-end">
+        <Button
+          type="button"
+          onClick={() => setCopyModalOpen(false)}
+          className="!bg-[rgba(0,212,255,0.2)] !text-[var(--text)] border !border-[rgba(0,212,255,0.35)]"
+        >
+          OK
+        </Button>
+      </div>
+    </Modal>
+    </>
   );
 }
