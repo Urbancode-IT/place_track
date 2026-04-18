@@ -1,3 +1,5 @@
+import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
+
 /**
  * Single Kanban card for Interview Pipeline — colored role tags, trainer circles, clock + time.
  * Matches reference: neat cards with FSD/SDET/BI_DS/Network tags and small colored circles.
@@ -106,7 +108,7 @@ export function KanbanCard({ interview, columnAccent, onEdit }) {
       {/* Optional note line */}
       {note && (
         <p className="font-mono text-[9px] text-[var(--text3)] flex items-center gap-1">
-          {interview.status === 'SHORTLISTED' && (
+          {pipeline === 'SHORTLISTED' && (
             <span className="text-[var(--green)]" aria-hidden>✓</span>
           )}
           {note}

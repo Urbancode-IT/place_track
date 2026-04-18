@@ -1,6 +1,7 @@
 import { formatDate } from '@/utils/formatDate';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_COLORS } from '@/utils/constants';
+import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
 import { cn } from '@/utils/helpers';
 
 function trainerReviewLabel(rating) {
@@ -22,6 +23,7 @@ export function InterviewTimeline({ interviews }) {
       {interviews?.map((i) => {
         const trLabel = trainerReviewLabel(i.trainerReviewRating);
         const trNotes = (i.trainerReviewNotes || '').trim();
+        const pipeline = getEffectiveInterviewStatus(i);
         return (
         <li
           key={i.id}
@@ -34,12 +36,12 @@ export function InterviewTimeline({ interviews }) {
             </p>
             <Badge
               className={
-                (STATUS_COLORS[i.status]?.bg || '') +
+                (STATUS_COLORS[pipeline]?.bg || '') +
                 ' ' +
-                (STATUS_COLORS[i.status]?.text || '')
+                (STATUS_COLORS[pipeline]?.text || '')
               }
             >
-              {i.status}
+              {pipeline}
             </Badge>
             {(trLabel || trNotes) && (
               <div

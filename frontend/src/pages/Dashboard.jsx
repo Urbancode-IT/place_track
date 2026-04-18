@@ -10,7 +10,6 @@ import { TrainerWorkload } from '@/components/dashboard/TrainerWorkload';
 import { Spinner } from '@/components/ui/Spinner';
 import { useSocket } from '@/hooks/useSocket';
 import { DashboardCreateStudentLink } from '@/components/dashboard/DashboardCreateStudentLink';
-import { DashboardInterviewFinishLink } from '@/components/dashboard/DashboardInterviewFinishLink';
 
 export default function Dashboard() {
   const qc = useQueryClient();
@@ -127,7 +126,6 @@ export default function Dashboard() {
 
         <div className="flex flex-wrap items-center gap-3">
           <DashboardCreateStudentLink />
-          <DashboardInterviewFinishLink />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

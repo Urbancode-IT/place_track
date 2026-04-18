@@ -13,6 +13,7 @@ import { useNotifyTrainer, useCreateTrainer } from '@/hooks/useTrainers';
 import { formatDate } from '@/utils/formatDate';
 import { cn } from '@/utils/helpers';
 import { useNotificationStore } from '@/store/notification.store';
+import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
 
 const AVATAR_COLORS = [
   'var(--tc-primary)',   // blue
@@ -99,8 +100,11 @@ export default function TrainerView() {
   );
   const stats = {
     interviews: interviews.length,
-    shortlisted: interviews.filter((i) => i.status === 'SHORTLISTED').length,
-    futures: interviews.filter((i) => ['SCHEDULED', 'AWAITING_RESPONSE', 'RESCHEDULED'].includes(i.status)).length,
+    shortlisted: interviews.filter((i) => getEffectiveInterviewStatus(i) === 'SHORTLISTED').length,
+    futures: interviews.filter((i) => {
+      if (['AWAITING_RESPONSE', 'RESCHEDULED'].includes(i.status)) return true;
+      return getEffectiveInterviewStatus(i) === 'SCHEDULED';
+    }).length,
     declined: interviews.filter((i) => i.status === 'REJECTED').length,
   };
 
@@ -317,14 +321,18 @@ export default function TrainerView() {
                 <span className="text-[11px] text-[var(--text2)]">Showing {interviews.length} records</span>
               </div>
               <div className="divide-y divide-[var(--border)]">
-                {interviews.map((i) => (
+                {interviews.map((i) => {
+                  const pipeline = getEffectiveInterviewStatus(i);
+                  const avatarKey =
+                    pipeline === 'REJECTED' ? 'REJECTED' : pipeline === 'SHORTLISTED' ? 'SHORTLISTED' : 'SCHEDULED';
+                  return (
                   <div
                     key={i.id}
                     className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-[var(--tc-panel-hover)]"
                   >
                     <TrainerAvatar
                       name={i.student?.name}
-                      index={['SHORTLISTED', 'REJECTED', 'SCHEDULED'].indexOf(i.status) % AVATAR_COLORS.length}
+                      index={['SHORTLISTED', 'REJECTED', 'SCHEDULED'].indexOf(avatarKey) % AVATAR_COLORS.length}
                       size="sm"
                     />
                     <div className="flex-1 min-w-0">
@@ -336,12 +344,16 @@ export default function TrainerView() {
                     <span
                       className={cn(
                         'text-[10px] font-medium px-2 py-1 rounded shrink-0',
-                        i.status === 'SHORTLISTED' && 'bg-[var(--tc-green-dim)] text-[var(--tc-green)]',
-                        i.status === 'REJECTED' && 'bg-[var(--tc-red-dim)] text-[var(--tc-red)]',
-                        !['SHORTLISTED', 'REJECTED'].includes(i.status) && 'bg-[var(--tc-panel-hover)] text-[var(--text2)]'
+                        pipeline === 'SHORTLISTED' && 'bg-[var(--tc-green-dim)] text-[var(--tc-green)]',
+                        pipeline === 'REJECTED' && 'bg-[var(--tc-red-dim)] text-[var(--tc-red)]',
+                        !['SHORTLISTED', 'REJECTED'].includes(pipeline) && 'bg-[var(--tc-panel-hover)] text-[var(--text2)]'
                       )}
                     >
-                      {i.status === 'SHORTLISTED' ? 'Shortlisted' : i.status === 'REJECTED' ? 'Rejected' : i.status}
+                      {pipeline === 'SHORTLISTED'
+                        ? 'Shortlisted'
+                        : pipeline === 'REJECTED'
+                          ? 'Rejected'
+                          : pipeline}
                     </span>
                     <div className="flex gap-2">
                       <select
@@ -373,7 +385,8 @@ export default function TrainerView() {
                       </Button>
                     </div>
                   </div>
-                ))}
+                );
+                })}
                 {interviews.length === 0 && (
                   <div className="px-4 py-8 text-center text-[12px] text-[var(--text3)]">
                     No assigned interviews

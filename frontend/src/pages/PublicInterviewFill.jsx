@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -8,16 +8,24 @@ import { publicSelfInterviewApi } from '@/api/publicSelfInterview.api';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { InterviewRoundFields } from '@/components/interviews/InterviewRoundFields';
+import { resolveSubmittedRound } from '@/constants/interviewRounds';
 
-const schema = z.object({
-  company: z.string().min(1, 'Company is required'),
-  round: z.string().min(1, 'Round is required'),
-  date: z.string().min(1, 'Interview date is required'),
-  timeSlot: z.string().min(1, 'Time slot is required'),
-  hrNumber: z.string().optional(),
-  room: z.string().optional(),
-  comments: z.string().optional(),
-});
+const schema = z
+  .object({
+    company: z.string().min(1, 'Company is required'),
+    round: z.string().min(1, 'Round is required'),
+    customRound: z.string().optional(),
+    date: z.string().min(1, 'Interview date is required'),
+    timeSlot: z.string().min(1, 'Time slot is required'),
+    hrNumber: z.string().optional(),
+    room: z.string().optional(),
+    comments: z.string().optional(),
+  })
+  .refine(
+    (data) => data.round !== 'Other' || (data.customRound && data.customRound.trim().length > 0),
+    { message: 'Please specify the round name', path: ['customRound'] }
+  );
 
 export default function PublicInterviewFill() {
   const { token } = useParams();
@@ -32,11 +40,12 @@ export default function PublicInterviewFill() {
     mutationFn: (body) => publicSelfInterviewApi.submit(token, body).then((r) => r.data),
   });
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       company: '',
       round: '',
+      customRound: '',
       date: '',
       timeSlot: '',
       hrNumber: '',
@@ -44,6 +53,8 @@ export default function PublicInterviewFill() {
       comments: '',
     },
   });
+
+  const watchRound = useWatch({ control, name: 'round' });
 
   useEffect(() => {
     document.title = 'Interview details — PlaceTrack';
@@ -98,10 +109,13 @@ export default function PublicInterviewFill() {
   }
 
   const onSubmit = (values) => {
-    submitMut.mutate({
+    const payload = {
       ...values,
+      round: resolveSubmittedRound(values.round, values.customRound),
       date: new Date(values.date).toISOString(),
-    });
+    };
+    delete payload.customRound;
+    submitMut.mutate(payload);
   };
 
   return (
@@ -122,7 +136,7 @@ export default function PublicInterviewFill() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input label="Company" {...register('company')} error={errors.company?.message} />
-          <Input label="Round" placeholder="e.g. L1, Technical" {...register('round')} error={errors.round?.message} />
+          <InterviewRoundFields register={register} errors={errors} watchRound={watchRound} />
           <Input
             label="Interview date (as on your invite)"
             type="date"

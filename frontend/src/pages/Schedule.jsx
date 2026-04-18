@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { downloadScheduleCsv } from '@/api/export.api';
 import { Spinner } from '@/components/ui/Spinner';
 import { useCreateInterview, useUpdateInterview, useUpdateInterviewStatus } from '@/hooks/useInterviews';
+import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
 
 const COLUMN_IDS = [
   'SCHEDULED',
@@ -108,7 +109,8 @@ export default function Schedule() {
     );
   }
 
-  const getColumnItems = (status) => interviews.filter((i) => i.status === status);
+  const getColumnItems = (status) =>
+    interviews.filter((i) => getEffectiveInterviewStatus(i) === status);
 
   return (
     <div className="space-y-5 text-[var(--text)]">
@@ -262,7 +264,9 @@ export default function Schedule() {
                 {({ active }) => {
                   const interview = active?.data?.current?.interview;
                   if (!interview) return null;
-                  const col = COLUMN_CONFIG.find((c) => c.id === interview.status) || COLUMN_CONFIG[0];
+                  const col =
+                    COLUMN_CONFIG.find((c) => c.id === getEffectiveInterviewStatus(interview)) ||
+                    COLUMN_CONFIG[0];
                   return (
                     <div className="rotate-2 shadow-xl rounded-xl opacity-95">
                       <KanbanCard interview={interview} columnAccent={col.accent} />

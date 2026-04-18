@@ -45,30 +45,26 @@ async function getDailyBoardEmailRecipients() {
 }
 
 /**
- * Build Chat text + HTML from the same rows (trainers loaded per interview).
+ * One calendar day: approved interviews + pending requests → plain + HTML fragments.
  */
-async function buildBoardMessages(interviews, pendingRequests, dateLabel, frontendUrl) {
-  const footer = `View more on PlaceTrack: ${frontendUrl}`;
-
+async function formatBoardDay(interviews, pendingRequests, dateLabel, boardTitle) {
   if (interviews.length === 0 && pendingRequests.length === 0) {
-    const head = `Tomorrow's Live Interview Board (${dateLabel})`;
-    const plain = `*${head}*\nNo interviews scheduled for tomorrow.\n\n${footer}`;
-    const html = `
-<div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111;">
-  <h2 style="margin: 0 0 12px;">${esc(head)}</h2>
-  <p>No interviews scheduled for tomorrow.</p>
-  <p style="margin-top: 16px;"><a href="${esc(frontendUrl)}">Open PlaceTrack</a></p>
-</div>`;
-    return { plain, html };
+    return {
+      plain: `*${boardTitle} (${dateLabel})*\nNo interviews scheduled.\n\n`,
+      html: `<div style="margin-bottom: 20px;">
+  <h3 style="margin: 0 0 8px; font-size: 16px;">${esc(boardTitle)} — ${esc(dateLabel)}</h3>
+  <p style="margin: 0; color: #555;">No interviews scheduled.</p>
+</div>`,
+    };
   }
 
-  let plain = `*Tomorrow's Live Interview Board (${dateLabel})*\n\n`;
-  let htmlBody = `<div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111;">
-  <h2 style="margin: 0 0 12px;">Tomorrow's Live Interview Board — ${esc(dateLabel)}</h2>`;
+  let plain = `*${boardTitle} (${dateLabel})*\n\n`;
+  let htmlBody = `<div style="margin-bottom: 24px;">
+  <h3 style="margin: 0 0 10px; font-size: 16px;">${esc(boardTitle)} — ${esc(dateLabel)}</h3>`;
 
   if (interviews.length) {
     plain += '*Approved Interviews*\n';
-    htmlBody += '<h3 style="margin: 16px 0 8px; font-size: 15px;">Approved Interviews</h3><ul style="margin: 0; padding-left: 20px;">';
+    htmlBody += '<h4 style="margin: 12px 0 6px; font-size: 14px;">Approved Interviews</h4><ul style="margin: 0; padding-left: 20px;">';
 
     for (const interview of interviews) {
       const tr = await query(
@@ -98,7 +94,7 @@ async function buildBoardMessages(interviews, pendingRequests, dateLabel, fronte
 
   if (pendingRequests.length) {
     plain += '*Approval Pending*\n';
-    htmlBody += '<h3 style="margin: 16px 0 8px; font-size: 15px;">Approval Pending</h3><ul style="margin: 0; padding-left: 20px;">';
+    htmlBody += '<h4 style="margin: 12px 0 6px; font-size: 14px;">Approval Pending</h4><ul style="margin: 0; padding-left: 20px;">';
 
     for (const request of pendingRequests) {
       plain += `• *${request.timeSlot}*: ${request.studentName} (${request.course}) - ${request.company}\n`;
@@ -118,45 +114,82 @@ async function buildBoardMessages(interviews, pendingRequests, dateLabel, fronte
     htmlBody += '</ul>';
   }
 
-  plain += footer;
-  htmlBody += `<p style="margin-top: 16px;"><a href="${esc(frontendUrl)}">${esc(footer)}</a></p></div>`;
-
+  htmlBody += '</div>';
   return { plain, html: htmlBody };
 }
 
 /**
- * Posts next calendar day (in TZ) interviews to Google Chat and emails digest (admins or DAILY_BOARD_EMAIL_TO).
+ * Posts **today** + **tomorrow** boards to Google Chat and email digest.
  */
 export async function runGoogleChatBoardOnce() {
+  const todayStart = dayStartInTz(0);
   const tomorrowStart = dayStartInTz(1);
   const dayAfterStart = dayStartInTz(2);
-  const dateLabel = tomorrowStart.toLocaleDateString('en-IN', { timeZone: TZ });
+
+  const todayLabel = todayStart.toLocaleDateString('en-IN', { timeZone: TZ });
+  const tomorrowLabel = tomorrowStart.toLocaleDateString('en-IN', { timeZone: TZ });
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-  const approvedResult = await query(
-    `SELECT i.*, s.name as "studentName", s.course
-     FROM "Interview" i
-     JOIN "Student" s ON s.id = i."studentId"
-     WHERE i.date >= $1 AND i.date < $2
-     ORDER BY i."timeSlot" ASC`,
-    [tomorrowStart, dayAfterStart]
+  const [todayApproved, todayPending, tomApproved, tomPending] = await Promise.all([
+    query(
+      `SELECT i.*, s.name as "studentName", s.course
+       FROM "Interview" i
+       JOIN "Student" s ON s.id = i."studentId"
+       WHERE i.date >= $1 AND i.date < $2
+       ORDER BY i."timeSlot" ASC`,
+      [todayStart, tomorrowStart]
+    ),
+    query(
+      `SELECT r.id, r.company, r.round, r.date, r."timeSlot", r.room,
+              s.name as "studentName", s.course
+       FROM "StudentInterviewRequest" r
+       JOIN "Student" s ON s.id = r."studentId"
+       WHERE r.status = 'SUBMITTED'
+         AND r.date >= $1 AND r.date < $2
+       ORDER BY r."timeSlot" ASC, r."submittedAt" ASC`,
+      [todayStart, tomorrowStart]
+    ),
+    query(
+      `SELECT i.*, s.name as "studentName", s.course
+       FROM "Interview" i
+       JOIN "Student" s ON s.id = i."studentId"
+       WHERE i.date >= $1 AND i.date < $2
+       ORDER BY i."timeSlot" ASC`,
+      [tomorrowStart, dayAfterStart]
+    ),
+    query(
+      `SELECT r.id, r.company, r.round, r.date, r."timeSlot", r.room,
+              s.name as "studentName", s.course
+       FROM "StudentInterviewRequest" r
+       JOIN "Student" s ON s.id = r."studentId"
+       WHERE r.status = 'SUBMITTED'
+         AND r.date >= $1 AND r.date < $2
+       ORDER BY r."timeSlot" ASC, r."submittedAt" ASC`,
+      [tomorrowStart, dayAfterStart]
+    ),
+  ]);
+
+  const todayPart = await formatBoardDay(
+    todayApproved.rows,
+    todayPending.rows,
+    todayLabel,
+    "Today's Live Interview Board"
+  );
+  const tomorrowPart = await formatBoardDay(
+    tomApproved.rows,
+    tomPending.rows,
+    tomorrowLabel,
+    "Tomorrow's Live Interview Board"
   );
 
-  const pendingResult = await query(
-    `SELECT r.id, r.company, r.round, r.date, r."timeSlot", r.room,
-            s.name as "studentName", s.course
-     FROM "StudentInterviewRequest" r
-     JOIN "Student" s ON s.id = r."studentId"
-     WHERE r.status = 'SUBMITTED'
-       AND r.date >= $1 AND r.date < $2
-     ORDER BY r."timeSlot" ASC, r."submittedAt" ASC`,
-    [tomorrowStart, dayAfterStart]
-  );
-
-  const interviews = approvedResult.rows;
-  const pendingRequests = pendingResult.rows;
-
-  const { plain, html } = await buildBoardMessages(interviews, pendingRequests, dateLabel, frontendUrl);
+  const footer = `View more on PlaceTrack: ${frontendUrl}`;
+  const plain = `${todayPart.plain}${tomorrowPart.plain}${footer}`;
+  const html = `
+<div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111;">
+  ${todayPart.html}
+  ${tomorrowPart.html}
+  <p style="margin-top: 16px;"><a href="${esc(frontendUrl)}">${esc(footer)}</a></p>
+</div>`;
 
   const chatResult = await sendToGoogleChat(plain);
   if (!chatResult.ok) console.error('[cron] Google Chat send failed:', chatResult.error);
@@ -168,22 +201,20 @@ export async function runGoogleChatBoardOnce() {
       await sendTomorrowBoardDigest(
         recipients,
         html,
-        `PlaceTrack: Tomorrow's interview board (${dateLabel})`
+        `PlaceTrack: Interview board — today ${todayLabel}, tomorrow ${tomorrowLabel}`
       );
       mailCount = recipients.length;
-      console.log(`[cron] Tomorrow board email queued for ${mailCount} address(es)`);
+      console.log(`[cron] Daily board email queued for ${mailCount} address(es)`);
     }
   } catch (e) {
-    console.error('[cron] Tomorrow board email failed:', e?.message || e);
+    console.error('[cron] Daily board email failed:', e?.message || e);
   }
 
   return { ...chatResult, mailRecipients: mailCount };
 }
 
 /**
- * Daily at 10:00 PM in GOOGLE_CHAT_CRON_TZ (default Asia/Kolkata): post next day's board.
- * On hosts that sleep (Render free tier), set GOOGLE_CHAT_DISABLE_INTERNAL_CRON=true and use
- * GET/POST /api/public/cron/google-chat-board with GOOGLE_CHAT_CRON_SECRET from cron-job.org at 22:00 IST.
+ * Daily at 10:00 PM in GOOGLE_CHAT_CRON_TZ (default Asia/Kolkata): today + tomorrow boards.
  */
 export function runGoogleChatBoardJob() {
   if (process.env.GOOGLE_CHAT_DISABLE_INTERNAL_CRON === 'true') {
@@ -195,10 +226,10 @@ export function runGoogleChatBoardJob() {
   cron.schedule(
     '0 22 * * *',
     async () => {
-      console.log(`[cron] Google Chat board job (${TZ}) — next-day interviews`);
+      console.log(`[cron] Google Chat board job (${TZ}) — today + tomorrow interviews`);
       try {
         await runGoogleChatBoardOnce();
-        console.log('[cron] Tomorrow\'s board job finished');
+        console.log('[cron] Daily board job finished');
       } catch (err) {
         console.error('[cron] Google Chat Board Job failed:', err?.message || err);
       }

@@ -33,18 +33,37 @@ export default function Login() {
       setAuth(res.data.user, res.data.accessToken);
       navigate(location.state?.from?.pathname || '/', { replace: true });
     } catch (err) {
-      if (!err.response) {
+      const networkFail =
+        !err.response ||
+        err.code === 'ERR_NETWORK' ||
+        err.code === 'ECONNABORTED' ||
+        String(err.message || '').includes('Network Error');
+      if (networkFail) {
         setError(
           import.meta.env.DEV
-            ? 'Cannot reach the API. Start the backend (npm run dev in backend) on port 5001; the dev server proxies /api there.'
-            : 'Cannot reach the API. Confirm the Render backend is up and VITE_API_URL matches your API URL.',
+            ? 'Cannot reach the API. Open another terminal: cd backend → npm run dev — you must see “PlaceTrack API running on port 5001”. (Vite proxies /api to that port.) If you see “EADDRINUSE”, only one backend can use 5001 — close the extra terminal.'
+            : 'Cannot reach the API. Confirm the production backend is up and VITE_API_URL is correct.',
         );
         return;
       }
       const status = err.response.status;
-      const msg = err.response?.data?.message;
+      const raw = err.response?.data;
+      const msg =
+        raw && typeof raw === 'object' && typeof raw.message === 'string'
+          ? raw.message
+          : null;
       if (status >= 500) {
-        setError(msg || 'Server error — check the backend terminal and PostgreSQL connection.');
+        // Vite proxy often returns 500 with no JSON body when nothing listens on :5001 — looks like "server error" but it's connection refused.
+        if (import.meta.env.DEV && !msg) {
+          setError(
+            'Backend not running on port 5001. Open a new terminal: cd backend → npm run dev — wait for “PlaceTrack API running on port 5001”. Keep it open; then try Sign in again.',
+          );
+          return;
+        }
+        setError(
+          msg ||
+            'Server error — check the backend terminal and PostgreSQL connection.',
+        );
       } else {
         setError(msg || 'Login failed');
       }

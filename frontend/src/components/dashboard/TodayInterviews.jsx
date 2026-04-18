@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_COLORS } from '@/utils/constants';
+import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
 import { useDeleteInterview } from '@/hooks/useInterviews';
 import { useNotificationStore } from '@/store/notification.store';
 import { useAuthStore } from '@/store/auth.store';
@@ -148,6 +149,7 @@ export function TodayInterviews({ interviews: initialInterviews }) {
           <tbody>
             {filteredInterviews?.map((i, idx) => {
               const isClash = clashes.has(i.id);
+              const pipelineStatus = getEffectiveInterviewStatus(i);
               return (
                 <tr
                   key={i.id}
@@ -223,8 +225,12 @@ export function TodayInterviews({ interviews: initialInterviews }) {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge className={STATUS_COLORS[i.status]?.bg + ' ' + STATUS_COLORS[i.status]?.text}>
-                    {i.status}
+                  <Badge
+                    className={
+                      STATUS_COLORS[pipelineStatus]?.bg + ' ' + STATUS_COLORS[pipelineStatus]?.text
+                    }
+                  >
+                    {pipelineStatus}
                   </Badge>
                 </td>
                 {canDelete && (

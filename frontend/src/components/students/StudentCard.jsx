@@ -2,10 +2,11 @@ import { Link } from 'react-router-dom';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { COURSE_COLORS, STATUS_COLORS } from '@/utils/constants';
+import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
 
 export function StudentCard({ student }) {
   const latestInterview = student.interviews?.[0];
-  const status = latestInterview?.status;
+  const status = latestInterview ? getEffectiveInterviewStatus(latestInterview) : null;
 
   return (
     <Link

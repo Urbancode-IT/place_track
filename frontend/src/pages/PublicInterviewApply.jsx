@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { useNotificationStore } from '@/store/notification.store';
+import { InterviewRoundFields } from '@/components/interviews/InterviewRoundFields';
+import { resolveSubmittedRound } from '@/constants/interviewRounds';
 
 function EyeIcon({ className }) {
   return (
@@ -164,13 +166,10 @@ export default function PublicInterviewApply() {
   const onSubmit = (values) => {
     const payload = {
       ...values,
+      round: resolveSubmittedRound(values.round, values.customRound),
       date: new Date(values.date).toISOString(),
     };
-
-    if (values.round === 'Other') {
-      payload.round = values.customRound;
-    }
-
+    delete payload.customRound;
     submitMut.mutate(payload);
   };
 
@@ -331,38 +330,7 @@ export default function PublicInterviewApply() {
 
               <Input label="Company" {...register('company')} error={errors.company?.message} />
 
-              <div>
-                <label className="block text-xs text-[var(--text2)] mb-1">Round</label>
-                <select
-                  className="w-full glass-input rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                  {...register('round')}
-                >
-                  <option value="">Select Round</option>
-                  <option value="L1">L1</option>
-                  <option value="L2">L2</option>
-                  <option value="Client_Round">Client_Round</option>
-                  <option value="HR Discussion">HR Discussion</option>
-                  <option value="Final Round">Final Round</option>
-                  <option value="Assessment">Assessment</option>
-                  <option value="L3">L3</option>
-                  <option value="L4">L4</option>
-                  <option value="GD">GD</option>
-                  <option value="Manager Round">Manager Round</option>
-                  <option value="Screening round">Screening round</option>
-                  <option value="AI round">AI round</option>
-                  <option value="Other">Other</option>
-                </select>
-                {errors.round && <p className="mt-1 text-sm text-danger">{errors.round.message}</p>}
-              </div>
-
-              {round === 'Other' && (
-                <Input
-                  label="Specify Round Name"
-                  placeholder="e.g. Technical Interview 3"
-                  {...register('customRound')}
-                  error={errors.customRound?.message}
-                />
-              )}
+              <InterviewRoundFields register={register} errors={errors} watchRound={round} />
 
               <Input label="HR / contact (optional)" {...register('hrNumber')} />
               <div>

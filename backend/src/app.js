@@ -8,21 +8,33 @@ import routes from './routes/index.js';
 
 const app = express();
 
-function getAllowedOrigins() {
-  const raw =
-    process.env.CORS_ORIGIN ||
-    process.env.FRONTEND_URL ||
-    'http://localhost:5173';
-  return raw
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+function normalizeOrigin(url) {
+  if (!url || typeof url !== 'string') return '';
+  return url.trim().replace(/\/+$/, '');
 }
 
-app.use(cors({
-  origin: getAllowedOrigins(),
-  credentials: true,
-}));
+/** Merge CORS_ORIGIN + FRONTEND_URL (comma lists) so production domain is never missed. */
+function getAllowedOrigins() {
+  const chunks = [
+    ...(process.env.CORS_ORIGIN || '').split(','),
+    ...(process.env.FRONTEND_URL || '').split(','),
+  ];
+  const set = new Set();
+  for (const c of chunks) {
+    const n = normalizeOrigin(c);
+    if (n) set.add(n);
+  }
+  if (!set.size) set.add('http://localhost:5173');
+  return [...set];
+}
+
+app.use(
+  cors({
+    origin: getAllowedOrigins(),
+    credentials: true,
+    optionsSuccessStatus: 204,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

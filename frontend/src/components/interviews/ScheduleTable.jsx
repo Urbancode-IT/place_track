@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { formatDate } from '@/utils/formatDate';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_COLORS, COURSE_COLORS } from '@/utils/constants';
+import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
 
 export function ScheduleTable({ data, onStatusChange, onEdit }) {
   return (
@@ -27,7 +28,9 @@ export function ScheduleTable({ data, onStatusChange, onEdit }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border text-[var(--text)]">
-          {data?.map((i, idx) => (
+          {data?.map((i, idx) => {
+            const pipeline = getEffectiveInterviewStatus(i);
+            return (
             <tr key={i.id} className="hover:bg-[rgba(255,255,255,0.03)] transition-colors">
               <td className="px-4 py-2 text-sm">{idx + 1}</td>
               <td className="px-4 py-2">
@@ -46,7 +49,7 @@ export function ScheduleTable({ data, onStatusChange, onEdit }) {
                 <select
                   value={i.status}
                   onChange={(e) => onStatusChange?.(i.id, e.target.value)}
-                  className={`text-xs rounded px-2 py-1 border ${STATUS_COLORS[i.status]?.bg} ${STATUS_COLORS[i.status]?.text} bg-opacity-90`}
+                  className={`text-xs rounded px-2 py-1 border ${STATUS_COLORS[pipeline]?.bg} ${STATUS_COLORS[pipeline]?.text} bg-opacity-90`}
                 >
                   <option value="SCHEDULED">Scheduled</option>
                   <option value="SHORTLISTED">Shortlisted</option>
@@ -80,7 +83,8 @@ export function ScheduleTable({ data, onStatusChange, onEdit }) {
                 </button>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>
