@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth.store';
 import { useAuthHydrated } from '@/hooks/useAuthHydrated';
@@ -12,6 +13,13 @@ import { useSocket } from '@/hooks/useSocket';
 import { DashboardCreateStudentLink } from '@/components/dashboard/DashboardCreateStudentLink';
 
 export default function Dashboard() {
+  const [boardDate, setBoardDate] = useState(() => {
+    const n = new Date();
+    const y = n.getFullYear();
+    const m = String(n.getMonth() + 1).padStart(2, '0');
+    const d = String(n.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  });
   const qc = useQueryClient();
   const hydrated = useAuthHydrated();
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -39,8 +47,8 @@ export default function Dashboard() {
     ...queryOptions,
   });
   const { data: todayData } = useQuery({
-    queryKey: ['dashboard', 'today'],
-    queryFn: () => dashboardApi.today().then((r) => r.data),
+    queryKey: ['dashboard', 'today', boardDate],
+    queryFn: () => dashboardApi.today(boardDate).then((r) => r.data),
     ...queryOptions,
     staleTime: 1000 * 60, // Today's list is more sensitive (1 min)
   });
@@ -147,7 +155,11 @@ export default function Dashboard() {
           />
         </div>
 
-        <TodayInterviews interviews={todayData?.data} />
+        <TodayInterviews
+          interviews={todayData?.data}
+          boardDate={boardDate}
+          onBoardDateChange={setBoardDate}
+        />
       </div>
 
       {/* Right column */}

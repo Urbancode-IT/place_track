@@ -74,8 +74,10 @@ export async function getStats(req, res, next) {
 
 export async function getToday(req, res, next) {
   try {
-    const todayStart = startOfDay(new Date());
-    const todayEnd = endOfDay(new Date());
+    const baseDate = req.query?.date ? new Date(req.query.date) : new Date();
+    const safeBaseDate = Number.isNaN(baseDate.getTime()) ? new Date() : baseDate;
+    const todayStart = startOfDay(safeBaseDate);
+    const todayEnd = endOfDay(safeBaseDate);
     let sql = `SELECT i.*, s.id as "s_id", s.name as "s_name", s.course as "s_course" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.date >= $1 AND i.date <= $2`;
     const vals = [todayStart, todayEnd];
     if (req.user.role === 'TRAINER') {

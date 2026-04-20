@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DeleteInterviewConfirmModal } from '@/components/ui/DeleteInterviewConfirmModal';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
@@ -44,7 +44,30 @@ function TrashIcon({ className }) {
   );
 }
 
-export function TodayInterviews({ interviews: initialInterviews }) {
+function CalendarIcon({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+export function TodayInterviews({ interviews: initialInterviews, boardDate, onBoardDateChange }) {
   const role = useAuthStore((s) => s.user?.role);
   const canDelete = role === 'ADMIN' || role === 'TRAINER';
   const del = useDeleteInterview();
@@ -90,6 +113,12 @@ export function TodayInterviews({ interviews: initialInterviews }) {
   };
 
   const courses = ['ALL', 'FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'];
+  const prettyDate = useMemo(() => {
+    if (!boardDate) return '';
+    const d = new Date(`${boardDate}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return boardDate;
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }, [boardDate]);
 
   const deleteDetail = deleteTarget
     ? `${deleteTarget.student?.name || 'Student'} · ${deleteTarget.company || '—'} · ${deleteTarget.round || '—'}`
@@ -104,7 +133,7 @@ export function TodayInterviews({ interviews: initialInterviews }) {
         className="flex items-center justify-between px-5 py-3"
         style={{ borderBottom: '1px solid var(--border)' }}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <span
               className="w-2 h-2 rounded-full"
@@ -126,9 +155,21 @@ export function TodayInterviews({ interviews: initialInterviews }) {
               </option>
             ))}
           </select>
+          <label
+            className="inline-flex items-center gap-1.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-[var(--cyan)] cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
+            title="Filter board by date"
+          >
+            <CalendarIcon className="opacity-90" />
+            <input
+              type="date"
+              value={boardDate}
+              onChange={(e) => onBoardDateChange?.(e.target.value)}
+              className="bg-transparent outline-none text-[9px] uppercase tracking-wider text-[var(--cyan)]"
+            />
+          </label>
         </div>
         <span className="font-mono text-[9px] text-[var(--text3)] uppercase tracking-widest bg-[rgba(255,255,255,0.03)] px-2 py-0.5 rounded-full">
-          {filteredInterviews?.length || 0} OF {initialInterviews?.length || 0}
+          {prettyDate ? `${prettyDate} · ` : ''}{filteredInterviews?.length || 0} OF {initialInterviews?.length || 0}
         </span>
       </div>
 
@@ -258,7 +299,7 @@ export function TodayInterviews({ interviews: initialInterviews }) {
             {(!initialInterviews || initialInterviews.length === 0) && (
               <tr>
                 <td colSpan={canDelete ? 6 : 5} className="px-4 py-6 text-center text-[var(--text3)] text-[11px]">
-                  No interviews today
+                  No interviews for selected date
                 </td>
               </tr>
             )}
