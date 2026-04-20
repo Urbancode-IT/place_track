@@ -9,6 +9,17 @@ function addDays(d, n) {
   return x;
 }
 
+function parseDateOnly(value) {
+  if (!value || typeof value !== 'string') return null;
+  const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]) - 1;
+  const d = Number(m[3]);
+  const local = new Date(y, mo, d);
+  return Number.isNaN(local.getTime()) ? null : local;
+}
+
 export async function getPendingSelfSubmits(req, res, next) {
   try {
     const r = await query(
@@ -74,7 +85,8 @@ export async function getStats(req, res, next) {
 
 export async function getToday(req, res, next) {
   try {
-    const baseDate = req.query?.date ? new Date(req.query.date) : new Date();
+    const parsedDate = parseDateOnly(req.query?.date);
+    const baseDate = parsedDate || (req.query?.date ? new Date(req.query.date) : new Date());
     const safeBaseDate = Number.isNaN(baseDate.getTime()) ? new Date() : baseDate;
     const todayStart = startOfDay(safeBaseDate);
     const todayEnd = endOfDay(safeBaseDate);
