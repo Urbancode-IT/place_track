@@ -214,7 +214,7 @@ export async function runGoogleChatBoardOnce() {
 }
 
 /**
- * Daily at 10:00 PM in GOOGLE_CHAT_CRON_TZ (default Asia/Kolkata): today + tomorrow boards.
+ * Daily at 12:00 AM in GOOGLE_CHAT_CRON_TZ (default Asia/Kolkata): today + tomorrow boards.
  */
 export function runGoogleChatBoardJob() {
   if (process.env.GOOGLE_CHAT_DISABLE_INTERNAL_CRON === 'true') {
@@ -224,9 +224,9 @@ export function runGoogleChatBoardJob() {
     return;
   }
   cron.schedule(
-    '0 22 * * *',
+    '0 0 * * *',
     async () => {
-      console.log(`[cron] Google Chat board job (${TZ}) — today + tomorrow interviews`);
+      console.log(`[cron] Google Chat board job (${TZ}) at 12:00 AM — today + tomorrow interviews`);
       try {
         await runGoogleChatBoardOnce();
         console.log('[cron] Daily board job finished');

@@ -1,6 +1,7 @@
 import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from '../utils/date.utils.js';
+import { getInterviewStartAt } from '../utils/interviewStartAt.utils.js';
 
 function addDays(d, n) {
   const x = new Date(d);
@@ -84,19 +85,12 @@ export async function getToday(req, res, next) {
     sql += ' ORDER BY i.date ASC';
     const r = await query(sql, vals);
 
-    function firstTimeSlotNumber(timeSlot) {
-      const m = String(timeSlot || '').match(/(\d{1,2})/);
-      if (!m) return 9999;
-      const n = parseInt(m[1], 10);
-      return Number.isFinite(n) ? n : 9999;
-    }
     r.rows.sort((a, b) => {
-      const ta = new Date(a.date).getTime();
-      const tb = new Date(b.date).getTime();
+      const sa = getInterviewStartAt(a.date, a.timeSlot);
+      const sb = getInterviewStartAt(b.date, b.timeSlot);
+      const ta = sa ? sa.getTime() : new Date(a.date).getTime();
+      const tb = sb ? sb.getTime() : new Date(b.date).getTime();
       if (ta !== tb) return ta - tb;
-      const ha = firstTimeSlotNumber(a.timeSlot);
-      const hb = firstTimeSlotNumber(b.timeSlot);
-      if (ha !== hb) return ha - hb;
       return String(a.timeSlot || '').localeCompare(String(b.timeSlot || ''), undefined, { numeric: true });
     });
 
