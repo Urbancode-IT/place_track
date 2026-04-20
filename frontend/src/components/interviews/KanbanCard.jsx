@@ -74,8 +74,8 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
         boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
       }}
     >
-      {/* Top row: name + role tag + round */}
-      <div className="flex justify-between items-start gap-2">
+      {/* Top row: name/company + compact tags */}
+      <div className="flex justify-between items-start gap-2 min-w-0">
         <div className="min-w-0 flex-1">
           <p className="font-outfit text-[12px] font-medium text-[var(--text)] leading-tight truncate">
             {interview.student?.name || 'Unnamed student'}
@@ -84,9 +84,9 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
             {interview.company}
           </p>
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-shrink min-w-0 max-w-[58%]">
           <span
-            className="uppercase font-mono text-[9px] font-semibold px-2 py-0.5 rounded-md"
+            className="uppercase font-mono text-[9px] font-semibold px-2 py-0.5 rounded-md shrink-0"
             style={{
               background: style.bg,
               border: `1px solid ${style.border}`,
@@ -97,7 +97,8 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
           </span>
           {interview.round && (
             <span
-              className="font-mono text-[9px] px-1.5 py-0.5 rounded"
+              className="font-mono text-[9px] px-1.5 py-0.5 rounded truncate min-w-0 max-w-[150px]"
+              title={interview.round}
               style={{
                 background: `${columnAccent}22`,
                 border: `1px solid ${columnAccent}44`,
