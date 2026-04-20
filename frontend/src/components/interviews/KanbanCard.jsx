@@ -27,7 +27,31 @@ function getCircleColor(index) {
   return CIRCLE_COLORS[index % CIRCLE_COLORS.length];
 }
 
-export function KanbanCard({ interview, columnAccent, onEdit }) {
+function TrashIcon({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      <line x1="10" x2="10" y1="11" y2="17" />
+      <line x1="14" x2="14" y1="11" y2="17" />
+    </svg>
+  );
+}
+
+export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
   const course = interview.student?.course || 'FSD';
   const style = getCourseStyle(course);
   const trainers = (interview.trainers || [])
@@ -116,19 +140,35 @@ export function KanbanCard({ interview, columnAccent, onEdit }) {
         </p>
       )}
 
-      {onEdit && (
-        <div className="pt-0.5 flex justify-end">
-          <button
-            type="button"
-            className="text-[10px] font-mono text-primary hover:underline"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(interview);
-            }}
-          >
-            Edit
-          </button>
+      {(onEdit || onDelete) && (
+        <div className="pt-0.5 flex justify-end items-center gap-2">
+          {onDelete && (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded p-1 text-[var(--text3)] hover:text-[var(--pink)] hover:bg-[rgba(244,63,94,0.12)] transition-colors"
+              title="Delete interview"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(interview);
+              }}
+            >
+              <TrashIcon />
+            </button>
+          )}
+          {onEdit && (
+            <button
+              type="button"
+              className="text-[10px] font-mono text-primary hover:underline"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(interview);
+              }}
+            >
+              Edit
+            </button>
+          )}
         </div>
       )}
     </div>

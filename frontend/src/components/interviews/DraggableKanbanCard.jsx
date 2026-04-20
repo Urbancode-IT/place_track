@@ -14,7 +14,7 @@ export function interviewIdFromCardId(cardIdStr) {
   return Number.isNaN(Number(num)) ? num : Number(num);
 }
 
-export function DraggableKanbanCard({ interview, columnAccent, onEdit }) {
+export function DraggableKanbanCard({ interview, columnAccent, onEdit, onDelete }) {
   const id = cardId(interview.id);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id,
@@ -35,7 +35,12 @@ export function DraggableKanbanCard({ interview, columnAccent, onEdit }) {
       {...attributes}
       className={isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-grab'}
     >
-      <KanbanCard interview={interview} columnAccent={columnAccent} onEdit={onEdit} />
+      <KanbanCard
+        interview={interview}
+        columnAccent={columnAccent}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
     </div>
   );
 }

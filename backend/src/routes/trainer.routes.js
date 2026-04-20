@@ -11,6 +11,7 @@ router.use(authMiddleware);
 
 router.get('/', requireAdmin, ctrl.list);
 router.post('/', requireAdmin, validate(createTrainerSchema), ctrl.create);
+router.delete('/:id', requireAdmin, validate(trainerIdParamSchema), ctrl.remove);
 router.get('/:id/interviews', validate(trainerIdParamSchema), ctrl.getInterviews);
 router.post('/:id/notify', validate(trainerIdParamSchema), ctrl.notifyTrainer);
 

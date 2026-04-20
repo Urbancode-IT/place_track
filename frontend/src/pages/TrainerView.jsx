@@ -9,7 +9,7 @@ import { AddTrainerModal } from '@/components/trainers/AddTrainerModal';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useUpdateInterview, useUpdateInterviewStatus } from '@/hooks/useInterviews';
-import { useNotifyTrainer, useCreateTrainer } from '@/hooks/useTrainers';
+import { useNotifyTrainer, useCreateTrainer, useDeleteTrainer } from '@/hooks/useTrainers';
 import { formatDate } from '@/utils/formatDate';
 import { cn } from '@/utils/helpers';
 import { useNotificationStore } from '@/store/notification.store';
@@ -77,6 +77,7 @@ export default function TrainerView() {
   const updateInterview = useUpdateInterview();
   const notifyTrainer = useNotifyTrainer();
   const createTrainer = useCreateTrainer();
+  const deleteTrainer = useDeleteTrainer();
 
   const trainers = Array.isArray(trainersData?.data) ? trainersData.data : [];
   const interviews = Array.isArray(interviewsData?.data) ? interviewsData.data : [];
@@ -110,6 +111,25 @@ export default function TrainerView() {
 
   const handleAddTrainer = (data) => {
     createTrainer.mutate(data, { onSuccess: () => setAddModalOpen(false) });
+  };
+
+  const handleDeleteTrainer = (trainer) => {
+    if (!trainer?.id) return;
+    if (!window.confirm(`Delete trainer ${trainer.name}? This will remove trainer assignments too.`)) return;
+    deleteTrainer.mutate(trainer.id, {
+      onSuccess: () => {
+        addToast({ type: 'success', message: 'Trainer deleted' });
+        if (selectedTrainerId === trainer.id) {
+          const next = trainers.find((t) => t.id !== trainer.id);
+          setSelectedTrainerId(next?.id || null);
+        }
+      },
+      onError: (err) =>
+        addToast({
+          type: 'error',
+          message: err?.response?.data?.message || 'Failed to delete trainer',
+        }),
+    });
   };
 
   const handleSendNotificationNow = () => {
@@ -182,38 +202,68 @@ export default function TrainerView() {
 
           <div className="space-y-1.5 max-h-[280px] overflow-y-auto">
             {trainers.map((t, idx) => (
-              <button
+              <div
                 key={t.id}
-                type="button"
-                onClick={() => setSelectedTrainerId(t.id)}
                 className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors',
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
                   selectedTrainerId === t.id
                     ? 'bg-[var(--tc-primary-dim)]'
                     : 'hover:bg-[var(--tc-panel-hover)]'
                 )}
               >
-                <TrainerAvatar name={t.name} index={idx} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-[13px] text-white truncate">{t.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTrainerId(t.id)}
+                  className="flex items-center gap-3 text-left flex-1 min-w-0"
+                >
+                  <TrainerAvatar name={t.name} index={idx} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-[13px] text-white truncate">{t.name}</span>
+                      {selectedTrainerId === t.id && (
+                        <span
+                          className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded"
+                          style={{ background: 'var(--tc-primary-dim)', color: 'var(--tc-primary)' }}
+                        >
+                          active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[var(--text2)] truncate">{t.email}</p>
                     {selectedTrainerId === t.id && (
-                      <span
-                        className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded"
-                        style={{ background: 'var(--tc-primary-dim)', color: 'var(--tc-primary)' }}
-                      >
-                        active
-                      </span>
+                      <p className="text-[10px] text-[var(--text3)] mt-0.5">
+                        {interviews.length} Interview{interviews.length !== 1 ? 's' : ''}
+                      </p>
                     )}
                   </div>
-                  <p className="text-[11px] text-[var(--text2)] truncate">{t.email}</p>
-                  {selectedTrainerId === t.id && (
-                    <p className="text-[10px] text-[var(--text3)] mt-0.5">
-                      {interviews.length} Interview{interviews.length !== 1 ? 's' : ''}
-                    </p>
-                  )}
-                </div>
-              </button>
+                </button>
+                <button
+                  type="button"
+                  title="Delete trainer"
+                  className="ml-2 inline-flex items-center justify-center rounded p-1.5 text-[var(--text3)] hover:text-[var(--tc-red)] hover:bg-[rgba(239,68,68,0.12)] transition-colors disabled:opacity-50"
+                  disabled={deleteTrainer.isPending}
+                  onClick={() => handleDeleteTrainer(t)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    <line x1="10" x2="10" y1="11" y2="17" />
+                    <line x1="14" x2="14" y1="11" y2="17" />
+                  </svg>
+                </button>
+              </div>
             ))}
           </div>
 

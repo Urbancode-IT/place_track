@@ -30,6 +30,18 @@ export async function create(req, res, next) {
   }
 }
 
+export async function remove(req, res, next) {
+  try {
+    const { id } = req.validated;
+    const r = await query('DELETE FROM "User" WHERE id = $1 AND role = $2 RETURNING id, name', [id, 'TRAINER']);
+    const row = r.rows[0];
+    if (!row) throw new AppError('Trainer not found', 404);
+    return success(res, null, 'Trainer deleted');
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getInterviews(req, res, next) {
   try {
     const { id } = req.validated;

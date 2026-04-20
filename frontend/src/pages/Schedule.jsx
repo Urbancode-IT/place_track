@@ -18,8 +18,9 @@ import { ScheduleTable } from '@/components/interviews/ScheduleTable';
 import { Button } from '@/components/ui/Button';
 import { downloadScheduleCsv } from '@/api/export.api';
 import { Spinner } from '@/components/ui/Spinner';
-import { useCreateInterview, useUpdateInterview, useUpdateInterviewStatus } from '@/hooks/useInterviews';
+import { useCreateInterview, useDeleteInterview, useUpdateInterview, useUpdateInterviewStatus } from '@/hooks/useInterviews';
 import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
+import { useNotificationStore } from '@/store/notification.store';
 
 const COLUMN_IDS = [
   'SCHEDULED',
@@ -62,6 +63,8 @@ export default function Schedule() {
   const createInterview = useCreateInterview();
   const updateInterview = useUpdateInterview();
   const updateStatus = useUpdateInterviewStatus();
+  const deleteInterview = useDeleteInterview();
+  const addToast = useNotificationStore((s) => s.addToast);
 
   const rawInterviews = data?.data || [];
 
@@ -254,6 +257,17 @@ export default function Schedule() {
                           setEditingInterview(interview);
                           setModalOpen(true);
                         }}
+                      onDelete={(interview) => {
+                        if (!window.confirm(`Delete interview for ${interview.student?.name || 'student'}?`)) return;
+                        deleteInterview.mutate(interview.id, {
+                          onSuccess: () => addToast({ type: 'success', message: 'Interview deleted' }),
+                          onError: (e) =>
+                            addToast({
+                              type: 'error',
+                              message: e?.response?.data?.message || 'Could not delete interview',
+                            }),
+                        });
+                      }}
                       />
                     )}
                   />

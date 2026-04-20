@@ -16,6 +16,18 @@ export function useCreateTrainer() {
   });
 }
 
+export function useDeleteTrainer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => trainerApi.delete(id).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['trainers'] });
+      qc.invalidateQueries({ queryKey: ['trainer-interviews'] });
+      qc.invalidateQueries({ queryKey: ['interviews'] });
+    },
+  });
+}
+
 export function useTrainerInterviews(id) {
   return useQuery({
     queryKey: ['trainer-interviews', id],
