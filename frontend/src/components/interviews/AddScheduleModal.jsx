@@ -10,9 +10,21 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { Button } from '@/components/ui/Button';
+import { COURSE_SELECT_OPTIONS } from '@/utils/constants';
+
+const courseEnum = z.enum([
+  'FSD',
+  'SDET',
+  'BI_DS',
+  'NETWORKING',
+  'AWS',
+  'JAVA',
+  'REACT',
+]);
 
 const schema = z.object({
   studentId: z.string().uuid(),
+  course: courseEnum,
   company: z.string().min(1),
   round: z.string().min(1),
   date: z.string().min(1),
@@ -41,6 +53,7 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
     resolver: zodResolver(schema),
     defaultValues: {
       studentId: '',
+      course: 'FSD',
       company: '',
       round: '',
       date: '',
@@ -52,6 +65,7 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
   });
 
   const trainerIds = watch('trainerIds') || [];
+  const { onChange: onStudentChange, ...studentRegister } = register('studentId');
 
   useEffect(() => {
     if (!open) return;
@@ -60,8 +74,13 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
         .map((t) => t?.trainer?.id || t?.trainerId)
         .filter(Boolean);
       const dateValue = initialData.date ? new Date(initialData.date).toISOString().slice(0, 10) : '';
+      const initialCourse =
+        initialData.student?.course && courseEnum.safeParse(initialData.student.course).success
+          ? initialData.student.course
+          : 'FSD';
       reset({
         studentId: initialData.studentId || initialData.student?.id || '',
+        course: initialCourse,
         company: initialData.company || '',
         round: initialData.round || '',
         date: dateValue,
@@ -73,6 +92,7 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
     } else {
       reset({
         studentId: '',
+        course: 'FSD',
         company: '',
         round: '',
         date: '',
@@ -84,14 +104,18 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
     }
   }, [open, initialData, reset]);
 
-  const handleFormSubmit = (data) => {
+  const handleFormSubmit = async (data) => {
     const payload = {
       ...data,
       date: new Date(data.date).toISOString(),
       trainerIds: Array.isArray(data.trainerIds) ? data.trainerIds : [data.trainerIds].filter(Boolean),
     };
-    onSubmit(payload);
-    onClose();
+    try {
+      await Promise.resolve(onSubmit(payload));
+      onClose();
+    } catch {
+      /* Parent shows error toast; keep modal open */
+    }
   };
 
   return (
@@ -101,7 +125,21 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
           label="Student"
           options={students.map((s) => ({ value: s.id, label: s.name }))}
           error={errors.studentId?.message}
-          {...register('studentId')}
+          {...studentRegister}
+          onChange={(e) => {
+            onStudentChange(e);
+            const sid = e.target.value;
+            const s = students.find((x) => x.id === sid);
+            if (s?.course && courseEnum.safeParse(s.course).success) {
+              setValue('course', s.course);
+            }
+          }}
+        />
+        <Select
+          label="Course"
+          options={COURSE_SELECT_OPTIONS}
+          error={errors.course?.message}
+          {...register('course')}
         />
         <Input label="Company" error={errors.company?.message} {...register('company')} />
         <Input label="Round" error={errors.round?.message} {...register('round')} />

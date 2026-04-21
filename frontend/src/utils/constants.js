@@ -18,6 +18,17 @@ export const COURSE_COLORS = {
   REACT: 'bg-cyan-500 text-white',
 };
 
+/** Value/label pairs for selects (matches backend `Course` enum). */
+export const COURSE_SELECT_OPTIONS = [
+  { value: 'FSD', label: 'FSD (Full Stack Development)' },
+  { value: 'SDET', label: 'SDET (Automation Testing)' },
+  { value: 'BI_DS', label: 'BI & Data Science' },
+  { value: 'NETWORKING', label: 'Networking' },
+  { value: 'AWS', label: 'AWS / Cloud' },
+  { value: 'JAVA', label: 'Java Specialist' },
+  { value: 'REACT', label: 'React / Frontend' },
+];
+
 export const QA_STATUS = {
   PREPARED: { bg: 'bg-success/20', text: 'text-success' },
   NEEDS_WORK: { bg: 'bg-warning/20', text: 'text-warning' },

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { startOfWeek, endOfWeek, isWithinInterval, parseISO } from 'date-fns';
 import {
   DndContext,
@@ -10,6 +10,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { interviewApi } from '@/api/interview.api';
+import { studentApi } from '@/api/student.api';
 import { AddScheduleModal } from '@/components/interviews/AddScheduleModal';
 import { KanbanCard } from '@/components/interviews/KanbanCard';
 import { DraggableKanbanCard, interviewIdFromCardId } from '@/components/interviews/DraggableKanbanCard';
@@ -49,6 +50,7 @@ const FILTER_OPTIONS = [
 ];
 
 export default function Schedule() {
+  const queryClient = useQueryClient();
   const [limit] = useState(50);
   const [filters, setFilters] = useState({});
   const [courseFilter, setCourseFilter] = useState('ALL');
@@ -310,11 +312,24 @@ export default function Schedule() {
         }}
         initialData={editingInterview}
         mode={editingInterview ? 'edit' : 'create'}
-        onSubmit={(payload) => {
-          if (editingInterview?.id) {
-            updateInterview.mutate({ id: editingInterview.id, data: payload });
-          } else {
-            createInterview.mutate(payload);
+        onSubmit={async (payload) => {
+          const { course, ...interviewData } = payload;
+          try {
+            if (interviewData.studentId && course) {
+              await studentApi.update(interviewData.studentId, { course });
+              queryClient.invalidateQueries({ queryKey: ['students'] });
+            }
+            if (editingInterview?.id) {
+              await updateInterview.mutateAsync({ id: editingInterview.id, data: interviewData });
+            } else {
+              await createInterview.mutateAsync(interviewData);
+            }
+          } catch (e) {
+            addToast({
+              type: 'error',
+              message: e?.response?.data?.message || e?.message || 'Could not save schedule',
+            });
+            throw e; // keep AddScheduleModal open on failure
           }
         }}
       />
