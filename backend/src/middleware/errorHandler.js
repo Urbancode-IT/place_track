@@ -1,19 +1,34 @@
+function getDatabaseNameFromUrl() {
+  try {
+    const raw = process.env.DATABASE_URL || '';
+    if (!raw) return null;
+    const url = new URL(raw);
+    const dbName = (url.pathname || '').replace(/^\/+/, '');
+    return dbName || null;
+  } catch {
+    return null;
+  }
+}
+
 function mapDbError(err) {
   const code = err?.code;
+  const dbName = getDatabaseNameFromUrl();
   if (code === 'ECONNREFUSED' || code === 'ENOTFOUND') {
     return {
       status: 503,
       message:
-        'Database unreachable — start PostgreSQL and check DATABASE_URL / DB_* in backend/.env.',
+        'Database unreachable — check PostgreSQL availability and DATABASE_URL in backend/.env.',
     };
   }
   if (code === '28P01') {
-    return { status: 503, message: 'Database login failed — check DB_USER / DB_PASSWORD in backend/.env.' };
+    return { status: 503, message: 'Database login failed — check username/password in DATABASE_URL.' };
   }
   if (code === '3D000') {
     return {
       status: 503,
-      message: 'Database does not exist — create it in pgAdmin (e.g. Placement_Tracking) and run schema.sql.',
+      message: dbName
+        ? `Database "${dbName}" does not exist. Create it (or update DATABASE_URL to an existing DB).`
+        : 'Database does not exist. Create it (or update DATABASE_URL to an existing DB).',
     };
   }
   if (code === '42P01') {
