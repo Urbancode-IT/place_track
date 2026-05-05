@@ -32,7 +32,7 @@ export default function PublicHonestReview() {
   });
 
   useEffect(() => {
-    document.title = 'Honest review — PlaceTrack';
+    document.title = 'Student review — PlaceTrack';
   }, []);
 
   if (!token) {
@@ -64,7 +64,7 @@ export default function PublicHonestReview() {
         >
           <h1 className="font-syne text-xl font-semibold">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
-            {submitMut.data?.message || 'Your honest review was submitted.'}
+            {submitMut.data?.message || 'Your student review was submitted.'}
           </p>
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function PublicHonestReview() {
       >
         <div>
           <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-          <h1 className="mt-2 font-syne text-2xl font-semibold">Honest review</h1>
+          <h1 className="mt-2 font-syne text-2xl font-semibold">Student review</h1>
           <p className="mt-2 text-sm text-[var(--text2)]">
             Hi <span className="text-[var(--text)] font-medium">{meta?.studentFirstName}</span>
             {meta?.course ? (
@@ -106,13 +106,13 @@ export default function PublicHonestReview() {
                 · <span className="text-[var(--text3)]">{meta.course}</span>
               </>
             ) : null}
-            . Share an honest reflection on your prep, communication, and how you show up in practice / interview rounds.
+            . Share your student review on prep, communication, and how you show up in practice / interview rounds.
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2 text-[var(--text2)]">Your honest review</label>
+            <label className="block text-sm font-medium mb-2 text-[var(--text2)]">Your student review</label>
             <textarea
               {...register('content')}
               rows={14}
@@ -122,7 +122,7 @@ export default function PublicHonestReview() {
             {errors.content && <p className="mt-1 text-sm text-danger">{errors.content.message}</p>}
           </div>
           <Button type="submit" loading={submitMut.isPending} className="w-full sm:w-auto">
-            Submit honest review
+            Submit student review
           </Button>
           {submitMut.isError && (
             <p className="text-sm text-danger">{submitMut.error?.response?.data?.message || 'Submit failed'}</p>

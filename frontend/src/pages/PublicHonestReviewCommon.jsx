@@ -30,7 +30,7 @@ export default function PublicHonestReviewCommon() {
   });
 
   useEffect(() => {
-    document.title = 'Honest review — PlaceTrack';
+    document.title = 'Student review — PlaceTrack';
   }, []);
 
   if (isLoading) {
@@ -58,7 +58,7 @@ export default function PublicHonestReviewCommon() {
         >
           <h1 className="font-syne text-xl font-semibold">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
-            {submitMut.data?.message || 'Your honest review was submitted.'}
+            {submitMut.data?.message || 'Your student review was submitted.'}
           </p>
         </div>
       </div>
@@ -77,9 +77,9 @@ export default function PublicHonestReviewCommon() {
       >
         <div>
           <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-          <h1 className="mt-2 font-syne text-2xl font-semibold">Honest review</h1>
+          <h1 className="mt-2 font-syne text-2xl font-semibold">Student review</h1>
           <p className="mt-2 text-sm text-[var(--text2)]">
-            {meta?.message || 'Use your registered email, then share your honest reflection.'}
+            {meta?.message || 'Use your registered email, then share your student review.'}
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function PublicHonestReviewCommon() {
           />
 
           <div>
-            <label className="block text-sm font-medium mb-2 text-[var(--text2)]">Your honest review</label>
+            <label className="block text-sm font-medium mb-2 text-[var(--text2)]">Your student review</label>
             <textarea
               {...register('content')}
               rows={14}
@@ -104,7 +104,7 @@ export default function PublicHonestReviewCommon() {
           </div>
 
           <Button type="submit" loading={submitMut.isPending} className="w-full sm:w-auto">
-            Submit honest review
+            Submit student review
           </Button>
           {submitMut.isError && (
             <p className="text-sm text-danger">{submitMut.error?.response?.data?.message || 'Submit failed'}</p>

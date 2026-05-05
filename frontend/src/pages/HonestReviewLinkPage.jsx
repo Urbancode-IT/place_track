@@ -31,7 +31,7 @@ export default function HonestReviewLinkPage() {
     } catch {
       /* clipboard API / permission */
     }
-    addToast({ message: 'Honest review link copied — share with students', type: 'success' });
+    addToast({ message: 'Student review link copied — share with students', type: 'success' });
     setCopyModalOpen(true);
   };
 
@@ -39,7 +39,7 @@ export default function HonestReviewLinkPage() {
     <>
     <div className="mx-auto max-w-3xl space-y-8 text-[var(--text)]">
       <div>
-        <h1 className="font-syne text-[22px] font-semibold">Honest review link</h1>
+        <h1 className="font-syne text-[22px] font-semibold">Student review link</h1>
       </div>
 
       <div>
@@ -98,7 +98,7 @@ export default function HonestReviewLinkPage() {
       variant="dark"
     >
       <p className="text-sm text-[var(--text2)]">
-        The honest review page URL is in your clipboard. Students use the same email as their profile — no login
+        The student review page URL is in your clipboard. Students use the same email as their profile — no login
         required.
       </p>
       {lastUrl && (

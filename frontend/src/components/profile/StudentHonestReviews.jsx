@@ -28,7 +28,7 @@ export function StudentHonestReviews({ studentId }) {
       style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
     >
       <div className="mb-4">
-        <h3 className="font-syne text-[13px] font-semibold text-[var(--text)]">Honest reviews</h3>
+        <h3 className="font-syne text-[13px] font-semibold text-[var(--text)]">Student reviews</h3>
         <p className="mt-1 text-xs text-[var(--text3)]">
           Shown here when the student uses the common <span className="text-[var(--text2)]">/honest-review</span> link with{' '}
           <strong className="text-[var(--text)]">this student’s profile email</strong>.
@@ -38,7 +38,7 @@ export function StudentHonestReviews({ studentId }) {
         <Spinner size="sm" />
       ) : rows.length === 0 ? (
         <p className="text-sm text-[var(--text3)]">
-          No submissions yet. Share the common <span className="text-[var(--cyan)] font-semibold">Honest review</span> link from the sidebar
+          No submissions yet. Share the common <span className="text-[var(--cyan)] font-semibold">Student review</span> link from the sidebar
           so students can submit using their profile email.
         </p>
       ) : (

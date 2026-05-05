@@ -84,7 +84,7 @@ export default function StudentProfile() {
                   'hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[var(--bg)]'
                 )}
               >
-                Honest review link →
+                Student review link →
               </Link>
             )}
           </StudentSelfInterviewLink>

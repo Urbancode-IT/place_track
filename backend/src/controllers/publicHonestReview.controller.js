@@ -31,13 +31,13 @@ export async function submitCommon(req, res, next) {
        VALUES ($1, NULL, $2)`,
       [student.id, content.trim()]
     );
-    return success(res, { ok: true }, 'Thank you. Your honest review was submitted.', 201);
+    return success(res, { ok: true }, 'Thank you. Your student review was submitted.', 201);
   } catch (err) {
     if (err.code === '42P01') {
       console.error('[honest-review] Missing tables — run: npm run db:migrate-student-honest-review (backend)');
       return next(
         new AppError(
-          'Honest review is not set up on the server yet. Please contact your placement team.',
+          'Student review is not set up on the server yet. Please contact your placement team.',
           503
         )
       );
@@ -97,7 +97,7 @@ export async function submitByToken(req, res, next) {
       );
       await client.query(`UPDATE "HonestReviewLink" SET "usedAt" = now() WHERE token = $1`, [token]);
       await client.query('COMMIT');
-      return success(res, { id: ins.rows[0].id }, 'Thank you. Your honest review was submitted.', 201);
+      return success(res, { id: ins.rows[0].id }, 'Thank you. Your student review was submitted.', 201);
     } catch (err) {
       try {
         await client.query('ROLLBACK');

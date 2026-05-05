@@ -106,7 +106,7 @@ const mainNav = [
 
 const secondaryNav = [
   { to: '/pending-self-submits', icon: 'clipboard', label: 'Student submits' },
-  { to: '/honest-review-link', icon: 'honestReview', label: 'Honest review link', trainerOrAdmin: true },
+  { to: '/honest-review-link', icon: 'honestReview', label: 'Student review link', trainerOrAdmin: true },
   { to: '/reference', icon: 'reference', label: 'Reference' },
   { to: '/notifications', icon: 'notifications', label: 'Notifications' },
   { to: '/analytics', icon: 'analytics', label: 'Analytics', adminOnly: true },
