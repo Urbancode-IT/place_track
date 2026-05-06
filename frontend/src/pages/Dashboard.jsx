@@ -4,12 +4,16 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth.store';
 import { useAuthHydrated } from '@/hooks/useAuthHydrated';
 import { dashboardApi } from '@/api/dashboard.api';
+import { studentApi } from '@/api/student.api';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { TodayInterviews } from '@/components/dashboard/TodayInterviews';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { TrainerWorkload } from '@/components/dashboard/TrainerWorkload';
 import { Spinner } from '@/components/ui/Spinner';
 import { useSocket } from '@/hooks/useSocket';
+import { AddScheduleModal } from '@/components/interviews/AddScheduleModal';
+import { useUpdateInterview } from '@/hooks/useInterviews';
+import { useNotificationStore } from '@/store/notification.store';
 import { DashboardCreateStudentLink } from '@/components/dashboard/DashboardCreateStudentLink';
 
 export default function Dashboard() {
@@ -21,8 +25,12 @@ export default function Dashboard() {
     return `${y}-${m}-${d}`;
   });
   const qc = useQueryClient();
+  const [editingInterview, setEditingInterview] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const hydrated = useAuthHydrated();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const updateInterview = useUpdateInterview();
+  const addToast = useNotificationStore((s) => s.addToast);
   const dashboardReady = hydrated && !!accessToken;
 
   const queryOptions = {
@@ -159,6 +167,10 @@ export default function Dashboard() {
           interviews={todayData?.data}
           boardDate={boardDate}
           onBoardDateChange={setBoardDate}
+          onEdit={(interview) => {
+            setEditingInterview(interview);
+            setEditModalOpen(true);
+          }}
         />
       </div>
 
@@ -168,6 +180,33 @@ export default function Dashboard() {
         <TrainerWorkload data={analyticsData?.data?.trainerPerformance} />
       </div>
       </div>
+
+      <AddScheduleModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingInterview(null);
+        }}
+        initialData={editingInterview}
+        mode="edit"
+        onSubmit={async (payload) => {
+          if (!editingInterview?.id) return;
+          const { course, ...interviewData } = payload;
+          try {
+            if (interviewData.studentId && course) {
+              await studentApi.update(interviewData.studentId, { course });
+              qc.invalidateQueries({ queryKey: ['students'] });
+            }
+            await updateInterview.mutateAsync({ id: editingInterview.id, data: interviewData });
+          } catch (e) {
+            addToast({
+              type: 'error',
+              message: e?.response?.data?.message || e?.message || 'Could not update interview',
+            });
+            throw e;
+          }
+        }}
+      />
     </div>
   );
 }

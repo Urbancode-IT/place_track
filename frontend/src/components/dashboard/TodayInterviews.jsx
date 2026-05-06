@@ -44,6 +44,27 @@ function TrashIcon({ className }) {
   );
 }
 
+function EditIcon({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+    </svg>
+  );
+}
+
 function CalendarIcon({ className }) {
   return (
     <svg
@@ -67,7 +88,7 @@ function CalendarIcon({ className }) {
   );
 }
 
-export function TodayInterviews({ interviews: initialInterviews, boardDate, onBoardDateChange }) {
+export function TodayInterviews({ interviews: initialInterviews, boardDate, onBoardDateChange, onEdit }) {
   const role = useAuthStore((s) => s.user?.role);
   const canDelete = role === 'ADMIN' || role === 'TRAINER';
   const del = useDeleteInterview();
@@ -184,7 +205,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
               <th className="px-4 py-2 text-left">Status</th>
               {canDelete && (
                 <th className="px-4 py-2 text-right w-[1%] font-mono text-[9px] uppercase tracking-[0.18em] text-[var(--text3)]">
-                  Delete
+                  Actions
                 </th>
               )}
             </tr>
@@ -278,19 +299,32 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                 </td>
                 {canDelete && (
                   <td className="px-4 py-3 text-right align-middle">
-                    <button
-                      type="button"
-                      title="Delete interview"
-                      disabled={del.isPending}
-                      onClick={() => setDeleteTarget(i)}
-                      className={cn(
-                        'inline-flex items-center justify-center rounded-lg p-2 transition-colors',
-                        'text-[var(--text3)] hover:text-[var(--pink)] hover:bg-[rgba(244,63,94,0.12)]',
-                        'disabled:opacity-40 disabled:pointer-events-none'
-                      )}
-                    >
-                      <TrashIcon />
-                    </button>
+                    <div className="inline-flex items-center gap-1">
+                      <button
+                        type="button"
+                        title="Edit interview"
+                        onClick={() => onEdit?.(i)}
+                        className={cn(
+                          'inline-flex items-center justify-center rounded-lg p-2 transition-colors',
+                          'text-[var(--text3)] hover:text-[var(--cyan)] hover:bg-[rgba(0,212,255,0.12)]'
+                        )}
+                      >
+                        <EditIcon />
+                      </button>
+                      <button
+                        type="button"
+                        title="Delete interview"
+                        disabled={del.isPending}
+                        onClick={() => setDeleteTarget(i)}
+                        className={cn(
+                          'inline-flex items-center justify-center rounded-lg p-2 transition-colors',
+                          'text-[var(--text3)] hover:text-[var(--pink)] hover:bg-[rgba(244,63,94,0.12)]',
+                          'disabled:opacity-40 disabled:pointer-events-none'
+                        )}
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
                   </td>
                 )}
                 </tr>
