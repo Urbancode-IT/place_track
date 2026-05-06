@@ -86,14 +86,27 @@ export async function getStats(req, res, next) {
 export async function getToday(req, res, next) {
   try {
     const parsedDate = parseDateOnly(req.query?.date);
-    const baseDate = parsedDate || (req.query?.date ? new Date(req.query.date) : new Date());
-    const safeBaseDate = Number.isNaN(baseDate.getTime()) ? new Date() : baseDate;
-    const todayStart = startOfDay(safeBaseDate);
-    const todayEnd = endOfDay(safeBaseDate);
-    let sql = `SELECT i.*, s.id as "s_id", s.name as "s_name", s.course as "s_course" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.date >= $1 AND i.date <= $2`;
-    const vals = [todayStart, todayEnd];
+    let sql = `SELECT i.*, s.id as "s_id", s.name as "s_name", s.course as "s_course" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE 1=1`;
+    const vals = [];
+    let idx = 1;
+
+    // Compare by DATE only to avoid timezone shifts when selecting from calendar.
+    if (parsedDate) {
+      const y = parsedDate.getFullYear();
+      const m = String(parsedDate.getMonth() + 1).padStart(2, '0');
+      const d = String(parsedDate.getDate()).padStart(2, '0');
+      sql += ` AND i.date::date = $${idx++}::date`;
+      vals.push(`${y}-${m}-${d}`);
+    } else {
+      const now = new Date();
+      const todayStart = startOfDay(now);
+      const todayEnd = endOfDay(now);
+      sql += ` AND i.date >= $${idx++} AND i.date <= $${idx++}`;
+      vals.push(todayStart, todayEnd);
+    }
+
     if (req.user.role === 'TRAINER') {
-      sql += ` AND EXISTS (SELECT 1 FROM "InterviewTrainer" it WHERE it."interviewId" = i.id AND it."trainerId" = $3)`;
+      sql += ` AND EXISTS (SELECT 1 FROM "InterviewTrainer" it WHERE it."interviewId" = i.id AND it."trainerId" = $${idx++})`;
       vals.push(req.user.id);
     }
     sql += ' ORDER BY i.date ASC';

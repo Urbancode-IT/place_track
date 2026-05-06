@@ -51,13 +51,11 @@ export async function approve(req, res, next) {
     if (!row.company || !row.round || !row.date || !row.timeSlot) {
       throw new AppError('Request is missing required fields', 400);
     }
-    // Schedule calendar date = **when admin approves** so it always appears on Today's Live Interview Board
-    // (student's date field is kept as a note — they may pick wrong TZ / wrong day).
-    const interviewDate = new Date();
-    const submittedDateNote = row.date
-      ? `[Student form date: ${new Date(row.date).toISOString().slice(0, 10)}]`
-      : '';
-    const mergedComments = [row.comments, submittedDateNote].filter(Boolean).join('\n\n') || null;
+    const interviewDate = new Date(row.date);
+    if (Number.isNaN(interviewDate.getTime())) {
+      throw new AppError('Invalid interview date in request', 400);
+    }
+    const mergedComments = row.comments || null;
     const finalRoom =
       roomFromApprove !== undefined && roomFromApprove !== null
         ? String(roomFromApprove).trim() || null
