@@ -4,6 +4,7 @@ import { sendToGoogleChat } from '../services/googleChat.service.js';
 import { sendTomorrowBoardDigest } from '../services/email.service.js';
 
 const TZ = process.env.GOOGLE_CHAT_CRON_TZ || process.env.INTERVIEW_SCHEDULE_TZ || 'Asia/Kolkata';
+const BOARD_CRON = process.env.GOOGLE_CHAT_BOARD_CRON || '0 8 * * *';
 
 function pad2(n) {
   return String(n).padStart(2, '0');
@@ -214,7 +215,8 @@ export async function runGoogleChatBoardOnce() {
 }
 
 /**
- * Daily at 12:00 AM in GOOGLE_CHAT_CRON_TZ (default Asia/Kolkata): today + tomorrow boards.
+ * Daily board reminder in GOOGLE_CHAT_CRON_TZ (default Asia/Kolkata).
+ * Default schedule is 08:00 AM; can be overridden via GOOGLE_CHAT_BOARD_CRON.
  */
 export function runGoogleChatBoardJob() {
   if (process.env.GOOGLE_CHAT_DISABLE_INTERNAL_CRON === 'true') {
@@ -224,9 +226,11 @@ export function runGoogleChatBoardJob() {
     return;
   }
   cron.schedule(
-    '0 0 * * *',
+    BOARD_CRON,
     async () => {
-      console.log(`[cron] Google Chat board job (${TZ}) at 12:00 AM — today + tomorrow interviews`);
+      console.log(
+        `[cron] Google Chat board job (${TZ}) [${BOARD_CRON}] — today + tomorrow interviews`
+      );
       try {
         await runGoogleChatBoardOnce();
         console.log('[cron] Daily board job finished');

@@ -13,13 +13,14 @@ export function isInterviewDateTodayInTz(dateValue) {
 }
 
 /**
- * Immediate Google Chat ping whenever an interview is saved with a date/time — not only “today”.
- * Set GOOGLE_CHAT_IMMEDIATE_NOTIFY=today to restrict to same-day interviews only.
+ * Immediate Google Chat ping whenever an interview is saved with a date/time.
+ * Default behavior is same-day only (to avoid early alerts for future interviews).
+ * Set GOOGLE_CHAT_IMMEDIATE_NOTIFY=all to notify for all dates.
  */
 export async function notifyGoogleChatInterviewScheduled(interviewId) {
   if (!process.env.GOOGLE_CHAT_WEBHOOK_URL?.trim()) return;
 
-  const mode = (process.env.GOOGLE_CHAT_IMMEDIATE_NOTIFY || 'all').trim().toLowerCase();
+  const mode = (process.env.GOOGLE_CHAT_IMMEDIATE_NOTIFY || 'today').trim().toLowerCase();
   if (mode === 'false' || mode === 'off' || mode === '0') return;
 
   const r = await query(
