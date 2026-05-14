@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { studentApi } from '@/api/student.api';
 import { StudentCard } from '@/components/students/StudentCard';
@@ -17,9 +17,25 @@ export default function Students() {
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const handleFiltersChange = (next) => {
+    setPage(1);
+    setFilters(next);
+  };
+
+  const listParams = useMemo(() => {
+    const q = typeof filters.search === 'string' ? filters.search.trim() : '';
+    return {
+      page,
+      limit: 12,
+      ...(filters.course ? { course: filters.course } : {}),
+      ...(filters.status ? { status: filters.status } : {}),
+      ...(q ? { search: q } : {}),
+    };
+  }, [filters.search, filters.course, filters.status, page]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['students', { ...filters, page, limit: 12 }],
-    queryFn: () => studentApi.list({ ...filters, page, limit: 12 }).then((r) => r.data),
+    queryKey: ['students', listParams],
+    queryFn: () => studentApi.list(listParams).then((r) => r.data),
   });
   const createStudent = useCreateStudent();
 
@@ -44,11 +60,11 @@ export default function Students() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Students</h1>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => downloadStudentsCsv(filters).catch(() => {})}>Export CSV</Button>
+          <Button variant="secondary" onClick={() => downloadStudentsCsv(listParams).catch(() => {})}>Export CSV</Button>
           <Button onClick={() => setModalOpen(true)}>+ Add Student</Button>
         </div>
       </div>
-      <StudentFilters filters={filters} onChange={setFilters} />
+      <StudentFilters filters={filters} onChange={handleFiltersChange} />
       <div className="flex gap-2">
         <Button variant={view === 'card' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('card')}>Cards</Button>
         <Button variant={view === 'table' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('table')}>Table</Button>

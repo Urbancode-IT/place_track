@@ -12,7 +12,13 @@ export async function list(req, res, next) {
     let joinSql = '';
     if (req.query.course) { conds.push(`s.course = $${idx++}`); vals.push(req.query.course); }
     if (req.query.batchId) { conds.push(`s."batchId" = $${idx++}`); vals.push(req.query.batchId); }
-    if (req.query.search) { conds.push(`(s.name ILIKE $${idx} OR s.email ILIKE $${idx})`); vals.push(`%${req.query.search}%`); idx++; }
+    const searchRaw = String(req.query.search ?? '').trim();
+    if (searchRaw) {
+      const term = `%${searchRaw}%`;
+      conds.push(`(s.name ILIKE $${idx} OR s.email ILIKE $${idx} OR COALESCE(s.phone, '') ILIKE $${idx})`);
+      vals.push(term);
+      idx++;
+    }
     if (req.user.role === 'TRAINER') {
       joinSql = ` INNER JOIN "Interview" i ON i."studentId" = s.id INNER JOIN "InterviewTrainer" it ON it."interviewId" = i.id AND it."trainerId" = $${idx}`;
       vals.push(req.user.id);

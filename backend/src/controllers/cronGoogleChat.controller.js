@@ -35,7 +35,10 @@ export async function postGoogleChatBoardCron(req, res) {
         message: result.error || 'Google Chat send failed',
       });
     }
-    return res.json({ success: true, message: 'Tomorrow board sent to Google Chat' });
+    return res.json({
+      success: true,
+      message: 'Interview board (today + tomorrow) sent to Google Chat',
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return res.status(500).json({ success: false, message });

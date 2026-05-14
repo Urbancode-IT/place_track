@@ -8,10 +8,15 @@ export function StudentFilters({ filters, onChange }) {
   return (
     <div className="flex flex-wrap gap-4 items-end">
       <Input
+        type="search"
+        name="q"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
         placeholder="Search name, email..."
         value={filters.search || ''}
         onChange={(e) => onChange({ ...filters, search: e.target.value })}
-        className="w-48"
+        className="w-48 min-w-[12rem]"
       />
       <Select
         placeholder="Course"

@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { errorHandler } from './middleware/errorHandler.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import routes from './routes/index.js';
+import { getGoogleChatBoardDiagnostics } from './jobs/googleChatBoard.job.js';
 
 const app = express();
 
@@ -69,20 +70,25 @@ app.use(rateLimiter);
 
 app.use('/api', routes);
 
-app.get('/health', (_, res) =>
-  res.json({
+app.get('/health', (_, res) => {
+  const gc = getGoogleChatBoardDiagnostics();
+  return res.json({
     success: true,
     message: 'PlaceTrack API OK',
     mail: getSmtpHealth(),
     googleChat: {
-      configured: Boolean(process.env.GOOGLE_CHAT_WEBHOOK_URL?.trim()),
-      cronTimezone:
-        process.env.GOOGLE_CHAT_CRON_TZ ||
-        process.env.INTERVIEW_SCHEDULE_TZ ||
-        'Asia/Kolkata',
+      /** @deprecated use webhookConfigured */
+      configured: gc.webhookConfigured,
+      webhookConfigured: gc.webhookConfigured,
+      cronTimezone: gc.timezone,
+      boardCron: gc.cronExpression,
+      renderHost: gc.renderHost,
+      disableInternalCronEnv: gc.disableInternalCronEnv,
+      internalBoardCronDisabled: gc.internalBoardCronDisabled,
+      externalCronSecretConfigured: gc.externalCronSecretConfigured,
     },
-  })
-);
+  });
+});
 
 app.use(errorHandler);
 

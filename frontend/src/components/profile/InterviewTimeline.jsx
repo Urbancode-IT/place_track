@@ -1,8 +1,50 @@
+import { parseISO, startOfDay, isBefore, isAfter } from 'date-fns';
 import { formatDate } from '@/utils/formatDate';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_COLORS } from '@/utils/constants';
 import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
 import { cn } from '@/utils/helpers';
+
+/** Calendar day vs today (local). */
+function calendarPhase(dateVal) {
+  if (!dateVal) return 'unknown';
+  const d = startOfDay(typeof dateVal === 'string' ? parseISO(dateVal) : new Date(dateVal));
+  const today = startOfDay(new Date());
+  if (isBefore(d, today)) return 'past';
+  if (isAfter(d, today)) return 'future';
+  return 'today';
+}
+
+/** Raw DB status or trainer review — signals someone updated the row after the slot. */
+function hasOutcomeOrTrainerReview(i) {
+  const raw = String(i.status || '').trim();
+  if (raw && raw !== 'SCHEDULED') return true;
+  if (i.trainerReviewRating) return true;
+  return !!(i.trainerReviewNotes || '').trim();
+}
+
+function slotFollowUpHint(i) {
+  const phase = calendarPhase(i.date);
+  if (phase === 'future') {
+    return { text: 'Upcoming slot', tone: 'neutral' };
+  }
+  if (phase === 'today') {
+    return { text: "Today's slot", tone: 'neutral' };
+  }
+  if (phase === 'unknown') {
+    return { text: '', tone: 'neutral' };
+  }
+  if (hasOutcomeOrTrainerReview(i)) {
+    return {
+      text: 'Past slot · outcome or trainer review on file',
+      tone: 'ok',
+    };
+  }
+  return {
+    text: 'Past slot · no update in app (cannot confirm attendance)',
+    tone: 'warn',
+  };
+}
 
 function trainerReviewLabel(rating) {
   if (rating === 'EXCELLENT') return 'Excellent';
@@ -24,6 +66,7 @@ export function InterviewTimeline({ interviews }) {
         const trLabel = trainerReviewLabel(i.trainerReviewRating);
         const trNotes = (i.trainerReviewNotes || '').trim();
         const pipeline = getEffectiveInterviewStatus(i);
+        const followUp = slotFollowUpHint(i);
         return (
         <li
           key={i.id}
@@ -43,6 +86,19 @@ export function InterviewTimeline({ interviews }) {
             >
               {pipeline}
             </Badge>
+            {followUp.text && (
+              <p
+                title="Place Track does not record physical check-ins. Use outcome status or trainer review to confirm follow-up."
+                className={cn(
+                  'text-[10px] font-mono leading-snug max-w-md',
+                  followUp.tone === 'warn' && 'text-amber-400/90',
+                  followUp.tone === 'ok' && 'text-emerald-400/85',
+                  followUp.tone === 'neutral' && 'text-[var(--text3)]'
+                )}
+              >
+                {followUp.text}
+              </p>
+            )}
             {(trLabel || trNotes) && (
               <div
                 className="rounded-lg border px-2.5 py-2 text-[11px] space-y-1"

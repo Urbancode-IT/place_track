@@ -4,7 +4,45 @@ import { sendToGoogleChat } from '../services/googleChat.service.js';
 import { sendTomorrowBoardDigest } from '../services/email.service.js';
 
 const TZ = process.env.GOOGLE_CHAT_CRON_TZ || process.env.INTERVIEW_SCHEDULE_TZ || 'Asia/Kolkata';
-const BOARD_CRON = process.env.GOOGLE_CHAT_BOARD_CRON || '0 8 * * *';
+
+const DEFAULT_BOARD_CRON = '0 8 * * *';
+const rawBoardCron = (process.env.GOOGLE_CHAT_BOARD_CRON || DEFAULT_BOARD_CRON).trim();
+const BOARD_CRON = cron.validate(rawBoardCron)
+  ? rawBoardCron
+  : (() => {
+      console.error(
+        `[cron] Google Chat: invalid GOOGLE_CHAT_BOARD_CRON "${rawBoardCron}" — using ${DEFAULT_BOARD_CRON}`
+      );
+      return DEFAULT_BOARD_CRON;
+    })();
+
+/**
+ * Best default for sleeping hosts (e.g. Render): prefer external
+ * `GET /api/public/cron/google-chat-board?secret=…` unless you opt in to in-process cron.
+ *
+ * - `GOOGLE_CHAT_DISABLE_INTERNAL_CRON=true` → no in-process board cron
+ * - `GOOGLE_CHAT_DISABLE_INTERNAL_CRON=false` → in-process board cron
+ * - unset + `RENDER=true` → treat as true (external expected)
+ * - unset + not on Render → false (in-process)
+ */
+export function isGoogleChatInternalBoardCronDisabled() {
+  const v = process.env.GOOGLE_CHAT_DISABLE_INTERNAL_CRON?.trim().toLowerCase();
+  if (v === 'true') return true;
+  if (v === 'false') return false;
+  return process.env.RENDER === 'true';
+}
+
+export function getGoogleChatBoardDiagnostics() {
+  return {
+    cronExpression: BOARD_CRON,
+    timezone: TZ,
+    renderHost: process.env.RENDER === 'true',
+    disableInternalCronEnv: process.env.GOOGLE_CHAT_DISABLE_INTERNAL_CRON ?? null,
+    internalBoardCronDisabled: isGoogleChatInternalBoardCronDisabled(),
+    webhookConfigured: Boolean(process.env.GOOGLE_CHAT_WEBHOOK_URL?.trim()),
+    externalCronSecretConfigured: Boolean(process.env.GOOGLE_CHAT_CRON_SECRET?.trim()),
+  };
+}
 
 function pad2(n) {
   return String(n).padStart(2, '0');
@@ -216,28 +254,62 @@ export async function runGoogleChatBoardOnce() {
 
 /**
  * Daily board reminder in GOOGLE_CHAT_CRON_TZ (default Asia/Kolkata).
- * Default schedule is 08:00 AM; can be overridden via GOOGLE_CHAT_BOARD_CRON.
+ * Default schedule is 08:00 AM; override with GOOGLE_CHAT_BOARD_CRON (5-field cron).
+ *
+ * If internal board cron is disabled (explicitly or by Render default), only an external
+ * scheduler should call GET/POST /api/public/cron/google-chat-board?secret=… (requires
+ * GOOGLE_CHAT_CRON_SECRET). If internal is disabled but the secret is missing, we still
+ * register in-process cron as a fallback so misconfigured prod does not get zero reminders.
  */
 export function runGoogleChatBoardJob() {
-  if (process.env.GOOGLE_CHAT_DISABLE_INTERNAL_CRON === 'true') {
-    console.log(
-      '[cron] Google Chat: internal cron disabled — use /api/public/cron/google-chat-board + external scheduler'
-    );
-    return;
+  const webhookOk = Boolean(process.env.GOOGLE_CHAT_WEBHOOK_URL?.trim());
+  const disableInternal = isGoogleChatInternalBoardCronDisabled();
+  const secretOk = Boolean(process.env.GOOGLE_CHAT_CRON_SECRET?.trim());
+
+  if (!webhookOk) {
+    console.warn('[cron] Google Chat: GOOGLE_CHAT_WEBHOOK_URL not set — board messages will not reach Chat');
   }
-  cron.schedule(
-    BOARD_CRON,
-    async () => {
+
+  if (disableInternal) {
+    if (secretOk) {
       console.log(
-        `[cron] Google Chat board job (${TZ}) [${BOARD_CRON}] — today + tomorrow interviews`
+        '[cron] Google Chat: in-process board cron disabled — ping /api/public/cron/google-chat-board from cron-job.org (or similar) with your secret'
       );
-      try {
-        await runGoogleChatBoardOnce();
-        console.log('[cron] Daily board job finished');
-      } catch (err) {
-        console.error('[cron] Google Chat Board Job failed:', err?.message || err);
+      if (process.env.RENDER === 'true') {
+        console.log(
+          '[cron] Google Chat: Render host may sleep — external scheduler is required for reliable daily Chat posts'
+        );
       }
-    },
-    { timezone: TZ }
-  );
+      return;
+    }
+    console.warn(
+      '[cron] Google Chat: board cron is external-only mode but GOOGLE_CHAT_CRON_SECRET is empty — external ping cannot auth. Enabling in-process board cron as fallback.'
+    );
+  }
+
+  try {
+    cron.schedule(
+      BOARD_CRON,
+      async () => {
+        console.log(
+          `[cron] Google Chat board job (${TZ}) [${BOARD_CRON}] — today + tomorrow interviews`
+        );
+        try {
+          await runGoogleChatBoardOnce();
+          console.log('[cron] Daily board job finished');
+        } catch (err) {
+          console.error('[cron] Google Chat Board Job failed:', err?.message || err);
+        }
+      },
+      { timezone: TZ }
+    );
+    console.log(
+      `[cron] Google Chat: in-process daily board scheduled — ${BOARD_CRON} (${TZ})`
+    );
+  } catch (err) {
+    console.error(
+      '[cron] Google Chat: failed to register board cron (check GOOGLE_CHAT_BOARD_CRON and GOOGLE_CHAT_CRON_TZ):',
+      err?.message || err
+    );
+  }
 }
