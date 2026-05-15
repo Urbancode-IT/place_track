@@ -6,6 +6,8 @@
  * Terminal / workflow statuses are left unchanged.
  */
 
+import { format, isValid, parseISO } from 'date-fns';
+
 const TERMINAL = new Set([
   'REJECTED',
   'SELECTED',
@@ -54,4 +56,38 @@ export function getEffectiveInterviewStatus(interview) {
   if (TERMINAL.has(s)) return s;
   if (s !== 'SCHEDULED' && s !== 'SHORTLISTED') return s;
   return isEarlyInterviewRound(interview?.round) ? 'SCHEDULED' : 'SHORTLISTED';
+}
+
+const PIPELINE_LABELS = {
+  SCHEDULED: 'Scheduled',
+  SHORTLISTED: 'Shortlisted',
+  SELECTED: 'Selected',
+  REJECTED: 'Rejected',
+  AWAITING_RESPONSE: 'Awaiting response',
+  RESCHEDULED: 'Rescheduled',
+  NO_RESPONSE: 'No response',
+};
+
+/** Readable pipeline label (uses round-aware effective status for Scheduled vs Shortlisted). */
+export function getEffectivePipelineLabel(interview) {
+  const eff = getEffectiveInterviewStatus(interview);
+  return PIPELINE_LABELS[eff] || String(eff || '').replace(/_/g, ' ');
+}
+
+/** One line for lists: `Round · 12 May 2026 · 10:00 AM` (omits missing parts). */
+export function formatInterviewRoundAndSchedule(interview) {
+  if (!interview) return '';
+  const round = String(interview.round || '').trim();
+  let datePart = '';
+  if (interview.date) {
+    const d =
+      typeof interview.date === 'string' ? parseISO(interview.date) : new Date(interview.date);
+    if (isValid(d)) datePart = format(d, 'd MMM yyyy');
+  }
+  const slot = String(interview.timeSlot || '').trim();
+  const when = [datePart, slot].filter(Boolean).join(' · ');
+  const parts = [];
+  if (round) parts.push(round);
+  if (when) parts.push(when);
+  return parts.join(' · ') || '—';
 }
