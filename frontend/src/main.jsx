@@ -5,10 +5,16 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { listenToForegroundMessages } from '@/lib/pushNotifications';
+import { QUERY_GC_MS, QUERY_STALE_MS } from '@/lib/queryDefaults';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: QUERY_STALE_MS,
+      gcTime: QUERY_GC_MS,
+    },
     mutations: { retry: 0 },
   },
 });

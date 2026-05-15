@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
@@ -8,7 +9,7 @@ import {
   getEffectivePipelineLabel,
 } from '@/utils/interviewEffectiveStatus';
 
-export function StudentTable({ data }) {
+function StudentTableInner({ data }) {
   const columns = [
     { field: 'name', header: 'Name', render: (val, row) => <Link to={`/students/${row.id}`} className="text-primary hover:underline font-medium">{val}</Link> },
     { field: 'email', header: 'Email' },
@@ -42,3 +43,5 @@ export function StudentTable({ data }) {
   ];
   return <Table columns={columns} data={data} keyField="id" />;
 }
+
+export const StudentTable = memo(StudentTableInner);

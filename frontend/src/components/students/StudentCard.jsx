@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
@@ -8,7 +9,7 @@ import {
   getEffectivePipelineLabel,
 } from '@/utils/interviewEffectiveStatus';
 
-export function StudentCard({ student }) {
+function StudentCardInner({ student }) {
   const latestInterview = student.interviews?.[0];
   const eff = latestInterview ? getEffectiveInterviewStatus(latestInterview) : null;
   const pipelineLabel = latestInterview ? getEffectivePipelineLabel(latestInterview) : null;
@@ -46,3 +47,5 @@ export function StudentCard({ student }) {
     </Link>
   );
 }
+
+export const StudentCard = memo(StudentCardInner);

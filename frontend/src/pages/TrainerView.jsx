@@ -68,9 +68,11 @@ export default function TrainerView() {
     enabled: !!selectedTrainerId,
   });
   const { data: allInterviewsData } = useQuery({
-    queryKey: ['interviews', { page: 1, limit: 200 }],
-    queryFn: () => interviewApi.list({ page: 1, limit: 200 }).then((r) => r.data),
+    queryKey: ['interviews', { page: 1, limit: 80, assignPicker: true }],
+    queryFn: () => interviewApi.list({ page: 1, limit: 80 }).then((r) => r.data),
     enabled: assignOpen,
+    staleTime: 1000 * 60 * 3,
+    refetchOnWindowFocus: false,
   });
 
   const updateStatus = useUpdateInterviewStatus();

@@ -83,10 +83,27 @@ async function getDailyBoardEmailRecipients() {
   return r.rows.map((row) => row.email).filter(Boolean);
 }
 
+async function loadTrainerNamesByInterviewId(interviewIds) {
+  if (!interviewIds.length) return {};
+  const tr = await query(
+    `SELECT it."interviewId", u.name
+     FROM "InterviewTrainer" it
+     JOIN "User" u ON u.id = it."trainerId"
+     WHERE it."interviewId" = ANY($1)`,
+    [interviewIds]
+  );
+  const map = {};
+  for (const row of tr.rows) {
+    if (!map[row.interviewId]) map[row.interviewId] = [];
+    map[row.interviewId].push(row.name);
+  }
+  return map;
+}
+
 /**
  * One calendar day: approved interviews + pending requests → plain + HTML fragments.
  */
-async function formatBoardDay(interviews, pendingRequests, dateLabel, boardTitle) {
+async function formatBoardDay(interviews, pendingRequests, dateLabel, boardTitle, trainersByInterviewId = {}) {
   if (interviews.length === 0 && pendingRequests.length === 0) {
     return {
       plain: `*${boardTitle} (${dateLabel})*\nNo interviews scheduled.\n\n`,
@@ -106,13 +123,8 @@ async function formatBoardDay(interviews, pendingRequests, dateLabel, boardTitle
     htmlBody += '<h4 style="margin: 12px 0 6px; font-size: 14px;">Approved Interviews</h4><ul style="margin: 0; padding-left: 20px;">';
 
     for (const interview of interviews) {
-      const tr = await query(
-        `SELECT u.name FROM "InterviewTrainer" it
-         JOIN "User" u ON u.id = it."trainerId"
-         WHERE it."interviewId" = $1`,
-        [interview.id]
-      );
-      const trainerNames = tr.rows.map((t) => t.name).join(', ') || 'Unassigned';
+      const trainerNames =
+        (trainersByInterviewId[interview.id] || []).join(', ') || 'Unassigned';
 
       plain += `• *${interview.timeSlot}*: ${interview.studentName} (${interview.course}) - ${interview.company}\n`;
       plain += `  _Round:_ ${interview.round}\n`;
@@ -208,17 +220,25 @@ export async function runGoogleChatBoardOnce() {
     ),
   ]);
 
+  const allInterviewIds = [
+    ...todayApproved.rows.map((r) => r.id),
+    ...tomApproved.rows.map((r) => r.id),
+  ];
+  const trainersByInterviewId = await loadTrainerNamesByInterviewId(allInterviewIds);
+
   const todayPart = await formatBoardDay(
     todayApproved.rows,
     todayPending.rows,
     todayLabel,
-    "Today's Live Interview Board"
+    "Today's Live Interview Board",
+    trainersByInterviewId
   );
   const tomorrowPart = await formatBoardDay(
     tomApproved.rows,
     tomPending.rows,
     tomorrowLabel,
-    "Tomorrow's Live Interview Board"
+    "Tomorrow's Live Interview Board",
+    trainersByInterviewId
   );
 
   const footer = `View more on PlaceTrack: ${frontendUrl}`;

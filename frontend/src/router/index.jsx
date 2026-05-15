@@ -1,27 +1,41 @@
+import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useAuthHydrated } from '@/hooks/useAuthHydrated';
 import { Spinner } from '@/components/ui/Spinner';
 import AppLayout from '@/components/layout/AppLayout';
 import { AuthLayout } from '@/components/layout/AuthLayout';
-import PublicInterviewFill from '@/pages/PublicInterviewFill';
-import PublicInterviewApply from '@/pages/PublicInterviewApply';
-import PublicInterviewFinish from '@/pages/PublicInterviewFinish';
-import Login from '@/pages/Login';
-import Dashboard from '@/pages/Dashboard';
-import Students from '@/pages/Students';
-import StudentProfile from '@/pages/StudentProfile';
-import Schedule from '@/pages/Schedule';
-import TrainerView from '@/pages/TrainerView';
-import Notifications from '@/pages/Notifications';
-import Analytics from '@/pages/Analytics';
-import Settings from '@/pages/Settings';
-import Reference from '@/pages/Reference';
-import PendingSelfSubmits from '@/pages/PendingSelfSubmits';
-import PendingInterviewFinishes from '@/pages/PendingInterviewFinishes';
-import HonestReviewLinkPage from '@/pages/HonestReviewLinkPage';
-import PublicHonestReview from '@/pages/PublicHonestReview';
-import PublicHonestReviewCommon from '@/pages/PublicHonestReviewCommon';
+
+const PublicInterviewFill = lazy(() => import('@/pages/PublicInterviewFill'));
+const PublicInterviewApply = lazy(() => import('@/pages/PublicInterviewApply'));
+const PublicInterviewFinish = lazy(() => import('@/pages/PublicInterviewFinish'));
+const Login = lazy(() => import('@/pages/Login'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Students = lazy(() => import('@/pages/Students'));
+const StudentProfile = lazy(() => import('@/pages/StudentProfile'));
+const Schedule = lazy(() => import('@/pages/Schedule'));
+const TrainerView = lazy(() => import('@/pages/TrainerView'));
+const Notifications = lazy(() => import('@/pages/Notifications'));
+const Analytics = lazy(() => import('@/pages/Analytics'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const Reference = lazy(() => import('@/pages/Reference'));
+const PendingSelfSubmits = lazy(() => import('@/pages/PendingSelfSubmits'));
+const PendingInterviewFinishes = lazy(() => import('@/pages/PendingInterviewFinishes'));
+const HonestReviewLinkPage = lazy(() => import('@/pages/HonestReviewLinkPage'));
+const PublicHonestReview = lazy(() => import('@/pages/PublicHonestReview'));
+const PublicHonestReviewCommon = lazy(() => import('@/pages/PublicHonestReviewCommon'));
+
+function PageLoader() {
+  return (
+    <div className="flex min-h-[40vh] w-full items-center justify-center">
+      <Spinner size="lg" />
+    </div>
+  );
+}
+
+function Lazy({ children }) {
+  return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
+}
 
 function ProtectedRoute({ children, adminOnly }) {
   const hydrated = useAuthHydrated();
@@ -43,30 +57,52 @@ function ProtectedRoute({ children, adminOnly }) {
 const routes = [
   {
     path: '/interview/apply',
-    element: <PublicInterviewApply />,
+    element: (
+      <Lazy>
+        <PublicInterviewApply />
+      </Lazy>
+    ),
   },
   {
     path: '/interview/finish',
-    element: <PublicInterviewFinish />,
+    element: (
+      <Lazy>
+        <PublicInterviewFinish />
+      </Lazy>
+    ),
   },
   {
     path: '/interview/fill/:token',
-    element: <PublicInterviewFill />,
+    element: (
+      <Lazy>
+        <PublicInterviewFill />
+      </Lazy>
+    ),
   },
   {
     path: '/honest-review',
-    element: <PublicHonestReviewCommon />,
+    element: (
+      <Lazy>
+        <PublicHonestReviewCommon />
+      </Lazy>
+    ),
   },
   {
     path: '/honest-review/:token',
-    element: <PublicHonestReview />,
+    element: (
+      <Lazy>
+        <PublicHonestReview />
+      </Lazy>
+    ),
   },
   {
     path: '/login',
     element: (
-      <AuthLayout>
-        <Login />
-      </AuthLayout>
+      <Lazy>
+        <AuthLayout>
+          <Login />
+        </AuthLayout>
+      </Lazy>
     ),
   },
   {
@@ -77,25 +113,104 @@ const routes = [
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Dashboard /> },
-      { path: 'students', element: <Students /> },
-      { path: 'students/:id', element: <StudentProfile /> },
-      { path: 'schedule', element: <Schedule /> },
-      { path: 'trainers', element: <TrainerView /> },
-      { path: 'notifications', element: <Notifications /> },
+      {
+        index: true,
+        element: (
+          <Lazy>
+            <Dashboard />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'students',
+        element: (
+          <Lazy>
+            <Students />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'students/:id',
+        element: (
+          <Lazy>
+            <StudentProfile />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'schedule',
+        element: (
+          <Lazy>
+            <Schedule />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'trainers',
+        element: (
+          <Lazy>
+            <TrainerView />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'notifications',
+        element: (
+          <Lazy>
+            <Notifications />
+          </Lazy>
+        ),
+      },
       {
         path: 'analytics',
         element: (
           <ProtectedRoute adminOnly>
-            <Analytics />
+            <Lazy>
+              <Analytics />
+            </Lazy>
           </ProtectedRoute>
         ),
       },
-      { path: 'settings', element: <Settings /> },
-      { path: 'reference', element: <Reference /> },
-      { path: 'pending-self-submits', element: <PendingSelfSubmits /> },
-      { path: 'pending-interview-finishes', element: <PendingInterviewFinishes /> },
-      { path: 'honest-review-link', element: <HonestReviewLinkPage /> },
+      {
+        path: 'settings',
+        element: (
+          <Lazy>
+            <Settings />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'reference',
+        element: (
+          <Lazy>
+            <Reference />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'pending-self-submits',
+        element: (
+          <Lazy>
+            <PendingSelfSubmits />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'pending-interview-finishes',
+        element: (
+          <Lazy>
+            <PendingInterviewFinishes />
+          </Lazy>
+        ),
+      },
+      {
+        path: 'honest-review-link',
+        element: (
+          <Lazy>
+            <HonestReviewLinkPage />
+          </Lazy>
+        ),
+      },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

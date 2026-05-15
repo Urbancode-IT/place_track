@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { studentApi } from '@/api/student.api';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { listQueryOptions } from '@/lib/queryDefaults';
 import { StudentCard } from '@/components/students/StudentCard';
 import { StudentTable } from '@/components/students/StudentTable';
 import { StudentFilters } from '@/components/students/StudentFilters';
@@ -16,6 +18,7 @@ export default function Students() {
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
+  const debouncedSearch = useDebouncedValue(filters.search ?? '', 400);
 
   const handleFiltersChange = (next) => {
     setPage(1);
@@ -23,7 +26,7 @@ export default function Students() {
   };
 
   const listParams = useMemo(() => {
-    const q = typeof filters.search === 'string' ? filters.search.trim() : '';
+    const q = typeof debouncedSearch === 'string' ? debouncedSearch.trim() : '';
     return {
       page,
       limit: 12,
@@ -31,11 +34,12 @@ export default function Students() {
       ...(filters.status ? { status: filters.status } : {}),
       ...(q ? { search: q } : {}),
     };
-  }, [filters.search, filters.course, filters.status, page]);
+  }, [debouncedSearch, filters.course, filters.status, page]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['students', listParams],
     queryFn: () => studentApi.list(listParams).then((r) => r.data),
+    ...listQueryOptions,
   });
   const createStudent = useCreateStudent();
 
@@ -47,13 +51,7 @@ export default function Students() {
     createStudent.mutate(formData, { onSuccess: () => setModalOpen(false) });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  const showInitialLoader = isLoading && !students.length;
 
   return (
     <div className="space-y-4">
@@ -65,11 +63,18 @@ export default function Students() {
         </div>
       </div>
       <StudentFilters filters={filters} onChange={handleFiltersChange} />
+      {isFetching && !showInitialLoader ? (
+        <p className="text-xs text-[var(--text3)] font-mono">Updating…</p>
+      ) : null}
       <div className="flex gap-2">
         <Button variant={view === 'card' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('card')}>Cards</Button>
         <Button variant={view === 'table' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('table')}>Table</Button>
       </div>
-      {view === 'card' ? (
+      {showInitialLoader ? (
+        <div className="flex justify-center py-12">
+          <Spinner size="lg" />
+        </div>
+      ) : view === 'card' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {students.map((s) => (
             <StudentCard key={s.id} student={s} />

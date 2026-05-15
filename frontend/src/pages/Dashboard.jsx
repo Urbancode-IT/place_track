@@ -93,7 +93,7 @@ export default function Dashboard() {
   const shortlisted = stats.shortlisted ?? 0;
   const placed = stats.placedThisMonth ?? 0;
 
-  if (!dashboardReady || statsLoading) {
+  if (!dashboardReady) {
     return (
       <div className="flex justify-center items-center h-full">
         <Spinner size="lg" />
@@ -144,23 +144,31 @@ export default function Dashboard() {
           <DashboardCreateStudentLink />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard
-            variant="hero"
-            title="TOTAL STUDENTS"
-            value={totalStudents}
-            sub={`${todayCount} enrolled this week`}
-          />
-          <StatCard
-            title="SHORTLISTED"
-            value={shortlisted}
-            progress={shortlisted ? Math.min(100, (shortlisted / (totalStudents || 1)) * 100) : 0}
-          />
-          <StatCard
-            title="PLACED"
-            value={placed}
-            progress={placed ? Math.min(100, (placed / (totalStudents || 1)) * 100) : 0}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[120px]">
+          {statsLoading ? (
+            <div className="col-span-full flex items-center justify-center py-8">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              <StatCard
+                variant="hero"
+                title="TOTAL STUDENTS"
+                value={totalStudents}
+                sub={`${todayCount} enrolled this week`}
+              />
+              <StatCard
+                title="SHORTLISTED"
+                value={shortlisted}
+                progress={shortlisted ? Math.min(100, (shortlisted / (totalStudents || 1)) * 100) : 0}
+              />
+              <StatCard
+                title="PLACED"
+                value={placed}
+                progress={placed ? Math.min(100, (placed / (totalStudents || 1)) * 100) : 0}
+              />
+            </>
+          )}
         </div>
 
         <TodayInterviews

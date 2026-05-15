@@ -58,9 +58,12 @@ export default function Schedule() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingInterview, setEditingInterview] = useState(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['interviews', { limit, ...filters }],
     queryFn: () => interviewApi.list({ page: 1, limit, ...filters }).then((r) => r.data),
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   });
   const createInterview = useCreateInterview();
   const updateInterview = useUpdateInterview();
@@ -106,7 +109,9 @@ export default function Schedule() {
     updateStatus.mutate({ id: interviewId, status: newStatus });
   };
 
-  if (isLoading) {
+  const showInitialLoader = isLoading && !rawInterviews.length;
+
+  if (showInitialLoader) {
     return (
       <div className="flex justify-center items-center h-full py-12">
         <Spinner size="lg" />

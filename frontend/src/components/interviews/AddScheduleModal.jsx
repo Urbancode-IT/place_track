@@ -36,9 +36,11 @@ const schema = z.object({
 
 export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, mode = 'create' }) {
   const { data: studentsRes } = useQuery({
-    queryKey: ['students', { limit: 200 }],
-    queryFn: () => studentApi.list({ limit: 200 }).then((r) => r.data),
+    queryKey: ['students', { limit: 80, picker: true }],
+    queryFn: () => studentApi.list({ page: 1, limit: 80 }).then((r) => r.data),
     enabled: open,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
   const { data: trainersRes } = useQuery({
     queryKey: ['trainers'],
