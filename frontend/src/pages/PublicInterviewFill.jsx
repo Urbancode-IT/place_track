@@ -87,7 +87,7 @@ export default function PublicInterviewFill() {
           className="max-w-md w-full rounded-2xl p-8 text-center space-y-3"
           style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
         >
-          <h1 className="font-syne text-xl font-semibold">Thank you</h1>
+          <h1 className="font-arial text-xl font-semibold">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">{submitMut.data?.message || 'Submitted. Your placement team will review it.'}</p>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function PublicInterviewFill() {
           className="max-w-md w-full rounded-2xl p-8 space-y-3"
           style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
         >
-          <h1 className="font-syne text-xl font-semibold">Hi {meta?.studentFirstName || 'there'}</h1>
+          <h1 className="font-arial text-xl font-semibold">Hi {meta?.studentFirstName || 'there'}</h1>
           <p className="text-sm text-[var(--text2)]">{meta?.message || 'This link is no longer available for editing.'}</p>
         </div>
       </div>
@@ -125,8 +125,8 @@ export default function PublicInterviewFill() {
         style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
       >
         <div>
-          <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">PlaceTrack</p>
-          <h1 className="mt-1 font-syne text-[22px] font-semibold">Interview details</h1>
+          <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">PlaceTrack</p>
+          <h1 className="mt-1 font-arial text-[22px] font-semibold">Interview details</h1>
           <p className="mt-2 text-sm text-[var(--text2)]">
             Hi {meta.studentFirstName}, fill this form with the interview details you have. After you submit, your
             placement team will approve it — then it shows on their live board for today. Use the{' '}

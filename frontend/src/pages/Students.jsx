@@ -64,7 +64,7 @@ export default function Students() {
       </div>
       <StudentFilters filters={filters} onChange={handleFiltersChange} />
       {isFetching && !showInitialLoader ? (
-        <p className="text-xs text-[var(--text3)] font-mono">Updating…</p>
+        <p className="text-xs text-[var(--text3)] font-arial">Updating…</p>
       ) : null}
       <div className="flex gap-2">
         <Button variant={view === 'card' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('card')}>Cards</Button>

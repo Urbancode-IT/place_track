@@ -8,6 +8,7 @@ import { authApi } from '@/api/auth.api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils/helpers';
+import { API_BASE_URL, getApiHealthUrl } from '@/lib/apiConfig';
 
 const schema = z.object({
   email: z.string().email('Invalid email'),
@@ -46,7 +47,7 @@ export default function Login() {
         setError(
           import.meta.env.DEV
             ? 'Cannot reach the API. Open another terminal: cd backend → npm run dev — you must see “PlaceTrack API running on port 5001”. (Vite proxies /api to that port.) If you see “EADDRINUSE”, only one backend can use 5001 — close the extra terminal.'
-            : 'Cannot reach the API. Confirm the production backend is up and VITE_API_URL is correct.',
+            : `Cannot reach the API (${API_BASE_URL}). Check backend health: ${getApiHealthUrl()} — Render free tier may need 30–60s to wake up. Ensure Render has DATABASE_URL set and redeploy backend.`,
         );
         return;
       }
@@ -56,6 +57,13 @@ export default function Login() {
         raw && typeof raw === 'object' && typeof raw.message === 'string'
           ? raw.message
           : null;
+      if (status === 503) {
+        setError(
+          msg ||
+            'Backend or database unavailable (503). On Render: set a working DATABASE_URL (Render Postgres recommended), then redeploy the API service.',
+        );
+        return;
+      }
       if (status >= 500) {
         // Vite proxy often returns 500 with no JSON body when nothing listens on :5001 — looks like "server error" but it's connection refused.
         if (import.meta.env.DEV && !msg) {
@@ -106,7 +114,7 @@ export default function Login() {
               boxShadow: '0 0 0 1px rgba(54,153,255,0.06) inset, 0 14px 40px rgba(54,153,255,0.10)',
             }}
           >
-            <span className="font-syne text-lg font-extrabold tracking-tight text-primary">PT</span>
+            <span className="font-arial text-lg font-extrabold tracking-tight text-primary">PT</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight">PlaceTrack</h1>
           <p className="mt-1 text-sm text-muted">urbancode</p>

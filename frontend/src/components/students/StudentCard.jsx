@@ -25,12 +25,16 @@ function StudentCardInner({ student }) {
         <Avatar src={student.photoUrl} name={student.name} size="lg" />
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-[var(--text)] truncate">{student.name}</h3>
-          <Badge className={COURSE_COLORS[student.course] || 'bg-gray-100'}>{student.course}</Badge>
-          {eff && pipelineLabel && (
-            <>
-              <Badge className={`mt-1 ${STATUS_COLORS[eff]?.bg} ${STATUS_COLORS[eff]?.text}`}>
+          <div className="flex items-center gap-1.5 flex-wrap mt-1">
+            <Badge className={COURSE_COLORS[student.course] || 'bg-gray-100'}>{student.course}</Badge>
+            {eff && pipelineLabel && (
+              <Badge className={`${STATUS_COLORS[eff]?.bg} ${STATUS_COLORS[eff]?.text}`}>
                 {pipelineLabel}
               </Badge>
+            )}
+          </div>
+          {eff && pipelineLabel && (
+            <>
               {company ? (
                 <p className="mt-1 text-xs font-medium text-[var(--text)] truncate" title={company}>
                   {company}

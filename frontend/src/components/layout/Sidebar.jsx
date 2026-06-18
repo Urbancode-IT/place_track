@@ -101,7 +101,6 @@ const mainNav = [
 const secondaryNav = [
   { to: '/pending-self-submits', icon: 'clipboard', label: 'Student submits' },
   { to: '/honest-review-link', icon: 'honestReview', label: 'Student review link', trainerOrAdmin: true },
-  { to: '/reference', icon: 'reference', label: 'Reference' },
   { to: '/notifications', icon: 'notifications', label: 'Notifications' },
   { to: '/analytics', icon: 'analytics', label: 'Analytics', adminOnly: true },
   { to: '/settings', icon: 'settings', label: 'Settings' },
@@ -144,7 +143,7 @@ function NavItem({ item, end, collapsed }) {
           {!collapsed && (
             <div className="flex min-w-0 flex-col leading-tight">
               <span className="text-sm font-semibold">{item.label}</span>
-              <span className="text-[10px] font-mono tracking-wide text-[var(--text3)]">{sub}</span>
+              <span className="text-[10px] font-arial tracking-wide text-[var(--text3)]">{sub}</span>
             </div>
           )}
 
@@ -206,12 +205,12 @@ export function Sidebar() {
                 boxShadow: '0 0 18px rgba(0,212,255,0.40)',
               }}
             >
-              <span className="font-syne text-sm font-extrabold text-black">PT</span>
+              <span className="font-arial text-sm font-extrabold text-black">PT</span>
             </div>
             {!collapsed && (
               <div className="min-w-0 flex flex-col">
-                <span className="font-syne text-sm font-extrabold tracking-tight">PlaceTrack</span>
-                <span className="font-mono text-[10px] tracking-[0.16em] text-[var(--text3)]">PLACEMENT PORTAL</span>
+                <span className="font-arial text-sm font-extrabold tracking-tight">PlaceTrack</span>
+                <span className="font-arial text-[10px] tracking-[0.16em] text-[var(--text3)]">PLACEMENT PORTAL</span>
               </div>
             )}
           </div>
@@ -242,7 +241,7 @@ export function Sidebar() {
       <div className="scrollbar-none mt-4 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pr-0.5">
         <div>
           {!collapsed && (
-            <p className="px-2 pb-2 font-mono text-[10px] tracking-[0.18em] text-[var(--text3)]">MAIN</p>
+            <p className="px-2 pb-2 font-arial text-[10px] tracking-[0.18em] text-[var(--text3)]">MAIN</p>
           )}
           <nav className="flex flex-col gap-1">
             {mainNav.filter(canSee).map((item) => (
@@ -253,7 +252,7 @@ export function Sidebar() {
 
         <div className="mt-6 pb-2">
           {!collapsed && (
-            <p className="px-2 pb-2 font-mono text-[10px] tracking-[0.18em] text-[var(--text3)]">TOOLS</p>
+            <p className="px-2 pb-2 font-arial text-[10px] tracking-[0.18em] text-[var(--text3)]">TOOLS</p>
           )}
           <nav className="flex flex-col gap-1">
             {secondaryNav.filter(canSee).map((item) => (
@@ -270,7 +269,7 @@ export function Sidebar() {
         title={collapsed ? `${user?.name || 'Admin'} · ${user?.role || 'ADMIN'}` : undefined}
       >
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-syne text-[12px] font-extrabold"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-arial text-[12px] font-extrabold"
           style={{
             background: 'linear-gradient(135deg,#00D4FF,#9B5DFF)',
             color: '#000',
@@ -282,7 +281,7 @@ export function Sidebar() {
         {!collapsed && (
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold">{user?.name || 'Admin'}</div>
-            <div className="truncate font-mono text-[10px] tracking-wide text-[var(--text3)]">{user?.role || 'ADMIN'}</div>
+            <div className="truncate font-arial text-[10px] tracking-wide text-[var(--text3)]">{user?.role || 'ADMIN'}</div>
           </div>
         )}
       </div>

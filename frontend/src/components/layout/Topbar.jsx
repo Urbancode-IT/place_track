@@ -40,16 +40,16 @@ export function Topbar() {
     >
       {/* Left: breadcrumb + title */}
       <div className="flex flex-col">
-        <span className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
+        <span className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
           01 ▸ DASHBOARD ▸ COMMAND CENTER
         </span>
-        <span className="font-syne text-[13px] font-bold text-[var(--text)]">
+        <span className="font-arial text-[13px] font-bold text-[var(--text)]">
           Command Center — Admin
         </span>
       </div>
 
       {/* Middle: date */}
-      <div className="hidden md:flex items-center justify-center font-mono text-[10px] text-[var(--text3)]">
+      <div className="hidden md:flex items-center justify-center font-arial text-[10px] text-[var(--text3)]">
         {formatNow()}
       </div>
 
@@ -78,7 +78,7 @@ export function Topbar() {
         >
           <span className="text-[12px] text-[var(--text3)]">Search students, companies</span>
           <span
-            className="font-mono text-[9px] px-2 py-0.5 rounded-md"
+            className="font-arial text-[9px] px-2 py-0.5 rounded-md"
             style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text3)' }}
           >
             ⌘K
@@ -87,7 +87,7 @@ export function Topbar() {
 
         <Button
           size="sm"
-          className="font-syne text-[11px] font-extrabold px-4 py-1.5 rounded-lg"
+          className="font-arial text-[11px] font-bold px-4 py-1.5 rounded-lg"
           style={{
             background: 'var(--cyan)',
             color: '#000',
@@ -101,7 +101,7 @@ export function Topbar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="font-mono text-[10px] text-[var(--text3)] hover:text-[var(--cyan)]"
+          className="font-arial text-[10px] text-[var(--text3)] hover:text-[var(--cyan)]"
         >
           Logout
         </button>

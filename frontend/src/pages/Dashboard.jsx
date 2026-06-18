@@ -116,7 +116,7 @@ export default function Dashboard() {
               color: 'var(--text)',
             }}
           >
-            <span className="font-mono text-[10px] tracking-wider text-[var(--yellow)]">ACTION</span>
+            <span className="font-arial text-[10px] tracking-wider text-[var(--yellow)]">ACTION</span>
             <span className="block mt-0.5">
               {pendingCount} student interview submission{pendingCount === 1 ? '' : 's'} waiting for approval — open queue →
             </span>
@@ -133,7 +133,7 @@ export default function Dashboard() {
               color: 'var(--text)',
             }}
           >
-            <span className="font-mono text-[10px] tracking-wider text-[var(--violet)]">ACTION</span>
+            <span className="font-arial text-[10px] tracking-wider text-[var(--violet)]">ACTION</span>
             <span className="block mt-0.5">
               {pendingFinishCount} interview finish submission{pendingFinishCount === 1 ? '' : 's'} waiting — open queue →
             </span>

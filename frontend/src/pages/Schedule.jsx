@@ -127,14 +127,14 @@ export default function Schedule() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
+          <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
             02 ▸ KANBAN SCHEDULE BOARD
           </p>
        
-          <h1 className="mt-1 font-syne text-[20px] font-semibold text-[var(--text)]">
+          <h1 className="mt-1 font-arial text-[20px] font-semibold text-[var(--text)]">
             Interview Pipeline
           </h1>
-          <p className="font-mono text-[11px] text-[var(--text2)] mt-0.5">
+          <p className="font-arial text-[11px] text-[var(--text2)] mt-0.5">
             {interviews.length} students · March 2026
           </p>
         </div>
@@ -142,14 +142,14 @@ export default function Schedule() {
           <Button
             variant="secondary"
             size="sm"
-            className="font-mono text-[10px]"
+            className="font-arial text-[10px]"
             onClick={() => downloadScheduleCsv(filters).catch(() => {})}
           >
             Export CSV
           </Button>
           <Button
             size="sm"
-            className="font-syne text-[11px] font-extrabold px-4 py-1.5 rounded-lg"
+            className="font-arial text-[11px] font-extrabold px-4 py-1.5 rounded-lg"
             style={{
               background: 'var(--cyan)',
               color: '#000',
@@ -177,17 +177,17 @@ export default function Schedule() {
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: 'var(--green)', boxShadow: '0 0 10px var(--green-dim)' }}
             />
-            <span className="font-syne text-[13px] font-semibold text-[var(--text)]">
+            <span className="font-arial text-[13px] font-semibold text-[var(--text)]">
               Interview Pipeline
             </span>
-            <span className="font-mono text-[10px] text-[var(--text3)]">
+            <span className="font-arial text-[10px] text-[var(--text3)]">
               {interviews.length} active
               {courseFilter !== 'ALL' && ` · ${courseFilter === 'THIS_WEEK' ? 'This week' : courseFilter}`}
             </span>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono">
+            <div className="flex items-center gap-1.5 text-[10px] font-arial">
               {FILTER_OPTIONS.map((opt) => {
                 const isActive = courseFilter === opt.id;
                 return (
@@ -215,7 +215,7 @@ export default function Schedule() {
               })}
             </div>
 
-            <div className="flex items-center gap-1.5 text-[10px] font-mono">
+            <div className="flex items-center gap-1.5 text-[10px] font-arial">
               {['BOARD', 'TABLE'].map((mode) => {
                 const isActive = viewMode === mode;
                 return (

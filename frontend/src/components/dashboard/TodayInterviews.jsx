@@ -160,7 +160,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--green)' }}
             />
-            <span className="font-syne text-[13px] font-semibold text-[var(--text)]">
+            <span className="font-arial text-[13px] font-semibold text-[var(--text)]">
               Today&apos;s Live Interview Board
             </span>
           </div>
@@ -189,7 +189,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
             />
           </label>
         </div>
-        <span className="font-mono text-[9px] text-[var(--text3)] uppercase tracking-widest bg-[rgba(255,255,255,0.03)] px-2 py-0.5 rounded-full">
+        <span className="font-arial text-[9px] text-[var(--text3)] uppercase tracking-widest bg-[rgba(255,255,255,0.03)] px-2 py-0.5 rounded-full">
           {prettyDate ? `${prettyDate} · ` : ''}{filteredInterviews?.length || 0} OF {initialInterviews?.length || 0}
         </span>
       </div>
@@ -197,14 +197,14 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
       <div className="overflow-x-auto">
         <table className="min-w-full text-[11px]">
           <thead>
-            <tr className="font-mono text-[9px] uppercase tracking-[0.18em] text-[var(--text3)]">
+            <tr className="font-arial text-[9px] uppercase tracking-[0.18em] text-[var(--text3)]">
               <th className="px-4 py-2 text-left">Student</th>
               <th className="px-4 py-2 text-left">Round</th>
               <th className="px-4 py-2 text-left">Time</th>
               <th className="px-4 py-2 text-left">Trainers</th>
               <th className="px-4 py-2 text-left">Status</th>
               {canDelete && (
-                <th className="px-4 py-2 text-right w-[1%] font-mono text-[9px] uppercase tracking-[0.18em] text-[var(--text3)]">
+                <th className="px-4 py-2 text-right w-[1%] font-arial text-[9px] uppercase tracking-[0.18em] text-[var(--text3)]">
                   Actions
                 </th>
               )}
@@ -225,7 +225,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center font-mono text-[12px] font-bold text-white/90 border border-white/10 shrink-0"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center font-arial text-[12px] font-bold text-white/90 border border-white/10 shrink-0"
                       style={{
                         background: `linear-gradient(135deg, ${getCircleColor(idx)}55, ${getCircleColor(idx)}22)`,
                       }}
@@ -235,11 +235,11 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                     <div className="min-w-0">
                       <Link
                         to={`/students/${i.student?.id}`}
-                        className="font-outfit text-[12px] text-[var(--text)] hover:text-[var(--cyan)] truncate block"
+                        className="font-arial text-[12px] text-[var(--text)] hover:text-[var(--cyan)] truncate block"
                       >
                         {i.student?.name || 'Unnamed'}
                       </Link>
-                      <div className="font-mono text-[9px] text-[var(--text2)] truncate">
+                      <div className="font-arial text-[9px] text-[var(--text2)] truncate">
                         {i.company} · {i.student?.course}
                       </div>
                     </div>
@@ -247,7 +247,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className="inline-flex items-center justify-center font-mono text-[9px] px-2 py-0.5 rounded-md"
+                    className="inline-flex items-center justify-center font-arial text-[9px] px-2 py-0.5 rounded-md"
                     style={{
                       background: 'rgba(0,212,255,0.12)',
                       border: '1px solid rgba(0,212,255,0.25)',
@@ -257,7 +257,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                     {i.round || '—'}
                   </span>
                 </td>
-                <td className="px-4 py-3 font-mono text-[10px] text-[var(--text3)]">
+                <td className="px-4 py-3 font-arial text-[10px] text-[var(--text3)]">
                   <div className="flex flex-col gap-1 items-start">
                     <span>{i.timeSlot || '—'}</span>
                     {isClash && (
@@ -276,7 +276,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                       .map((t, tIdx) => (
                         <span
                           key={t?.id ?? tIdx}
-                          className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[9px] font-bold text-black border border-white/20"
+                          className="w-6 h-6 rounded-full flex items-center justify-center font-arial text-[9px] font-bold text-black border border-white/20"
                           style={{
                             background: getCircleColor(tIdx),
                             boxShadow: '0 0 14px rgba(0,0,0,0.25)',

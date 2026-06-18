@@ -16,7 +16,7 @@ export function DeleteInterviewConfirmModal({
     <Modal open={open} onClose={onClose} title="Delete interview?" size="sm" variant="dark">
       <p className="text-sm text-[var(--text2)]">{description}</p>
       {detail ? (
-        <p className="mt-3 rounded-lg border border-[var(--border)] bg-[rgba(0,0,0,0.2)] px-3 py-2 text-[12px] font-mono text-[var(--text)]">
+        <p className="mt-3 rounded-lg border border-[var(--border)] bg-[rgba(0,0,0,0.2)] px-3 py-2 text-[12px] font-arial text-[var(--text)]">
           {detail}
         </p>
       ) : null}

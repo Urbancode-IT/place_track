@@ -28,7 +28,7 @@ export function StudentHonestReviews({ studentId }) {
       style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
     >
       <div className="mb-4">
-        <h3 className="font-syne text-[13px] font-semibold text-[var(--text)]">Student reviews</h3>
+        <h3 className="font-arial text-[13px] font-semibold text-[var(--text)]">Student reviews</h3>
         <p className="mt-1 text-xs text-[var(--text3)]">
           Shown here when the student uses the common <span className="text-[var(--text2)]">/honest-review</span> link with{' '}
           <strong className="text-[var(--text)]">this student’s profile email</strong>.

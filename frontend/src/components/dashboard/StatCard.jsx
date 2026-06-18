@@ -15,14 +15,14 @@ export function StatCard({ title, value, sub, progress, variant = 'mini', classN
         }}
       >
         <div className="flex flex-col gap-2">
-          <span className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--cyan)]">
+          <span className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--cyan)]">
             {title}
           </span>
-          <span className="font-syne text-[42px] leading-none font-extrabold text-[var(--text)]">
+          <span className="font-arial text-[42px] leading-none font-bold text-[var(--text)]">
             {value}
           </span>
           {sub && (
-            <span className="font-outfit text-[11px] text-[var(--green)]">
+            <span className="font-arial text-[11px] text-[var(--green)]">
               ↑ {sub}
             </span>
           )}
@@ -42,11 +42,11 @@ export function StatCard({ title, value, sub, progress, variant = 'mini', classN
         border: '1px solid var(--border)',
       }}
     >
-      <span className="font-mono text-[9px] tracking-[0.16em] uppercase text-[var(--text3)]">
+      <span className="font-arial text-[9px] tracking-[0.16em] uppercase text-[var(--text3)]">
         {title}
       </span>
       <div className="mt-1">
-        <span className="font-syne text-[26px] font-extrabold text-[var(--text)]">
+        <span className="font-arial text-[26px] font-bold text-[var(--text)]">
           {value}
         </span>
       </div>

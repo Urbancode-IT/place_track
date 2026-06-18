@@ -7,6 +7,7 @@ export default {
         syne: ['Syne', 'system-ui', 'sans-serif'],
         mono: ['IBM Plex Mono', 'monospace'],
         outfit: ['Outfit', 'system-ui', 'sans-serif'],
+        arial: ['Arial', 'Helvetica', 'sans-serif'],
       },
     },
   },

@@ -18,7 +18,7 @@ export function ProfileHero({ student, actions = null }) {
         <Avatar src={student?.photoUrl} name={student?.name} size="lg" />
       </div>
       <div className="relative z-10 space-y-1 min-w-0 flex-1">
-        <h1 className="font-syne text-[22px] font-semibold text-[var(--text)]">
+        <h1 className="font-arial text-[22px] font-semibold text-[var(--text)]">
           {student?.name}
         </h1>
         {student?.course && (

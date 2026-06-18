@@ -13,11 +13,19 @@ function getDatabaseNameFromUrl() {
 function mapDbError(err) {
   const code = err?.code;
   const dbName = getDatabaseNameFromUrl();
-  if (code === 'ECONNREFUSED' || code === 'ENOTFOUND') {
+  if (
+    code === 'ECONNREFUSED' ||
+    code === 'ENOTFOUND' ||
+    code === 'ETIMEDOUT' ||
+    code === 'ECONNRESET' ||
+    code === 'EHOSTUNREACH'
+  ) {
+    const isProd = process.env.NODE_ENV === 'production';
     return {
       status: 503,
-      message:
-        'Database unreachable — check PostgreSQL availability and DATABASE_URL in backend/.env.',
+      message: isProd
+        ? 'Database connection timed out. On Render, use Render PostgreSQL or a cloud DB (Neon/Supabase) in DATABASE_URL — a VPS DB must allow remote connections on the correct port and firewall.'
+        : 'Database unreachable — check PostgreSQL is running and DATABASE_URL in backend/.env.',
     };
   }
   if (code === '28P01') {
@@ -54,9 +62,15 @@ export function errorHandler(err, _req, res, _next) {
     console.error(err);
   }
 
+  const isProd = process.env.NODE_ENV === 'production';
+  const safeMessage =
+    isProd && status >= 500 && !mapped
+      ? 'Something went wrong. Please try again later.'
+      : message;
+
   res.status(status).json({
     success: false,
-    message,
+    message: safeMessage,
     ...(process.env.NODE_ENV === 'development' && err.stack && { stack: err.stack }),
   });
 }

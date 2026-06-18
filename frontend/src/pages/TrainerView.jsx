@@ -183,7 +183,7 @@ export default function TrainerView() {
     <div className="space-y-4 text-[var(--text)]">
       {/* Breadcrumb */}
       <div>
-        <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--text3)]">
+        <p className="font-arial text-[10px] tracking-widest uppercase text-[var(--text3)]">
           H / TRAINER CENTER + NOTIFICATIONS
         </p>
         <p className="mt-0.5 text-[11px] text-[var(--text2)]">
@@ -198,7 +198,7 @@ export default function TrainerView() {
           style={{ background: 'var(--tc-panel)', border: '1px solid var(--border)' }}
         >
           <div>
-            <h2 className="font-syne text-base font-semibold text-white">Trainers</h2>
+            <h2 className="font-arial text-base font-semibold text-white">Trainers</h2>
             <p className="text-[11px] text-[var(--text2)] mt-0.5">Tag - Auto Notify via Email & SMS</p>
           </div>
 
@@ -281,7 +281,7 @@ export default function TrainerView() {
           {selectedTrainer && (
             <>
               <div className="pt-2 border-t border-[var(--border)]">
-                <h3 className="font-syne text-[13px] font-semibold text-white mb-3">
+                <h3 className="font-arial text-[13px] font-semibold text-white mb-3">
                   Notify {selectedTrainer.name}
                 </h3>
                 <div className="flex flex-wrap gap-4">
@@ -319,7 +319,7 @@ export default function TrainerView() {
             >
               <TrainerAvatar name={selectedTrainer.name} index={trainers.findIndex((t) => t.id === selectedTrainerId)} />
               <div className="flex-1 min-w-0">
-                <h2 className="font-syne text-lg font-semibold text-white">{selectedTrainer.name}</h2>
+                <h2 className="font-arial text-lg font-semibold text-white">{selectedTrainer.name}</h2>
                 <p className="text-[12px] text-[var(--text2)]">{selectedTrainer.email}</p>
               </div>
               <div className="flex gap-2">
@@ -369,7 +369,7 @@ export default function TrainerView() {
               style={{ background: 'var(--tc-panel)', border: '1px solid var(--border)' }}
             >
               <div className="px-4 py-3 flex items-center justify-between border-b border-[var(--border)]">
-                <h3 className="font-syne text-[14px] font-semibold text-white">Assigned Interviews</h3>
+                <h3 className="font-arial text-[14px] font-semibold text-white">Assigned Interviews</h3>
                 <span className="text-[11px] text-[var(--text2)]">Showing {interviews.length} records</span>
               </div>
               <div className="divide-y divide-[var(--border)]">
@@ -504,7 +504,7 @@ export default function TrainerView() {
               className="rounded-lg border px-3 py-2.5 text-sm space-y-1"
               style={{ borderColor: 'var(--border)', background: 'rgba(155,93,255,0.08)' }}
             >
-              <p className="text-[10px] font-mono uppercase tracking-wide text-[var(--text3)]">
+              <p className="text-[10px] font-arial uppercase tracking-wide text-[var(--text3)]">
                 Student trainer review (from interview finish)
               </p>
               {activeInterviewForNotes.trainerReviewRating && (

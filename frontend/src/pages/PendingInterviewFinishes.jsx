@@ -49,8 +49,8 @@ export default function PendingInterviewFinishes() {
     <div className="space-y-4 text-[var(--text)]">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">Queue</p>
-          <h1 className="font-syne text-[20px] font-semibold">Interview finish submissions</h1>
+          <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">Queue</p>
+          <h1 className="font-arial text-[20px] font-semibold">Interview finish submissions</h1>
           <p className="text-sm text-[var(--text2)] mt-1">
             New finish forms update the interview immediately. This queue only shows older items still marked submitted (if
             any). Approve to apply them, or reject to leave the interview unchanged.
@@ -70,7 +70,7 @@ export default function PendingInterviewFinishes() {
         >
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-[var(--text3)] font-mono text-[10px] uppercase tracking-wider border-b" style={{ borderColor: 'var(--border)' }}>
+              <tr className="text-left text-[var(--text3)] font-arial text-[10px] uppercase tracking-wider border-b" style={{ borderColor: 'var(--border)' }}>
                 <th className="p-3">Student</th>
                 <th className="p-3">Interview</th>
                 <th className="p-3">Current</th>
@@ -94,7 +94,7 @@ export default function PendingInterviewFinishes() {
                     <div className="text-[10px] text-[var(--text3)]">{r.interviewRound}</div>
                   </td>
                   <td className="p-3 text-[var(--text2)]">{r.currentInterviewStatus}</td>
-                  <td className="p-3 font-mono text-[11px] text-[var(--violet)]">{r.proposedStatus}</td>
+                  <td className="p-3 font-arial text-[11px] text-[var(--violet)]">{r.proposedStatus}</td>
                   <td className="p-3 text-[var(--text2)] text-xs max-w-[220px]" title={r.proposedTrainersDisplay || ''}>
                     {r.proposedTrainersDisplay ?? '—'}
                   </td>

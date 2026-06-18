@@ -186,7 +186,7 @@
     margin: 0;
     background-color: var(--bg);
     color: var(--text);
-    font-family: 'Outfit', system-ui, sans-serif;
+    font-family: Arial, Helvetica, system-ui, sans-serif;
   }
 
   body::before {
