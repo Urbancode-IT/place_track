@@ -86,7 +86,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
         </div>
         <div className="flex items-center gap-1.5 flex-shrink min-w-0 max-w-[58%]">
           <span
-            className="uppercase font-arial text-[9px] font-semibold px-2 py-0.5 rounded-md shrink-0"
+            className="uppercase font-arial text-[9px] font-medium px-2 py-0.5 rounded-md shrink-0"
             style={{
               background: style.bg,
               border: `1px solid ${style.border}`,
@@ -117,7 +117,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
           {trainers.slice(0, 3).map((t, idx) => (
             <span
               key={t?.id ?? idx}
-              className="w-5 h-5 rounded-full flex items-center justify-center font-arial text-[9px] font-bold text-white border border-white/20 shrink-0"
+              className="w-5 h-5 rounded-full flex items-center justify-center font-arial text-[9px] font-medium text-white border border-white/20 shrink-0"
               style={{ background: getCircleColor(idx) }}
               title={t?.name}
             >

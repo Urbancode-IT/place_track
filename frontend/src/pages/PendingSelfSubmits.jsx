@@ -80,7 +80,7 @@ export default function PendingSelfSubmits() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Queue</p>
-          <h1 className="font-arial text-[20px] font-semibold">Student interview submissions</h1>
+          <h1 className="font-arial text-[20px] font-medium">Student interview submissions</h1>
           <p className="text-sm text-[var(--text2)] mt-1">
             Students submit via the link you share from their profile. Approve to add a real interview to the schedule and dashboard.
           </p>

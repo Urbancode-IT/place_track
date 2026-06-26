@@ -59,7 +59,7 @@ export function ActivityFeed({ items }) {
       style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="font-arial text-[12px] font-semibold text-[var(--text)]">
+        <span className="font-arial text-[12px] font-medium text-[var(--text)]">
           Activity Stream
         </span>
         <span className="font-arial text-[9px] text-[var(--text3)]">ALL</span>

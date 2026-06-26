@@ -43,7 +43,7 @@ export function Topbar() {
         <span className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
           01 ▸ DASHBOARD ▸ COMMAND CENTER
         </span>
-        <span className="font-arial text-[13px] font-bold text-[var(--text)]">
+        <span className="font-arial text-[13px] font-medium text-[var(--text)]">
           Command Center — Admin
         </span>
       </div>
@@ -87,7 +87,7 @@ export function Topbar() {
 
         <Button
           size="sm"
-          className="font-arial text-[11px] font-bold px-4 py-1.5 rounded-lg"
+          className="font-arial text-[11px] font-medium px-4 py-1.5 rounded-lg"
           style={{
             background: 'var(--cyan)',
             color: '#000',

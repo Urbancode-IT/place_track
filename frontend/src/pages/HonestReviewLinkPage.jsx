@@ -39,7 +39,7 @@ export default function HonestReviewLinkPage() {
     <>
     <div className="mx-auto max-w-3xl space-y-8 text-[var(--text)]">
       <div>
-        <h1 className="font-arial text-[22px] font-semibold">Student review link</h1>
+        <h1 className="font-arial text-[22px] font-medium">Student review link</h1>
       </div>
 
       <div>
@@ -56,7 +56,7 @@ export default function HonestReviewLinkPage() {
         className="rounded-2xl border p-6 space-y-4"
         style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'var(--border)' }}
       >
-        <h2 className="font-arial text-lg font-semibold">Recent submissions</h2>
+        <h2 className="font-arial text-lg font-medium">Recent submissions</h2>
         {listLoading ? (
           <Spinner size="sm" />
         ) : recentRows.length === 0 ? (

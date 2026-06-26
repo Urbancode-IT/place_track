@@ -58,29 +58,35 @@ export async function applyOpen(req, res, next) {
 }
 
 /**
- * List interviews for a specific course and date (public).
+ * List interviews for a date (public). Course is optional — when omitted, returns
+ * interviews across all courses so the "view schedule" button shows everything.
+ * Includes both pending (SUBMITTED) and APPROVED requests.
  */
 export async function listInterviews(req, res, next) {
   try {
     const { course, date } = req.query;
-    if (!course || !date) {
-      return success(res, [], 'Select course and date to view schedule.');
-    }
-
-    const startOfDay = new Date(date);
+    const targetDate = date ? new Date(date) : new Date();
+    const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
+    const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 
+    const params = [startOfDay.toISOString(), endOfDay.toISOString()];
+    let courseFilter = '';
+    if (course) {
+      params.push(course);
+      courseFilter = `AND s.course = $${params.length}`;
+    }
+
     const r = await query(
-      `SELECT r.id, r.company, r.round, r."timeSlot", r.status, s.name as "studentName"
+      `SELECT r.id, r.company, r.round, r."timeSlot", r.status, s.name as "studentName", s.course as "studentCourse"
        FROM "StudentInterviewRequest" r
        JOIN "Student" s ON s.id = r."studentId"
-       WHERE s.course = $1 
-         AND r.date >= $2 AND r.date <= $3
+       WHERE r.date >= $1 AND r.date <= $2
          AND r.status IN ('SUBMITTED', 'APPROVED')
+         ${courseFilter}
        ORDER BY r."timeSlot" ASC`,
-      [course, startOfDay.toISOString(), endOfDay.toISOString()]
+      params
     );
 
     return success(res, r.rows);

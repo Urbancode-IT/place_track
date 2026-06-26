@@ -30,7 +30,7 @@ export default function Reference() {
         <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
           Reference
         </p>
-        <h1 className="mt-1 font-arial text-[20px] font-semibold">Reference</h1>
+        <h1 className="mt-1 font-arial text-[20px] font-medium">Reference</h1>
       </div>
 
       {/* Design system */}
@@ -38,7 +38,7 @@ export default function Reference() {
         className="rounded-2xl p-5"
         style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
       >
-        <h2 className="font-arial text-[14px] font-semibold text-[var(--text)] mb-4">
+        <h2 className="font-arial text-[14px] font-medium text-[var(--text)] mb-4">
           Design system
         </h2>
 

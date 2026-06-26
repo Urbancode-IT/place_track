@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { applyInterviewFinishOutcome } from '../services/interviewFinishApply.service.js';
+import { notifyGoogleChatInterviewOutcomeApproved } from '../services/googleChatInterviewNotify.service.js';
 
 export async function list(req, res, next) {
   try {
@@ -61,6 +62,10 @@ export async function approve(req, res, next) {
        SET status = 'APPROVED', "reviewedAt" = now(), "reviewedByUserId" = $1, "updatedAt" = now()
        WHERE id = $2`,
       [req.user.id, id]
+    );
+
+    notifyGoogleChatInterviewOutcomeApproved(row.interviewId, proposedStatus).catch((e) =>
+      console.error('[google-chat] interview outcome approve notify:', e)
     );
 
     return success(res, { interview: u, proposedStatus }, 'Approved — interview status updated');

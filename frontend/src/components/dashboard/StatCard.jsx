@@ -18,7 +18,7 @@ export function StatCard({ title, value, sub, progress, variant = 'mini', classN
           <span className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--cyan)]">
             {title}
           </span>
-          <span className="font-arial text-[42px] leading-none font-bold text-[var(--text)]">
+          <span className="font-arial text-[42px] leading-none font-medium text-[var(--text)]">
             {value}
           </span>
           {sub && (
@@ -46,7 +46,7 @@ export function StatCard({ title, value, sub, progress, variant = 'mini', classN
         {title}
       </span>
       <div className="mt-1">
-        <span className="font-arial text-[26px] font-bold text-[var(--text)]">
+        <span className="font-arial text-[26px] font-medium text-[var(--text)]">
           {value}
         </span>
       </div>

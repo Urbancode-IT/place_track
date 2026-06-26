@@ -21,7 +21,7 @@ export default function Settings() {
     <div className="space-y-6 text-[var(--text)]">
       <div>
         <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Settings</p>
-        <h1 className="font-arial text-[22px] font-semibold">Workspace</h1>
+        <h1 className="font-arial text-[22px] font-medium">Workspace</h1>
         <p className="text-sm text-[var(--text2)] mt-1">
           Notification toggles live on the <Link to="/notifications" className="text-[var(--cyan)] hover:underline">Notifications</Link> page.
         </p>
@@ -31,7 +31,7 @@ export default function Settings() {
         className="rounded-2xl border p-6 space-y-4"
         style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
       >
-        <h2 className="font-arial text-sm font-semibold">Email delivery (trainers)</h2>
+        <h2 className="font-arial text-sm font-medium">Email delivery (trainers)</h2>
         <p className="text-xs text-[var(--text3)] leading-relaxed">
           Interview emails use SMTP from <span className="font-arial text-[var(--text2)]">placetrack/backend/.env</span>. If mail never arrives, check this first.
         </p>

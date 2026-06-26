@@ -160,7 +160,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--green)' }}
             />
-            <span className="font-arial text-[13px] font-semibold text-[var(--text)]">
+            <span className="font-arial text-[13px] font-medium text-[var(--text)]">
               Today&apos;s Live Interview Board
             </span>
           </div>
@@ -168,7 +168,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
           <select
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
-            className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[var(--cyan)] focus:outline-none focus:border-[var(--cyan)] transition-all cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
+            className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2.5 py-1 text-[9px] font-medium uppercase tracking-wider text-[var(--cyan)] focus:outline-none focus:border-[var(--cyan)] transition-all cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
           >
             {courses.map((c) => (
               <option key={c} value={c} className="bg-[#0f172a] text-white">
@@ -177,7 +177,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
             ))}
           </select>
           <label
-            className="inline-flex items-center gap-1.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-[var(--cyan)] cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
+            className="inline-flex items-center gap-1.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2 py-1 text-[9px] font-medium uppercase tracking-wider text-[var(--cyan)] cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
             title="Filter board by date"
           >
             <CalendarIcon className="opacity-90" />
@@ -225,7 +225,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center font-arial text-[12px] font-bold text-white/90 border border-white/10 shrink-0"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center font-arial text-[12px] font-medium text-white/90 border border-white/10 shrink-0"
                       style={{
                         background: `linear-gradient(135deg, ${getCircleColor(idx)}55, ${getCircleColor(idx)}22)`,
                       }}
@@ -261,7 +261,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                   <div className="flex flex-col gap-1 items-start">
                     <span>{i.timeSlot || '—'}</span>
                     {isClash && (
-                      <span className="px-1.5 py-0.5 rounded text-[8px] bg-[var(--pink)] text-white font-bold animate-pulse">
+                      <span className="px-1.5 py-0.5 rounded text-[8px] bg-[var(--pink)] text-white font-medium animate-pulse">
                         CLASH
                       </span>
                     )}
@@ -276,7 +276,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                       .map((t, tIdx) => (
                         <span
                           key={t?.id ?? tIdx}
-                          className="w-6 h-6 rounded-full flex items-center justify-center font-arial text-[9px] font-bold text-black border border-white/20"
+                          className="w-6 h-6 rounded-full flex items-center justify-center font-arial text-[9px] font-medium text-black border border-white/20"
                           style={{
                             background: getCircleColor(tIdx),
                             boxShadow: '0 0 14px rgba(0,0,0,0.25)',

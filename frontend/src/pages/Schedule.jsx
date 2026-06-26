@@ -131,7 +131,7 @@ export default function Schedule() {
             02 ▸ KANBAN SCHEDULE BOARD
           </p>
        
-          <h1 className="mt-1 font-arial text-[20px] font-semibold text-[var(--text)]">
+          <h1 className="mt-1 font-arial text-[20px] font-medium text-[var(--text)]">
             Interview Pipeline
           </h1>
           <p className="font-arial text-[11px] text-[var(--text2)] mt-0.5">
@@ -149,7 +149,7 @@ export default function Schedule() {
           </Button>
           <Button
             size="sm"
-            className="font-arial text-[11px] font-extrabold px-4 py-1.5 rounded-lg"
+            className="font-arial text-[11px] font-medium px-4 py-1.5 rounded-lg"
             style={{
               background: 'var(--cyan)',
               color: '#000',
@@ -177,7 +177,7 @@ export default function Schedule() {
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: 'var(--green)', boxShadow: '0 0 10px var(--green-dim)' }}
             />
-            <span className="font-arial text-[13px] font-semibold text-[var(--text)]">
+            <span className="font-arial text-[13px] font-medium text-[var(--text)]">
               Interview Pipeline
             </span>
             <span className="font-arial text-[10px] text-[var(--text3)]">

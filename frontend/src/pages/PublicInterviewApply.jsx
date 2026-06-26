@@ -109,12 +109,12 @@ export default function PublicInterviewApply() {
   const round = useWatch({ control, name: 'round' });
 
   const schedQuery = useQuery({
-    queryKey: ['publicInterviews', course, date],
+    queryKey: ['publicInterviews', date],
     queryFn: () => {
       const targetDate = date || new Date().toISOString().split('T')[0];
-      return publicSelfInterviewApi.listInterviews(course, targetDate).then((r) => r.data?.data || []);
+      return publicSelfInterviewApi.listInterviews(undefined, targetDate).then((r) => r.data?.data || []);
     },
-    enabled: !!course,
+    enabled: showShed,
   });
 
   const timeConflicts = useMemo(() => {
@@ -154,7 +154,7 @@ export default function PublicInterviewApply() {
           className="max-w-md w-full rounded-2xl p-8 text-center space-y-3"
           style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
         >
-          <h1 className="font-arial text-xl font-semibold">Thank you</h1>
+          <h1 className="font-arial text-xl font-medium">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
             {submitMut.data?.message || 'Submitted. Your placement team will review it.'}
           </p>
@@ -182,14 +182,14 @@ export default function PublicInterviewApply() {
         <div className="flex justify-between items-start">
           <div>
             <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">PlaceTrack</p>
-            <h1 className="mt-1 font-arial text-[22px] font-semibold">Interview details</h1>
+            <h1 className="mt-1 font-arial text-[22px] font-medium">Interview details</h1>
             <div className="flex items-center gap-3 mt-2">
               <p className="text-sm text-[var(--text2)]">
                 Use your <strong className="text-[var(--text)]">Email or Phone Number</strong> on file.
               </p>
               <Link
                 to="/interview/finish"
-                className="text-[10px] font-bold text-[var(--cyan)] hover:text-white transition-colors bg-[rgba(0,212,255,0.1)] px-2 py-1 rounded-md border border-[rgba(0,212,255,0.2)]"
+                className="text-[10px] font-medium text-[var(--cyan)] hover:text-white transition-colors bg-[rgba(0,212,255,0.1)] px-2 py-1 rounded-md border border-[rgba(0,212,255,0.2)]"
               >
                 Finished? Record Outcome →
               </Link>
@@ -210,12 +210,10 @@ export default function PublicInterviewApply() {
 
         {showShed && (
           <div className="bg-[rgba(0,0,0,0.2)] border border-[var(--border)] rounded-xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--cyan)]">
-              {course} Schedule — {date || 'Today'}
+            <h3 className="text-xs font-medium uppercase tracking-wider text-[var(--cyan)]">
+              All Interviews — {date || 'Today'}
             </h3>
-            {!course ? (
-              <p className="text-[10px] text-[var(--text3)]">Please select a course above to view the schedule.</p>
-            ) : schedQuery.isLoading ? (
+            {schedQuery.isLoading ? (
               <div className="flex justify-center py-4"><Spinner size="sm" /></div>
             ) : schedQuery.data?.length === 0 ? (
               <p className="text-[10px] text-[var(--text3)]">No interviews scheduled yet for this selection.</p>
@@ -234,13 +232,13 @@ export default function PublicInterviewApply() {
                         ? 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15 ring-1 ring-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
                         : 'bg-[rgba(255,255,255,0.03)] border-[var(--border)] hover:bg-[rgba(255,255,255,0.05)]'
                       }`}>
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg border border-white/5 ${colorClass}`}>
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-medium text-lg border border-white/5 ${colorClass}`}>
                         {initial}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[var(--text)] truncate">{item.studentName}</p>
-                        <p className="text-[11px] text-[var(--text2)] truncate">{item.company} • <span className="text-[var(--text3)]">{course}</span></p>
+                        <p className="text-sm font-medium text-[var(--text)] truncate">{item.studentName}</p>
+                        <p className="text-[11px] text-[var(--text2)] truncate">{item.company} • <span className="text-[var(--text3)]">{item.studentCourse}</span></p>
                       </div>
 
                       <div className="flex flex-col items-end gap-1.5 min-w-[80px]">
@@ -249,7 +247,7 @@ export default function PublicInterviewApply() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] font-arial text-[var(--text2)]">{item.timeSlot}</span>
-                          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-widest ${item.status === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-primary/80 text-white'
+                          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-widest ${item.status === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-primary/80 text-white'
                             }`}>
                             {item.status === 'APPROVED' ? 'READY' : 'PENDING'}
                           </span>

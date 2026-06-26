@@ -142,7 +142,7 @@ function NavItem({ item, end, collapsed }) {
           </span>
           {!collapsed && (
             <div className="flex min-w-0 flex-col leading-tight">
-              <span className="text-sm font-semibold">{item.label}</span>
+              <span className="text-sm font-medium">{item.label}</span>
               <span className="text-[10px] font-arial tracking-wide text-[var(--text3)]">{sub}</span>
             </div>
           )}
@@ -205,11 +205,11 @@ export function Sidebar() {
                 boxShadow: '0 0 18px rgba(0,212,255,0.40)',
               }}
             >
-              <span className="font-arial text-sm font-extrabold text-black">PT</span>
+              <span className="font-arial text-sm font-medium text-black">PT</span>
             </div>
             {!collapsed && (
               <div className="min-w-0 flex flex-col">
-                <span className="font-arial text-sm font-extrabold tracking-tight">PlaceTrack</span>
+                <span className="font-arial text-sm font-medium tracking-tight">PlaceTrack</span>
                 <span className="font-arial text-[10px] tracking-[0.16em] text-[var(--text3)]">PLACEMENT PORTAL</span>
               </div>
             )}
@@ -269,7 +269,7 @@ export function Sidebar() {
         title={collapsed ? `${user?.name || 'Admin'} · ${user?.role || 'ADMIN'}` : undefined}
       >
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-arial text-[12px] font-extrabold"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-arial text-[12px] font-medium"
           style={{
             background: 'linear-gradient(135deg,#00D4FF,#9B5DFF)',
             color: '#000',
@@ -280,7 +280,7 @@ export function Sidebar() {
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <div className="truncate text-sm font-semibold">{user?.name || 'Admin'}</div>
+            <div className="truncate text-sm font-medium">{user?.name || 'Admin'}</div>
             <div className="truncate font-arial text-[10px] tracking-wide text-[var(--text3)]">{user?.role || 'ADMIN'}</div>
           </div>
         )}

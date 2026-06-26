@@ -64,3 +64,41 @@ export async function notifyGoogleChatInterviewScheduled(interviewId) {
 export async function notifyGoogleChatTodaysInterviewIfApplicable(interviewId) {
   return notifyGoogleChatInterviewScheduled(interviewId);
 }
+
+const STATUS_LABEL = {
+  SHORTLISTED: 'Shortlisted',
+  REJECTED: 'Rejected',
+  RESCHEDULED: 'Rescheduled',
+  SCHEDULED: 'Scheduled',
+  AWAITING_RESPONSE: 'Awaiting response',
+};
+
+/**
+ * Google Chat ping when an admin approves a trainer's submitted interview outcome
+ * (Pending Interview Finishes → Approve), i.e. the interview status becomes final.
+ */
+export async function notifyGoogleChatInterviewOutcomeApproved(interviewId, proposedStatus) {
+  if (!process.env.GOOGLE_CHAT_WEBHOOK_URL?.trim()) return;
+
+  const r = await query(
+    `SELECT i.*, s.name as "studentName", s.course
+     FROM "Interview" i
+     JOIN "Student" s ON s.id = i."studentId"
+     WHERE i.id = $1`,
+    [interviewId]
+  );
+  const row = r.rows[0];
+  if (!row) return;
+
+  const statusLabel = STATUS_LABEL[proposedStatus] || proposedStatus;
+  const dateLabel = row.date ? new Date(row.date).toLocaleDateString('en-IN', { timeZone: TZ }) : '—';
+
+  let msg = `*Interview outcome approved — ${statusLabel}*\n\n`;
+  msg += `• ${row.studentName} (${row.course}) - ${row.company}\n`;
+  msg += `  _Round:_ ${row.round}\n`;
+  msg += `  _Date:_ ${dateLabel}${row.timeSlot ? ` · ${row.timeSlot}` : ''}\n`;
+  msg += `\n${process.env.FRONTEND_URL || 'http://localhost:5173'}`;
+
+  const result = await sendToGoogleChat(msg);
+  if (!result.ok) console.error('[google-chat] interview outcome approve notify failed:', result.error);
+}

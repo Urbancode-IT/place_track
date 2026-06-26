@@ -114,9 +114,9 @@ export default function Login() {
               boxShadow: '0 0 0 1px rgba(54,153,255,0.06) inset, 0 14px 40px rgba(54,153,255,0.10)',
             }}
           >
-            <span className="font-arial text-lg font-extrabold tracking-tight text-primary">PT</span>
+            <span className="font-arial text-lg font-medium tracking-tight text-primary">PT</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">PlaceTrack</h1>
+          <h1 className="text-3xl font-medium tracking-tight">PlaceTrack</h1>
           <p className="mt-1 text-sm text-muted">urbancode</p>
         </div>
 

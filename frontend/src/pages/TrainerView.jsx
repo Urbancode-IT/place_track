@@ -37,7 +37,7 @@ function TrainerAvatar({ name, index = 0, size = 'md' }) {
   const sizeClass = size === 'sm' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
     <div
-      className={cn('rounded-full flex items-center justify-center font-semibold text-white shrink-0', sizeClass)}
+      className={cn('rounded-full flex items-center justify-center font-medium text-white shrink-0', sizeClass)}
       style={{ backgroundColor: bg }}
     >
       {getInitials(name)}
@@ -198,7 +198,7 @@ export default function TrainerView() {
           style={{ background: 'var(--tc-panel)', border: '1px solid var(--border)' }}
         >
           <div>
-            <h2 className="font-arial text-base font-semibold text-white">Trainers</h2>
+            <h2 className="font-arial text-base font-medium text-white">Trainers</h2>
             <p className="text-[11px] text-[var(--text2)] mt-0.5">Tag - Auto Notify via Email & SMS</p>
           </div>
 
@@ -281,7 +281,7 @@ export default function TrainerView() {
           {selectedTrainer && (
             <>
               <div className="pt-2 border-t border-[var(--border)]">
-                <h3 className="font-arial text-[13px] font-semibold text-white mb-3">
+                <h3 className="font-arial text-[13px] font-medium text-white mb-3">
                   Notify {selectedTrainer.name}
                 </h3>
                 <div className="flex flex-wrap gap-4">
@@ -319,7 +319,7 @@ export default function TrainerView() {
             >
               <TrainerAvatar name={selectedTrainer.name} index={trainers.findIndex((t) => t.id === selectedTrainerId)} />
               <div className="flex-1 min-w-0">
-                <h2 className="font-arial text-lg font-semibold text-white">{selectedTrainer.name}</h2>
+                <h2 className="font-arial text-lg font-medium text-white">{selectedTrainer.name}</h2>
                 <p className="text-[12px] text-[var(--text2)]">{selectedTrainer.email}</p>
               </div>
               <div className="flex gap-2">
@@ -356,7 +356,7 @@ export default function TrainerView() {
                   style={{ background: 'var(--tc-panel)', border: '1px solid var(--border)' }}
                 >
                   <p className="text-[11px] text-[var(--text2)] uppercase tracking-wide">{m.label}</p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: m.color }}>
+                  <p className="text-2xl font-medium mt-1" style={{ color: m.color }}>
                     {m.value}
                   </p>
                 </div>
@@ -369,7 +369,7 @@ export default function TrainerView() {
               style={{ background: 'var(--tc-panel)', border: '1px solid var(--border)' }}
             >
               <div className="px-4 py-3 flex items-center justify-between border-b border-[var(--border)]">
-                <h3 className="font-arial text-[14px] font-semibold text-white">Assigned Interviews</h3>
+                <h3 className="font-arial text-[14px] font-medium text-white">Assigned Interviews</h3>
                 <span className="text-[11px] text-[var(--text2)]">Showing {interviews.length} records</span>
               </div>
               <div className="divide-y divide-[var(--border)]">

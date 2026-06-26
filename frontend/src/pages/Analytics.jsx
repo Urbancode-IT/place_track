@@ -42,10 +42,10 @@ export default function Analytics() {
 
   return (
     <div className="space-y-8 text-[var(--text)]">
-      <h1 className="text-2xl font-bold text-[var(--text)]">Analytics</h1>
+      <h1 className="text-2xl font-medium text-[var(--text)]">Analytics</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl border p-4" style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}>
-          <h3 className="font-semibold mb-4 text-[var(--text)]">Status distribution</h3>
+          <h3 className="font-medium mb-4 text-[var(--text)]">Status distribution</h3>
           {statusData.length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -62,7 +62,7 @@ export default function Analytics() {
           )}
         </div>
         <div className="rounded-xl border p-4" style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}>
-          <h3 className="font-semibold mb-4 text-[var(--text)]">Placement trend</h3>
+          <h3 className="font-medium mb-4 text-[var(--text)]">Placement trend</h3>
           {placementTrend.length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -81,7 +81,7 @@ export default function Analytics() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl border p-4" style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}>
-          <h3 className="font-semibold mb-4 text-[var(--text)]">Top companies (selected)</h3>
+          <h3 className="font-medium mb-4 text-[var(--text)]">Top companies (selected)</h3>
           <ul className="space-y-2">
             {topCompanies.map((c) => (
               <li key={c.company} className="flex justify-between">
@@ -92,7 +92,7 @@ export default function Analytics() {
           </ul>
         </div>
         <div className="rounded-xl border p-4" style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}>
-          <h3 className="font-semibold mb-4 text-[var(--text)]">Trainer performance</h3>
+          <h3 className="font-medium mb-4 text-[var(--text)]">Trainer performance</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm text-[var(--text)]">
               <thead>

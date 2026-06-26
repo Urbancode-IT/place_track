@@ -24,7 +24,7 @@ function StudentCardInner({ student }) {
       <div className="flex items-start gap-3">
         <Avatar src={student.photoUrl} name={student.name} size="lg" />
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-[var(--text)] truncate">{student.name}</h3>
+          <h3 className="font-medium text-[var(--text)] truncate">{student.name}</h3>
           <div className="flex items-center gap-1.5 flex-wrap mt-1">
             <Badge className={COURSE_COLORS[student.course] || 'bg-gray-100'}>{student.course}</Badge>
             {eff && pipelineLabel && (

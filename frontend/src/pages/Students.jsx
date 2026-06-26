@@ -56,7 +56,7 @@ export default function Students() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Students</h1>
+        <h1 className="text-2xl font-medium">Students</h1>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => downloadStudentsCsv(listParams).catch(() => {})}>Export CSV</Button>
           <Button onClick={() => setModalOpen(true)}>+ Add Student</Button>

@@ -30,7 +30,7 @@ export function KanbanColumn({ column, items, renderCard }) {
           </p>
         </div>
         <span
-          className="font-arial text-[11px] font-semibold px-2 py-0.5 rounded shrink-0"
+          className="font-arial text-[11px] font-medium px-2 py-0.5 rounded shrink-0"
           style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid var(--border)',

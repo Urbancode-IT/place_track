@@ -159,7 +159,7 @@ export default function PublicInterviewFinish() {
           className="max-w-md w-full rounded-2xl p-8 text-center space-y-3"
           style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
         >
-          <h1 className="font-arial text-xl font-semibold">Thank you</h1>
+          <h1 className="font-arial text-xl font-medium">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
             {submitMut.data?.message || 'Your interview row on the schedule is updated.'}
           </p>
@@ -177,14 +177,14 @@ export default function PublicInterviewFinish() {
         <div className="flex justify-between items-start">
           <div>
             <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-            <h1 className="mt-1 font-arial text-[22px] font-semibold">Interview finish</h1>
+            <h1 className="mt-1 font-arial text-[22px] font-medium">Interview finish</h1>
             <div className="flex items-center gap-3 mt-2">
               <p className="text-sm text-[var(--text2)]">
                 Record the outcome of your completed interview.
               </p>
               <Link 
                 to="/interview/apply" 
-                className="text-[10px] font-bold text-[var(--violet)] hover:text-white transition-colors bg-[rgba(155,93,255,0.1)] px-2 py-1 rounded-md border border-[rgba(155,93,255,0.2)]"
+                className="text-[10px] font-medium text-[var(--violet)] hover:text-white transition-colors bg-[rgba(155,93,255,0.1)] px-2 py-1 rounded-md border border-[rgba(155,93,255,0.2)]"
               >
                 Need to apply? →
               </Link>
@@ -269,12 +269,12 @@ export default function PublicInterviewFinish() {
               style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.25)' }}
             >
               <div className="flex flex-wrap items-start justify-between gap-2 gap-y-1">
-                <p className="font-semibold text-[var(--text)]">Matched: {preview.studentName}</p>
+                <p className="font-medium text-[var(--text)]">Matched: {preview.studentName}</p>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={() => setTrainersEditable(true)}
-                    className="text-xs font-semibold uppercase tracking-wide px-2 py-1 rounded-lg transition-colors hover:opacity-90"
+                    className="text-xs font-medium uppercase tracking-wide px-2 py-1 rounded-lg transition-colors hover:opacity-90"
                     style={{
                       color: 'var(--cyan)',
                       border: '1px solid rgba(0,212,255,0.45)',

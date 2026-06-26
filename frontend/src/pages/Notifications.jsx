@@ -24,7 +24,7 @@ export default function Notifications() {
           <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
             04 ▸ Alerts Center
           </p>
-          <h1 className="mt-1 font-arial text-[18px] font-semibold">Alerts & notifications</h1>
+          <h1 className="mt-1 font-arial text-[18px] font-medium">Alerts & notifications</h1>
         </div>
         <Button
           variant="secondary"
