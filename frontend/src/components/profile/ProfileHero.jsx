@@ -43,7 +43,7 @@ export function ProfileHero({ student, actions = null }) {
       )}
 
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-0 w-1/3 rounded-2xl overflow-hidden"
+        className="pointer-events-none absolute inset-y-0 right-0 z-0 w-1/3 rounded-2xl overflow-hidden hidden sm:block"
         style={{
           background:
             'radial-gradient(circle at 0% 0%, rgba(0,212,255,0.3), transparent 55%)',

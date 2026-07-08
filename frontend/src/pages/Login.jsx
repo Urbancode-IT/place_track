@@ -106,15 +106,8 @@ export default function Login() {
         }}
       >
         <div className="mb-6 text-center">
-          <div
-            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border"
-            style={{
-              background: 'rgba(54,153,255,0.10)',
-              borderColor: 'rgba(54,153,255,0.25)',
-              boxShadow: '0 0 0 1px rgba(54,153,255,0.06) inset, 0 14px 40px rgba(54,153,255,0.10)',
-            }}
-          >
-            <span className="font-arial text-lg font-medium tracking-tight text-primary">PT</span>
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center">
+            <img src="/placetrack-icon.png" alt="Placetrack" className="h-12 w-12 object-contain drop-shadow-[0_0_10px_rgba(0,212,255,0.35)]" />
           </div>
           <h1 className="text-3xl font-medium tracking-tight">PlaceTrack</h1>
           <p className="mt-1 text-sm text-muted">urbancode</p>

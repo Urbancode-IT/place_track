@@ -106,7 +106,7 @@ const secondaryNav = [
   { to: '/settings', icon: 'settings', label: 'Settings' },
 ];
 
-function NavItem({ item, end, collapsed }) {
+function NavItem({ item, end, collapsed, onNavigate }) {
   const sub =
     item.to === '/' ? 'OVERVIEW' : item.to.replace(/^\//, '').replace(/\//g, '-').toUpperCase();
 
@@ -114,6 +114,7 @@ function NavItem({ item, end, collapsed }) {
     <NavLink
       to={item.to}
       end={end}
+      onClick={onNavigate}
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         [
@@ -166,6 +167,8 @@ export function Sidebar() {
   const user = useAuthStore((s) => s.user);
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggleSidebarCollapsed = useUIStore((s) => s.toggleSidebarCollapsed);
+  const mobileOpen = useUIStore((s) => s.sidebarMobileOpen);
+  const closeSidebarMobile = useUIStore((s) => s.closeSidebarMobile);
 
   const initials =
     user?.name
@@ -180,9 +183,20 @@ export function Sidebar() {
     return true;
   };
 
+  const widthClass = collapsed ? 'w-64 px-4 md:w-[4.5rem] md:px-2' : 'w-64 px-4';
+  const translateClass = mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0';
+
   return (
-    <aside
-      className={`fixed left-0 top-0 z-40 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-[width] duration-200 ease-out ${collapsed ? 'w-[4.5rem] px-2' : 'w-64 px-4'}`}
+    <>
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={closeSidebarMobile}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+      className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-transform duration-200 ease-out md:transition-[width] ${translateClass} ${widthClass}`}
       style={{
         background: 'rgba(10,13,24,0.70)',
         backdropFilter: 'blur(18px)',
@@ -200,12 +214,9 @@ export function Sidebar() {
           <div className={`flex min-w-0 items-center gap-3 ${collapsed ? '' : 'flex-1'}`}>
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-              style={{
-                background: 'linear-gradient(135deg,#00D4FF,#9B5DFF)',
-                boxShadow: '0 0 18px rgba(0,212,255,0.40)',
-              }}
+              style={{ filter: 'drop-shadow(0 0 10px rgba(0,212,255,0.40))' }}
             >
-              <span className="font-arial text-sm font-medium text-black">PT</span>
+              <img src="/placetrack-icon.png" alt="Placetrack" className="h-10 w-10 object-contain" />
             </div>
             {!collapsed && (
               <div className="min-w-0 flex flex-col">
@@ -245,7 +256,7 @@ export function Sidebar() {
           )}
           <nav className="flex flex-col gap-1">
             {mainNav.filter(canSee).map((item) => (
-              <NavItem key={item.to} item={item} end={item.to === '/'} collapsed={collapsed} />
+              <NavItem key={item.to} item={item} end={item.to === '/'} collapsed={collapsed} onNavigate={closeSidebarMobile} />
             ))}
           </nav>
         </div>
@@ -256,7 +267,7 @@ export function Sidebar() {
           )}
           <nav className="flex flex-col gap-1">
             {secondaryNav.filter(canSee).map((item) => (
-              <NavItem key={item.to} item={item} collapsed={collapsed} />
+              <NavItem key={item.to} item={item} collapsed={collapsed} onNavigate={closeSidebarMobile} />
             ))}
           </nav>
         </div>
@@ -285,6 +296,7 @@ export function Sidebar() {
           </div>
         )}
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

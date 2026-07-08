@@ -249,7 +249,7 @@ export default function Schedule() {
           <>
             {/* Columns with drag and drop */}
             <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-              <div className="flex gap-3 overflow-x-auto pb-2">
+              <div className="flex gap-3 overflow-x-auto pb-2 items-start">
                 {COLUMN_CONFIG.map((col) => (
                   <KanbanColumn
                     key={col.id}

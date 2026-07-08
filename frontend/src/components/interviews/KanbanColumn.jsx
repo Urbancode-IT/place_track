@@ -44,7 +44,7 @@ export function KanbanColumn({ column, items, renderCard }) {
       {/* Droppable card list */}
       <div
         ref={setNodeRef}
-        className="space-y-2 min-h-[120px] rounded-xl transition-colors"
+        className="space-y-2 min-h-[120px] max-h-[65vh] overflow-y-auto rounded-xl transition-colors pr-0.5"
         style={{
           background: isOver ? 'rgba(0,212,255,0.04)' : 'transparent',
         }}

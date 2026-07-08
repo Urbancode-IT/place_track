@@ -14,8 +14,9 @@ import { useNotificationStore } from '@/store/notification.store';
 export default function PendingSelfSubmits() {
   const qc = useQueryClient();
   const addToast = useNotificationStore((s) => s.addToast);
-  const [approveRow, setApproveRow] = useState(null);
+  const [approveTargets, setApproveTargets] = useState(null); // array of rows being approved, or null
   const [trainerIds, setTrainerIds] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['self-interview-requests', { status: 'SUBMITTED' }],
@@ -24,47 +25,63 @@ export default function PendingSelfSubmits() {
   const { data: trainersRes } = useQuery({
     queryKey: ['trainers'],
     queryFn: () => trainerApi.list().then((r) => r.data),
-    enabled: Boolean(approveRow),
+    enabled: Boolean(approveTargets),
   });
 
   const rows = data?.data || [];
   const trainers = (trainersRes?.data || []).map((t) => ({ value: t.id, label: t.name }));
 
+  const allSelected = rows.length > 0 && selectedIds.length === rows.length;
+  const toggleSelectAll = () => setSelectedIds(allSelected ? [] : rows.map((r) => r.id));
+  const toggleSelectOne = (id) =>
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
   const approveMut = useMutation({
-    mutationFn: ({ id, trainerIds: tids }) =>
-      selfInterviewRequestApi.approve(id, { trainerIds: tids }),
-    onSuccess: () => {
+    mutationFn: ({ ids, trainerIds: tids }) =>
+      Promise.all(ids.map((id) => selfInterviewRequestApi.approve(id, { trainerIds: tids }))),
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['self-interview-requests'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
       qc.invalidateQueries({ queryKey: ['interviews'] });
       addToast({
-        message: 'Approved — interview is on Today\'s Live Interview Board (dashboard)',
+        message:
+          variables.ids.length > 1
+            ? `${variables.ids.length} interviews approved — added to Today's Live Interview Board`
+            : 'Approved — interview is on Today\'s Live Interview Board (dashboard)',
         type: 'success',
       });
-      setApproveRow(null);
+      setApproveTargets(null);
       setTrainerIds([]);
+      setSelectedIds((prev) => prev.filter((id) => !variables.ids.includes(id)));
     },
     onError: (e) => addToast({ message: e?.response?.data?.message || 'Approve failed', type: 'error' }),
   });
 
   const rejectMut = useMutation({
-    mutationFn: (id) => selfInterviewRequestApi.reject(id),
-    onSuccess: () => {
+    mutationFn: (ids) => Promise.all(ids.map((id) => selfInterviewRequestApi.reject(id))),
+    onSuccess: (_data, ids) => {
       qc.invalidateQueries({ queryKey: ['self-interview-requests'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
-      addToast({ message: 'Request rejected', type: 'success' });
+      addToast({ message: ids.length > 1 ? `${ids.length} requests rejected` : 'Request rejected', type: 'success' });
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
     },
     onError: (e) => addToast({ message: e?.response?.data?.message || 'Reject failed', type: 'error' }),
   });
 
-  const openApprove = (row) => {
+  const openApprove = (targetRows) => {
     setTrainerIds([]);
-    setApproveRow(row);
+    setApproveTargets(targetRows);
   };
 
   const confirmApprove = () => {
-    if (!approveRow) return;
-    approveMut.mutate({ id: approveRow.id, trainerIds });
+    if (!approveTargets?.length) return;
+    approveMut.mutate({ ids: approveTargets.map((r) => r.id), trainerIds });
+  };
+
+  const rejectIds = (ids) => {
+    if (ids.length === 0) return;
+    const msg = ids.length > 1 ? `Reject ${ids.length} selected submissions?` : 'Reject this submission?';
+    if (window.confirm(msg)) rejectMut.mutate(ids);
   };
 
   if (isLoading) {
@@ -93,66 +110,112 @@ export default function PendingSelfSubmits() {
       {rows.length === 0 ? (
         <p className="text-[var(--text3)] text-sm py-8">No pending submissions.</p>
       ) : (
-        <div
-          className="rounded-2xl border overflow-hidden"
-          style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
-        >
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-[var(--text3)] font-arial text-[10px] uppercase tracking-wider border-b" style={{ borderColor: 'var(--border)' }}>
-                <th className="p-3">Student</th>
-                <th className="p-3">Company</th>
-                <th className="p-3">Round</th>
-                <th className="p-3">When</th>
-                <th className="p-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
-                  <td className="p-3">
-                    <Link className="text-[var(--cyan)] hover:underline" to={`/students/${r.studentId}`}>
-                      {r.studentName}
-                    </Link>
-                    <div className="text-[10px] text-[var(--text3)]">{r.course}</div>
-                  </td>
-                  <td className="p-3">{r.company}</td>
-                  <td className="p-3">{r.round}</td>
-                  <td className="p-3 text-[var(--text2)]">
-                    {r.date ? format(new Date(r.date), 'MMM d, yyyy') : '—'} · {r.timeSlot || '—'}
-                  </td>
-                  <td className="p-3 text-right space-x-2">
-                    <Button size="sm" variant="secondary" onClick={() => openApprove(r)}>
-                      Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      loading={rejectMut.isPending}
-                      onClick={() => {
-                        if (window.confirm('Reject this submission?')) rejectMut.mutate(r.id);
-                      }}
-                    >
-                      Reject
-                    </Button>
-                  </td>
+        <>
+          {selectedIds.length > 0 && (
+            <div
+              className="flex items-center justify-between gap-4 rounded-xl border px-4 py-2.5"
+              style={{ background: 'rgba(0,212,255,0.06)', borderColor: 'rgba(0,212,255,0.25)' }}
+            >
+              <span className="text-sm text-[var(--text)]">{selectedIds.length} selected</span>
+              <div className="space-x-2">
+                <Button
+                  size="sm"
+                  onClick={() => openApprove(rows.filter((r) => selectedIds.includes(r.id)))}
+                >
+                  Approve selected
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  loading={rejectMut.isPending}
+                  onClick={() => rejectIds(selectedIds)}
+                >
+                  Reject selected
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div
+            className="rounded-2xl border overflow-hidden"
+            style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
+          >
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-sm">
+              <thead>
+                <tr className="text-left text-[var(--text3)] font-arial text-[10px] uppercase tracking-wider border-b" style={{ borderColor: 'var(--border)' }}>
+                  <th className="p-3 w-10">
+                    <input
+                      type="checkbox"
+                      className="accent-[var(--cyan)]"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      aria-label="Select all"
+                    />
+                  </th>
+                  <th className="p-3">Student</th>
+                  <th className="p-3">Company</th>
+                  <th className="p-3">Round</th>
+                  <th className="p-3">When</th>
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        className="accent-[var(--cyan)]"
+                        checked={selectedIds.includes(r.id)}
+                        onChange={() => toggleSelectOne(r.id)}
+                        aria-label={`Select ${r.studentName}`}
+                      />
+                    </td>
+                    <td className="p-3">
+                      <Link className="text-[var(--cyan)] hover:underline" to={`/students/${r.studentId}`}>
+                        {r.studentName}
+                      </Link>
+                      <div className="text-[10px] text-[var(--text3)]">{r.course}</div>
+                    </td>
+                    <td className="p-3">{r.company}</td>
+                    <td className="p-3">{r.round}</td>
+                    <td className="p-3 text-[var(--text2)]">
+                      {r.date ? format(new Date(r.date), 'MMM d, yyyy') : '—'} · {r.timeSlot || '—'}
+                    </td>
+                    <td className="p-3 text-right space-x-2">
+                      <Button size="sm" variant="secondary" onClick={() => openApprove([r])}>
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        loading={rejectMut.isPending}
+                        onClick={() => rejectIds([r.id])}
+                      >
+                        Reject
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </>
       )}
 
       <Modal
-        open={Boolean(approveRow)}
-        onClose={() => { setApproveRow(null); setTrainerIds([]); }}
-        title="Approve submission"
+        open={Boolean(approveTargets)}
+        onClose={() => { setApproveTargets(null); setTrainerIds([]); }}
+        title={approveTargets?.length > 1 ? `Approve ${approveTargets.length} submissions` : 'Approve submission'}
         variant="dark"
       >
         <p className="text-sm text-[var(--text2)] mb-4">
-          Creates the interview and lists it on <strong className="text-[var(--text)]">Today&apos;s Live Interview Board</strong>{' '}
+          Creates {approveTargets?.length > 1 ? 'the interviews' : 'the interview'} and lists {approveTargets?.length > 1 ? 'them' : 'it'} on{' '}
+          <strong className="text-[var(--text)]">Today&apos;s Live Interview Board</strong>{' '}
           right away. Trainers receive the &quot;Interview scheduled&quot; email (and app notification). If you pick none below,
-          <strong className="text-[var(--text)]"> all trainers</strong> are notified; if you pick specific trainers, only they get the email and are linked to this interview.
+          <strong className="text-[var(--text)]"> all trainers</strong> are notified; if you pick specific trainers, only they get the email and are linked to {approveTargets?.length > 1 ? 'these interviews' : 'this interview'}.
         </p>
         <MultiSelect
           label="Assign trainers (optional)"
@@ -162,11 +225,11 @@ export default function PendingSelfSubmits() {
           placeholder="Leave empty to notify all trainers, or select…"
         />
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="secondary" onClick={() => { setApproveRow(null); setTrainerIds([]); }}>
+          <Button variant="secondary" onClick={() => { setApproveTargets(null); setTrainerIds([]); }}>
             Cancel
           </Button>
           <Button loading={approveMut.isPending} onClick={confirmApprove}>
-            Approve & add to schedule
+            {approveTargets?.length > 1 ? `Approve ${approveTargets.length} & add to schedule` : 'Approve & add to schedule'}
           </Button>
         </div>
       </Modal>

@@ -103,9 +103,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-full gap-6 text-[var(--text)]">
-      <div className="flex flex-1 min-h-0 gap-6">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 gap-6">
       {/* Left column */}
-      <div className="flex-1 flex flex-col gap-4 pr-4 border-r min-w-0" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex-1 flex flex-col gap-4 md:pr-4 md:border-r min-w-0" style={{ borderColor: 'var(--border)' }}>
         {pendingCount > 0 && (
           <Link
             to="/pending-self-submits"
@@ -183,7 +183,7 @@ export default function Dashboard() {
       </div>
 
       {/* Right column */}
-      <div className="w-[360px] flex-shrink-0 flex flex-col gap-4 pl-2">
+      <div className="w-full md:w-[360px] flex-shrink-0 flex flex-col gap-4 md:pl-2">
         <ActivityFeed items={activityData?.data} />
         <TrainerWorkload data={analyticsData?.data?.trainerPerformance} />
       </div>

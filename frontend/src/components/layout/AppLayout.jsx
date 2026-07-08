@@ -10,7 +10,7 @@ export default function AppLayout() {
     <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <Sidebar />
       <div
-        className={`relative min-h-screen flex flex-col transition-[margin] duration-200 ease-out ${sidebarCollapsed ? 'ml-[4.5rem]' : 'ml-64'}`}
+        className={`relative min-h-screen flex flex-col transition-[margin] duration-200 ease-out ${sidebarCollapsed ? 'md:ml-[4.5rem]' : 'md:ml-64'}`}
       >
         <Topbar />
         <main className="flex-1 p-6 relative z-10">

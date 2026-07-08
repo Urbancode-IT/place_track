@@ -68,7 +68,8 @@ export default function PendingInterviewFinishes() {
           className="rounded-2xl border overflow-hidden"
           style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
         >
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="text-left text-[var(--text3)] font-arial text-[10px] uppercase tracking-wider border-b" style={{ borderColor: 'var(--border)' }}>
                 <th className="p-3">Student</th>
@@ -125,6 +126,7 @@ export default function PendingInterviewFinishes() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

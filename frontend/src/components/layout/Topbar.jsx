@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useThemeStore } from '@/store/theme.store';
+import { useUIStore } from '@/store/ui.store';
 import { authApi } from '@/api/auth.api';
 import { Button } from '@/components/ui/Button';
 
@@ -19,6 +20,7 @@ export function Topbar() {
   const navigate = useNavigate();
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const toggleSidebarMobile = useUIStore((s) => s.toggleSidebarMobile);
 
   const handleLogout = async () => {
     try {
@@ -38,14 +40,31 @@ export function Topbar() {
         borderBottom: '1px solid var(--border)',
       }}
     >
-      {/* Left: breadcrumb + title */}
-      <div className="flex flex-col">
-        <span className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
-          01 ▸ DASHBOARD ▸ COMMAND CENTER
-        </span>
-        <span className="font-arial text-[13px] font-medium text-[var(--text)]">
-          Command Center — Admin
-        </span>
+      {/* Left: hamburger (mobile) + breadcrumb + title */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={toggleSidebarMobile}
+          className="md:hidden flex items-center justify-center w-8 h-8 rounded-full shrink-0"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'var(--text3)',
+          }}
+          aria-label="Open menu"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+          </svg>
+        </button>
+        <div className="flex flex-col">
+          <span className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
+            01 ▸ DASHBOARD ▸ COMMAND CENTER
+          </span>
+          <span className="font-arial text-[13px] font-medium text-[var(--text)]">
+            Command Center — Admin
+          </span>
+        </div>
       </div>
 
       {/* Middle: date */}
