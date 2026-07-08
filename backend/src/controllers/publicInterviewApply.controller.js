@@ -60,7 +60,14 @@ export async function applyOpen(req, res, next) {
 /**
  * List interviews for a date (public). Course is optional — when omitted, returns
  * interviews across all courses so the "view schedule" button shows everything.
- * Includes both pending (SUBMITTED) and APPROVED requests.
+ *
+ * Pulls from two sources so it matches the real Today's Live Interview Board:
+ *  - "Interview": the actual schedule — covers both approved self-submissions and
+ *    interviews the placement team added directly.
+ *  - "StudentInterviewRequest" (status SUBMITTED only): still-pending self-submissions
+ *    that haven't been approved into the real schedule yet.
+ * Approved requests are excluded from the second query since they already have a
+ * mirrored row in "Interview" (see resultingInterviewId) — including both would double them up.
  */
 export async function listInterviews(req, res, next) {
   try {
@@ -79,13 +86,24 @@ export async function listInterviews(req, res, next) {
     }
 
     const r = await query(
-      `SELECT r.id, r.company, r.round, r."timeSlot", r.status, s.name as "studentName", s.course as "studentCourse"
+      `SELECT i.id, i.company, i.round, i."timeSlot", i.status::text, false as pending,
+              s.name as "studentName", s.course as "studentCourse"
+       FROM "Interview" i
+       JOIN "Student" s ON s.id = i."studentId"
+       WHERE i.date >= $1 AND i.date <= $2
+         ${courseFilter}
+
+       UNION ALL
+
+       SELECT r.id, r.company, r.round, r."timeSlot", r.status::text, true as pending,
+              s.name as "studentName", s.course as "studentCourse"
        FROM "StudentInterviewRequest" r
        JOIN "Student" s ON s.id = r."studentId"
        WHERE r.date >= $1 AND r.date <= $2
-         AND r.status IN ('SUBMITTED', 'APPROVED')
+         AND r.status = 'SUBMITTED'
          ${courseFilter}
-       ORDER BY r."timeSlot" ASC`,
+
+       ORDER BY "timeSlot" ASC`,
       params
     );
 

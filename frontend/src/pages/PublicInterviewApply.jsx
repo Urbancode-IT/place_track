@@ -248,9 +248,9 @@ export default function PublicInterviewApply() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] font-arial text-[var(--text2)]">{item.timeSlot}</span>
-                          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-widest ${item.status === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-primary/80 text-white'
+                          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-widest ${item.pending ? 'bg-primary/80 text-white' : 'bg-emerald-500 text-white'
                             }`}>
-                            {item.status === 'APPROVED' ? 'READY' : 'PENDING'}
+                            {item.pending ? 'PENDING' : 'READY'}
                           </span>
                         </div>
                       </div>
