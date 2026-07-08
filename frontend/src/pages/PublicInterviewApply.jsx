@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useNotificationStore } from '@/store/notification.store';
 import { InterviewRoundFields } from '@/components/interviews/InterviewRoundFields';
 import { resolveSubmittedRound } from '@/constants/interviewRounds';
+import { todayLocalISO } from '@/utils/formatDate';
 
 function EyeIcon({ className }) {
   return (
@@ -111,7 +112,7 @@ export default function PublicInterviewApply() {
   const schedQuery = useQuery({
     queryKey: ['publicInterviews', date],
     queryFn: () => {
-      const targetDate = date || new Date().toISOString().split('T')[0];
+      const targetDate = date || todayLocalISO();
       return publicSelfInterviewApi.listInterviews(undefined, targetDate).then((r) => r.data?.data || []);
     },
     enabled: showShed,

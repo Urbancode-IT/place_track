@@ -15,15 +15,10 @@ import { AddScheduleModal } from '@/components/interviews/AddScheduleModal';
 import { useUpdateInterview } from '@/hooks/useInterviews';
 import { useNotificationStore } from '@/store/notification.store';
 import { DashboardCreateStudentLink } from '@/components/dashboard/DashboardCreateStudentLink';
+import { todayLocalISO } from '@/utils/formatDate';
 
 export default function Dashboard() {
-  const [boardDate, setBoardDate] = useState(() => {
-    const n = new Date();
-    const y = n.getFullYear();
-    const m = String(n.getMonth() + 1).padStart(2, '0');
-    const d = String(n.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  });
+  const [boardDate, setBoardDate] = useState(todayLocalISO);
   const qc = useQueryClient();
   const [editingInterview, setEditingInterview] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
