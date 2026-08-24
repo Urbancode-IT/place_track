@@ -13,7 +13,8 @@ function trimEnv(key) {
 const host = trimEnv('SMTP_HOST') || 'smtp.gmail.com';
 const port = Number(process.env.SMTP_PORT) || 587;
 const user = trimEnv('SMTP_USER');
-const pass = trimEnv('SMTP_PASS');
+// Gmail App Passwords are often pasted with spaces — strip them for SMTP auth
+const pass = trimEnv('SMTP_PASS')?.replace(/\s+/g, '') || null;
 
 /** For /health + logs */
 export let smtpConfigured = !!(user && pass);
