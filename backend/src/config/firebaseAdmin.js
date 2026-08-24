@@ -1,13 +1,25 @@
 import admin from 'firebase-admin';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
 let app;
+
+function resolveServiceAccountPath() {
+  const raw = (process.env.FIREBASE_SERVICE_ACCOUNT_PATH || '').trim();
+  if (!raw) return null;
+  // Ignore .env.example placeholders (Windows path on Linux VPS, etc.)
+  if (/path\/to\/firebase|your_.*\.json/i.test(raw)) return null;
+  if (!existsSync(raw)) {
+    console.warn(`[push] FIREBASE_SERVICE_ACCOUNT_PATH not found, skipping: ${raw}`);
+    return null;
+  }
+  return raw;
+}
 
 function initFirebaseAdmin() {
   if (app) return app;
 
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+  const serviceAccountJson = (process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '').trim();
+  const serviceAccountPath = resolveServiceAccountPath();
 
   if (!serviceAccountJson && !serviceAccountPath) {
     console.warn(
@@ -32,4 +44,3 @@ function initFirebaseAdmin() {
 export function getFirebaseAdmin() {
   return initFirebaseAdmin() ? admin : null;
 }
-
