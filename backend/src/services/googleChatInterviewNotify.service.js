@@ -1,6 +1,8 @@
 import { query } from '../config/db.js';
 import { sendToGoogleChat } from './googleChat.service.js';
-import { getPublicFrontendUrl } from '../utils/frontendUrl.utils.js';
+
+/** Always production — never FRONTEND_URL / localhost */
+const PLACE_TRACK_URL = 'https://placetrack.urbancode.in';
 
 const TZ = process.env.GOOGLE_CHAT_CRON_TZ || process.env.INTERVIEW_SCHEDULE_TZ || 'Asia/Kolkata';
 
@@ -55,7 +57,7 @@ export async function notifyGoogleChatInterviewScheduled(interviewId) {
   msg += `  _Round:_ ${row.round}\n`;
   msg += `  _Trainers:_ ${trainerNames}\n`;
   if (row.room) msg += `  _Room/Link:_ ${row.room}\n`;
-  msg += `\n${getPublicFrontendUrl()}`;
+  msg += `\n${PLACE_TRACK_URL}`;
 
   const result = await sendToGoogleChat(msg);
   if (!result.ok) console.error('[google-chat] interview schedule notify failed:', result.error);
@@ -98,7 +100,7 @@ export async function notifyGoogleChatInterviewOutcomeApproved(interviewId, prop
   msg += `• ${row.studentName} (${row.course}) - ${row.company}\n`;
   msg += `  _Round:_ ${row.round}\n`;
   msg += `  _Date:_ ${dateLabel}${row.timeSlot ? ` · ${row.timeSlot}` : ''}\n`;
-  msg += `\n${getPublicFrontendUrl()}`;
+  msg += `\n${PLACE_TRACK_URL}`;
 
   const result = await sendToGoogleChat(msg);
   if (!result.ok) console.error('[google-chat] interview outcome approve notify failed:', result.error);
