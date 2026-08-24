@@ -17,16 +17,10 @@ function isLocalhost(url) {
 }
 
 /**
- * Public site URL for links in Google Chat / email (never localhost).
- * Prefers FRONTEND_URL when it is not local; else first non-local CORS_ORIGIN entry.
+ * Public site URL for Google Chat / email links.
+ * Never uses FRONTEND_URL (often localhost on VPS). Override with PUBLIC_FRONTEND_URL if needed.
  */
 export function getPublicFrontendUrl() {
-  const candidates = [
-    ...splitUrls(process.env.FRONTEND_URL),
-    ...splitUrls(process.env.CORS_ORIGIN),
-    ...splitUrls(process.env.PUBLIC_FRONTEND_URL),
-  ];
-
-  const publicUrl = candidates.find((url) => !isLocalhost(url));
-  return publicUrl || DEFAULT_PUBLIC_URL;
+  const override = splitUrls(process.env.PUBLIC_FRONTEND_URL).find((url) => !isLocalhost(url));
+  return override || DEFAULT_PUBLIC_URL;
 }
