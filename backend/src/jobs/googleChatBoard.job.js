@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { query } from '../config/db.js';
 import { sendToGoogleChat } from '../services/googleChat.service.js';
 import { sendTomorrowBoardDigest } from '../services/email.service.js';
+import { getPublicFrontendUrl } from '../utils/frontendUrl.utils.js';
 
 const TZ = process.env.GOOGLE_CHAT_CRON_TZ || process.env.INTERVIEW_SCHEDULE_TZ || 'Asia/Kolkata';
 
@@ -179,7 +180,7 @@ export async function runGoogleChatBoardOnce() {
 
   const todayLabel = todayStart.toLocaleDateString('en-IN', { timeZone: TZ });
   const tomorrowLabel = tomorrowStart.toLocaleDateString('en-IN', { timeZone: TZ });
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = getPublicFrontendUrl();
 
   const [todayApproved, todayPending, tomApproved, tomPending] = await Promise.all([
     query(
