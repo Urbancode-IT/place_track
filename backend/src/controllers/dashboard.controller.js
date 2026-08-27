@@ -1,6 +1,6 @@
 import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth } from '../utils/date.utils.js';
+import { dayStartInScheduleTz, dayEndInScheduleTz, startOfMonth, endOfMonth } from '../utils/date.utils.js';
 import { getInterviewStartAt } from '../utils/interviewStartAt.utils.js';
 
 function addDays(d, n) {
@@ -49,8 +49,8 @@ export async function getPendingInterviewFinishes(req, res, next) {
 export async function getStats(req, res, next) {
   try {
     const now = new Date();
-    const todayStart = startOfDay(now);
-    const todayEnd = endOfDay(now);
+    const todayStart = dayStartInScheduleTz(0, now);
+    const todayEnd = dayEndInScheduleTz(0, now);
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
 
@@ -99,8 +99,8 @@ export async function getToday(req, res, next) {
       vals.push(`${y}-${m}-${d}`);
     } else {
       const now = new Date();
-      const todayStart = startOfDay(now);
-      const todayEnd = endOfDay(now);
+      const todayStart = dayStartInScheduleTz(0, now);
+      const todayEnd = dayEndInScheduleTz(0, now);
       sql += ` AND i.date >= $${idx++} AND i.date <= $${idx++}`;
       vals.push(todayStart, todayEnd);
     }

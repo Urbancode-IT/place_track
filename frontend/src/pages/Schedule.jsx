@@ -27,6 +27,7 @@ const COLUMN_IDS = [
   'SCHEDULED',
   'AWAITING_RESPONSE',
   'SHORTLISTED',
+  'SELECTED',
   'REJECTED',
   'RESCHEDULED',
   'NO_RESPONSE',
@@ -36,6 +37,7 @@ const COLUMN_CONFIG = [
   { id: 'SCHEDULED', title: 'Scheduled', accent: '#00D4FF' },
   { id: 'AWAITING_RESPONSE', title: 'Awaiting Response', accent: '#FFD60A' },
   { id: 'SHORTLISTED', title: 'Shortlisted', accent: '#00FFA3' },
+  { id: 'SELECTED', title: 'Selected', accent: '#6366F1' },
   { id: 'REJECTED', title: 'Rejected', accent: '#FF3D82' },
   { id: 'RESCHEDULED', title: 'Rescheduled', accent: '#9B5DFF' },
   { id: 'NO_RESPONSE', title: 'No Response', accent: '#7B82A8' },
@@ -57,6 +59,7 @@ export default function Schedule() {
   const [viewMode, setViewMode] = useState('BOARD');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingInterview, setEditingInterview] = useState(null);
+  const [activeInterview, setActiveInterview] = useState(null);
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['interviews', { limit, ...filters }],
@@ -97,7 +100,14 @@ export default function Schedule() {
     useSensor(KeyboardSensor)
   );
 
+  const handleDragStart = (event) => {
+    const interviewId = interviewIdFromCardId(event.active.id);
+    const interview = interviews.find((i) => i.id == interviewId) || null;
+    setActiveInterview(interview);
+  };
+
   const handleDragEnd = (event) => {
+    setActiveInterview(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const newStatus = COLUMN_IDS.includes(String(over.id)) ? String(over.id) : null;
@@ -105,9 +115,13 @@ export default function Schedule() {
     const interviewId = interviewIdFromCardId(active.id);
     if (interviewId == null) return;
     const interview = interviews.find((i) => i.id == interviewId);
-    if (!interview || interview.status === newStatus) return;
+    if (!interview) return;
+    const currentEffective = getEffectiveInterviewStatus(interview);
+    if (currentEffective === newStatus && interview.status === newStatus) return;
     updateStatus.mutate({ id: interviewId, status: newStatus });
   };
+
+  const handleDragCancel = () => setActiveInterview(null);
 
   const showInitialLoader = isLoading && !rawInterviews.length;
 
@@ -135,7 +149,8 @@ export default function Schedule() {
             Interview Pipeline
           </h1>
           <p className="font-arial text-[11px] text-[var(--text2)] mt-0.5">
-            {interviews.length} students · March 2026
+            {interviews.length} interviews ·{' '}
+            {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -248,7 +263,12 @@ export default function Schedule() {
         {viewMode === 'BOARD' ? (
           <>
             {/* Columns with drag and drop */}
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <DndContext
+              sensors={sensors}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
+            >
               <div className="flex gap-3 overflow-x-auto pb-2 items-start">
                 {COLUMN_CONFIG.map((col) => (
                   <KanbanColumn
@@ -282,18 +302,20 @@ export default function Schedule() {
               </div>
 
               <DragOverlay>
-                {({ active }) => {
-                  const interview = active?.data?.current?.interview;
-                  if (!interview) return null;
-                  const col =
-                    COLUMN_CONFIG.find((c) => c.id === getEffectiveInterviewStatus(interview)) ||
-                    COLUMN_CONFIG[0];
-                  return (
-                    <div className="rotate-2 shadow-xl rounded-xl opacity-95">
-                      <KanbanCard interview={interview} columnAccent={col.accent} />
-                    </div>
-                  );
-                }}
+                {activeInterview ? (
+                  <div className="rotate-2 shadow-xl rounded-xl opacity-95">
+                    <KanbanCard
+                      interview={activeInterview}
+                      columnAccent={
+                        (
+                          COLUMN_CONFIG.find(
+                            (c) => c.id === getEffectiveInterviewStatus(activeInterview)
+                          ) || COLUMN_CONFIG[0]
+                        ).accent
+                      }
+                    />
+                  </div>
+                ) : null}
               </DragOverlay>
             </DndContext>
           </>

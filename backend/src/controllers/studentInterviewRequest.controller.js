@@ -1,4 +1,4 @@
-import { query } from '../config/db.js';
+import { query, withTransaction } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { createInterviewWithTrainers } from '../services/interviewCreate.service.js';
@@ -42,43 +42,58 @@ export async function approve(req, res, next) {
   try {
     const { id } = req.validated;
     const { trainerIds = [], room: roomFromApprove } = req.validated;
-    const r = await query('SELECT * FROM "StudentInterviewRequest" WHERE id = $1', [id]);
-    const row = r.rows[0];
-    if (!row) throw new AppError('Request not found', 404);
-    if (row.status !== 'SUBMITTED') {
-      throw new AppError('Only submitted requests can be approved', 400);
-    }
-    if (!row.company || !row.round || !row.date || !row.timeSlot) {
-      throw new AppError('Request is missing required fields', 400);
-    }
-    const interviewDate = new Date(row.date);
-    if (Number.isNaN(interviewDate.getTime())) {
-      throw new AppError('Invalid interview date in request', 400);
-    }
-    const mergedComments = row.comments || null;
-    const finalRoom =
-      roomFromApprove !== undefined && roomFromApprove !== null
-        ? String(roomFromApprove).trim() || null
-        : (row.room && String(row.room).trim()) || null;
-    const { interview, student } = await createInterviewWithTrainers({
-      studentId: row.studentId,
-      company: row.company,
-      round: row.round,
-      date: interviewDate,
-      timeSlot: row.timeSlot,
-      hrNumber: row.hrNumber,
-      room: finalRoom,
-      comments: mergedComments,
-      trainerIds,
-      broadcastEmailToAllTrainersIfUnassigned: true,
+
+    const result = await withTransaction(async (client) => {
+      const locked = await client.query(
+        `SELECT * FROM "StudentInterviewRequest" WHERE id = $1 FOR UPDATE`,
+        [id]
+      );
+      const row = locked.rows[0];
+      if (!row) throw new AppError('Request not found', 404);
+      if (row.status !== 'SUBMITTED') {
+        throw new AppError('Only submitted requests can be approved', 400);
+      }
+      if (!row.company || !row.round || !row.date || !row.timeSlot) {
+        throw new AppError('Request is missing required fields', 400);
+      }
+      const interviewDate = new Date(row.date);
+      if (Number.isNaN(interviewDate.getTime())) {
+        throw new AppError('Invalid interview date in request', 400);
+      }
+      const mergedComments = row.comments || null;
+      const finalRoom =
+        roomFromApprove !== undefined && roomFromApprove !== null
+          ? String(roomFromApprove).trim() || null
+          : (row.room && String(row.room).trim()) || null;
+
+      const { interview, student } = await createInterviewWithTrainers({
+        studentId: row.studentId,
+        company: row.company,
+        round: row.round,
+        date: interviewDate,
+        timeSlot: row.timeSlot,
+        hrNumber: row.hrNumber,
+        room: finalRoom,
+        comments: mergedComments,
+        trainerIds,
+        broadcastEmailToAllTrainersIfUnassigned: true,
+        dbQuery: (text, params) => client.query(text, params),
+      });
+
+      const claim = await client.query(
+        `UPDATE "StudentInterviewRequest"
+         SET status = 'APPROVED', "reviewedAt" = now(), "reviewedByUserId" = $1, "resultingInterviewId" = $2, "updatedAt" = now()
+         WHERE id = $3 AND status = 'SUBMITTED'
+         RETURNING id`,
+        [req.user.id, interview.id, id]
+      );
+      if (!claim.rows[0]) {
+        throw new AppError('Only submitted requests can be approved', 400);
+      }
+      return { interview, student, requestId: id };
     });
-    await query(
-      `UPDATE "StudentInterviewRequest"
-       SET status = 'APPROVED', "reviewedAt" = now(), "reviewedByUserId" = $1, "resultingInterviewId" = $2, "updatedAt" = now()
-       WHERE id = $3`,
-      [req.user.id, interview.id, id]
-    );
-    return success(res, { interview, student, requestId: id }, 'Approved — interview is on the schedule');
+
+    return success(res, result, 'Approved — interview is on the schedule');
   } catch (err) {
     next(err);
   }
@@ -87,18 +102,18 @@ export async function approve(req, res, next) {
 export async function reject(req, res, next) {
   try {
     const { id } = req.validated;
-    const r = await query('SELECT * FROM "StudentInterviewRequest" WHERE id = $1', [id]);
-    const row = r.rows[0];
-    if (!row) throw new AppError('Request not found', 404);
-    if (row.status !== 'SUBMITTED') {
-      throw new AppError('Only submitted requests can be rejected', 400);
-    }
-    await query(
+    const claim = await query(
       `UPDATE "StudentInterviewRequest"
        SET status = 'REJECTED', "reviewedAt" = now(), "reviewedByUserId" = $1, "updatedAt" = now()
-       WHERE id = $2`,
+       WHERE id = $2 AND status = 'SUBMITTED'
+       RETURNING id`,
       [req.user.id, id]
     );
+    if (!claim.rows[0]) {
+      const r = await query('SELECT status FROM "StudentInterviewRequest" WHERE id = $1', [id]);
+      if (!r.rows[0]) throw new AppError('Request not found', 404);
+      throw new AppError('Only submitted requests can be rejected', 400);
+    }
     return success(res, null, 'Request rejected');
   } catch (err) {
     next(err);

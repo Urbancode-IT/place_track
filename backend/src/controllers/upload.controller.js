@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { uploadResume, uploadPhoto } from '../services/upload.service.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { assertCanAccessStudent } from '../utils/interviewAccess.utils.js';
 
 export async function uploadResumeHandler(req, res, next) {
   try {
@@ -9,6 +10,7 @@ export async function uploadResumeHandler(req, res, next) {
     const url = await uploadResume(req.file.path);
     const studentId = req.body?.studentId || req.params?.id;
     if (studentId) {
+      await assertCanAccessStudent(req.user, studentId);
       await query('UPDATE "Student" SET "resumeUrl" = $1, "updatedAt" = now() WHERE id = $2', [url, studentId]);
     }
     return success(res, { url, studentId: studentId || null });

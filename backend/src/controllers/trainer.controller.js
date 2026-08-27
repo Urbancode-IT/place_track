@@ -45,6 +45,9 @@ export async function remove(req, res, next) {
 export async function getInterviews(req, res, next) {
   try {
     const { id } = req.validated;
+    if (req.user.role !== 'ADMIN' && req.user.id !== id) {
+      throw new AppError('Access denied', 403);
+    }
     const r = await query(
       `SELECT i.*, s.id as "s_id", s.name as "s_name", s.course as "s_course" FROM "Interview" i
        INNER JOIN "InterviewTrainer" it ON it."interviewId" = i.id AND it."trainerId" = $1
@@ -64,6 +67,9 @@ export async function getInterviews(req, res, next) {
 export async function notifyTrainer(req, res, next) {
   try {
     const { id } = req.validated;
+    if (req.user.role !== 'ADMIN' && req.user.id !== id) {
+      throw new AppError('Access denied', 403);
+    }
     const t = await query(
       'SELECT * FROM "User" WHERE id = $1 AND role IN (\'TRAINER\', \'ADMIN\')',
       [id]
@@ -72,6 +78,13 @@ export async function notifyTrainer(req, res, next) {
     if (!trainer) throw new AppError('Trainer not found', 404);
     const interviewId = req.body?.interviewId;
     if (!interviewId) throw new AppError('interviewId required', 400);
+    const assigned = await query(
+      'SELECT 1 FROM "InterviewTrainer" WHERE "interviewId" = $1 AND "trainerId" = $2',
+      [interviewId, id]
+    );
+    if (!assigned.rows[0] && req.user.role !== 'ADMIN') {
+      throw new AppError('Trainer is not assigned to this interview', 403);
+    }
     const i = await query('SELECT i.*, s.name FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.id = $1', [interviewId]);
     const interview = i.rows[0];
     if (!interview) throw new AppError('Interview not found', 404);

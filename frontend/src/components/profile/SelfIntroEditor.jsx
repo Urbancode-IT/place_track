@@ -32,7 +32,7 @@ export function SelfIntroEditor({ studentId }) {
         onChange={(e) => setText(e.target.value)}
         onFocus={() => setEdit(true)}
         rows={6}
-        className="w-full border border-border rounded-lg px-3 py-2 text-sm"
+        className="w-full rounded-lg px-3 py-2 text-sm border border-[var(--border)] bg-[rgba(0,0,0,0.25)] text-[var(--text)] placeholder:text-[var(--text3)] outline-none focus:ring-2 focus:ring-primary"
         placeholder="Self introduction script..."
       />
       <Button size="sm" disabled={saving} onClick={() => save(text)}>Save</Button>

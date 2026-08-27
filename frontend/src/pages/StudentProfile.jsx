@@ -6,7 +6,6 @@ import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { ResumeUpload } from '@/components/profile/ResumeUpload';
 import { SelfIntroEditor } from '@/components/profile/SelfIntroEditor';
 import { QABank } from '@/components/profile/QABank';
-import { SkillsChart } from '@/components/profile/SkillsChart';
 import { InterviewTimeline } from '@/components/profile/InterviewTimeline';
 import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
@@ -97,28 +96,17 @@ export default function StudentProfile() {
         style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
       >
         {tab === 'Overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-arial text-[13px] font-medium text-[var(--text)] mb-3">
-                Skill assessment
-              </h3>
-              <SkillsChart />
-            </div>
-            <div>
-              <h3 className="font-arial text-[13px] font-medium text-[var(--text)] mb-3">
-                Interview timeline
-              </h3>
-              <InterviewTimeline interviews={student.interviews} />
-            </div>
+          <div>
+            <h3 className="font-arial text-[13px] font-medium text-[var(--text)] mb-3">
+              Interview timeline
+            </h3>
+            <InterviewTimeline interviews={student.interviews} />
           </div>
         )}
         {tab === 'Resume' && <ResumeUpload studentId={id} />}
         {tab === 'Self Intro' && <SelfIntroEditor studentId={id} />}
         {tab === 'Q&A' && <QABank studentId={id} />}
         {tab === 'Schedule History' && <InterviewTimeline interviews={student.interviews} />}
-        {tab === 'Notes' && (
-          <p className="text-[var(--text3)] text-sm">Notes (trainer-only) – placeholder.</p>
-        )}
       </div>
     </div>
   );

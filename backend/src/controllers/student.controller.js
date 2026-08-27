@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { success, successWithPagination } from '../utils/response.utils.js';
 import { getPaginationParams, buildPaginationResponse } from '../utils/pagination.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { assertCanAccessStudent } from '../utils/interviewAccess.utils.js';
 
 export async function list(req, res, next) {
   try {
@@ -44,7 +45,7 @@ export async function list(req, res, next) {
     const students = studentsResult.rows;
     const studentIds = students.map((s) => s.id);
     if (studentIds.length === 0) {
-      const pagination = buildPaginationResponse(0, page, limit);
+      const pagination = buildPaginationResponse(total, page, limit);
       return successWithPagination(res, [], pagination);
     }
     const latestInterviews = await query(
@@ -111,6 +112,7 @@ export async function create(req, res, next) {
 export async function update(req, res, next) {
   try {
     const { id, ...data } = req.validated;
+    await assertCanAccessStudent(req.user, id);
     const fields = [];
     const values = [];
     let i = 1;
@@ -140,6 +142,7 @@ export async function update(req, res, next) {
 export async function remove(req, res, next) {
   try {
     const { id } = req.validated;
+    if (req.user.role !== 'ADMIN') throw new AppError('Admin access required', 403);
     await query('DELETE FROM "Student" WHERE id = $1', [id]);
     return success(res, null, 'Student deleted');
   } catch (err) {
@@ -150,6 +153,7 @@ export async function remove(req, res, next) {
 export async function getInterviews(req, res, next) {
   try {
     const { id } = req.validated;
+    await assertCanAccessStudent(req.user, id);
     const r = await query(
       `SELECT i.*, (SELECT json_agg(json_build_object('id', u.id, 'name', u.name)) FROM "InterviewTrainer" it JOIN "User" u ON u.id = it."trainerId" WHERE it."interviewId" = i.id) as trainers
        FROM "Interview" i WHERE i."studentId" = $1 ORDER BY i.date DESC`,
@@ -164,6 +168,7 @@ export async function getInterviews(req, res, next) {
 export async function getQa(req, res, next) {
   try {
     const { id } = req.validated;
+    await assertCanAccessStudent(req.user, id);
     const r = await query('SELECT * FROM "QAEntry" WHERE "studentId" = $1 ORDER BY "createdAt" DESC', [id]);
     return success(res, r.rows);
   } catch (err) {
@@ -174,6 +179,7 @@ export async function getQa(req, res, next) {
 export async function updateSelfIntro(req, res, next) {
   try {
     const { id, selfIntro } = req.validated;
+    await assertCanAccessStudent(req.user, id);
     const r = await query('UPDATE "Student" SET "selfIntro" = $1, "updatedAt" = now() WHERE id = $2 RETURNING *', [selfIntro, id]);
     if (!r.rows[0]) throw new AppError('Student not found', 404);
     return success(res, r.rows[0]);

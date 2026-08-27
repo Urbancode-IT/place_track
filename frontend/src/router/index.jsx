@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useAuthHydrated } from '@/hooks/useAuthHydrated';
 import { Spinner } from '@/components/ui/Spinner';
@@ -40,6 +40,7 @@ function Lazy({ children }) {
 function ProtectedRoute({ children, adminOnly }) {
   const hydrated = useAuthHydrated();
   const { isAuthenticated, user } = useAuthStore();
+  const location = useLocation();
 
   if (!hydrated) {
     return (
@@ -49,7 +50,7 @@ function ProtectedRoute({ children, adminOnly }) {
     );
   }
 
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: location }} />;
   if (adminOnly && user?.role !== 'ADMIN') return <Navigate to="/" replace />;
   return children;
 }
@@ -148,9 +149,11 @@ const routes = [
       {
         path: 'trainers',
         element: (
-          <Lazy>
-            <TrainerView />
-          </Lazy>
+          <ProtectedRoute adminOnly>
+            <Lazy>
+              <TrainerView />
+            </Lazy>
+          </ProtectedRoute>
         ),
       },
       {

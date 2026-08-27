@@ -61,9 +61,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
   const note =
     pipeline === 'SHORTLISTED'
       ? 'Cleared - Next round pending'
-      : pipeline === 'SCHEDULED' && interview.notes
-        ? 'Email sent'
-        : interview.notes || null;
+      : interview.comments || null;
 
   return (
     <div

@@ -150,7 +150,7 @@ export default function Dashboard() {
                 variant="hero"
                 title="TOTAL STUDENTS"
                 value={totalStudents}
-                sub={`${todayCount} enrolled this week`}
+                sub={`${todayCount} interviews today`}
               />
               <StatCard
                 title="SHORTLISTED"

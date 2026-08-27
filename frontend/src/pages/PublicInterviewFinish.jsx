@@ -161,7 +161,8 @@ export default function PublicInterviewFinish() {
         >
           <h1 className="font-arial text-xl font-medium">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
-            {submitMut.data?.message || 'Your interview row on the schedule is updated.'}
+            {submitMut.data?.message ||
+              'Submitted for approval. Your placement team will update the schedule after review.'}
           </p>
         </div>
       </div>

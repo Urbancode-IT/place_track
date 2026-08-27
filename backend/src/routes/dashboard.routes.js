@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import { requireTrainerOrAdmin } from '../middleware/role.middleware.js';
 import * as ctrl from '../controllers/dashboard.controller.js';
 
 const router = Router();
 
-router.use(authMiddleware);
+router.use(authMiddleware, requireTrainerOrAdmin);
 
 router.get('/pending-self-submits', ctrl.getPendingSelfSubmits);
 router.get('/pending-interview-finishes', ctrl.getPendingInterviewFinishes);

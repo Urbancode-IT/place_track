@@ -12,6 +12,18 @@ import { MultiSelect } from '@/components/ui/MultiSelect';
 import { Button } from '@/components/ui/Button';
 import { COURSE_SELECT_OPTIONS } from '@/utils/constants';
 
+/** YYYY-MM-DD from Date/string without UTC day-shift. */
+function toLocalYmd(value) {
+  if (!value) return '';
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 const courseEnum = z.enum([
   'FSD',
   'SDET',
@@ -75,7 +87,7 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
       const trainerValues = (initialData.trainers || [])
         .map((t) => t?.trainer?.id || t?.trainerId)
         .filter(Boolean);
-      const dateValue = initialData.date ? new Date(initialData.date).toISOString().slice(0, 10) : '';
+      const dateValue = initialData.date ? toLocalYmd(initialData.date) : '';
       const initialCourse =
         initialData.student?.course && courseEnum.safeParse(initialData.student.course).success
           ? initialData.student.course
@@ -109,7 +121,7 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
   const handleFormSubmit = async (data) => {
     const payload = {
       ...data,
-      date: new Date(data.date).toISOString(),
+      date: toLocalYmd(data.date),
       trainerIds: Array.isArray(data.trainerIds) ? data.trainerIds : [data.trainerIds].filter(Boolean),
     };
     try {

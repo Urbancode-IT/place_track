@@ -1,6 +1,7 @@
 import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { scheduleDayBoundsFromInput } from '../utils/date.utils.js';
 
 /**
  * Shared form URL — any student posts once; row goes to SUBMITTED queue (no per-student token).
@@ -72,13 +73,9 @@ export async function applyOpen(req, res, next) {
 export async function listInterviews(req, res, next) {
   try {
     const { course, date } = req.query;
-    const targetDate = date ? new Date(date) : new Date();
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const { start, end } = scheduleDayBoundsFromInput(date);
 
-    const params = [startOfDay.toISOString(), endOfDay.toISOString()];
+    const params = [start.toISOString(), end.toISOString()];
     let courseFilter = '';
     if (course) {
       params.push(course);

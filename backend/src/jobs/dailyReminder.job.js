@@ -2,15 +2,12 @@ import cron from 'node-cron';
 import { query } from '../config/db.js';
 import { sendDailySummary } from '../services/email.service.js';
 import { sendPushToUsers } from '../services/push.service.js';
+import { dayStartInScheduleTz, dayEndInScheduleTz } from '../utils/date.utils.js';
 
 export function runDailyReminder() {
   cron.schedule('0 8 * * *', async () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const start = new Date(tomorrow);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(tomorrow);
-    end.setHours(23, 59, 59, 999);
+    const start = dayStartInScheduleTz(1);
+    const end = dayEndInScheduleTz(1);
     const r = await query(
       `SELECT i.*, s.name as "s_name" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.date >= $1 AND i.date <= $2`,
       [start, end]

@@ -15,8 +15,10 @@ export async function applyInterviewFinishOutcome(interviewId, {
   proposedTrainerIds,
   rescheduleDate,
   rescheduleTimeSlot,
+  dbQuery = query,
 }) {
-  const iv = await query(
+  const q = dbQuery;
+  const iv = await q(
     `SELECT i.*, s.id as "s_id", s.name, s.email, s.course as "s_course"
      FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.id = $1`,
     [interviewId]
@@ -55,13 +57,13 @@ export async function applyInterviewFinishOutcome(interviewId, {
     const gaveSchedule = rescheduleDate != null || rescheduleTimeSlot != null;
     if (dateOk && slot) {
       if (writeTrainerReview) {
-        await query(
+        await q(
           `UPDATE "Interview" SET status = $1::interview_status_enum, comments = $2, date = $3, "timeSlot" = $4,
            "trainerReviewRating" = $5, "trainerReviewNotes" = $6, "updatedAt" = now() WHERE id = $7`,
           [proposedStatus, mergedComments, d.toISOString(), slot, ratingDb, notesDb, interviewId]
         );
       } else {
-        await query(
+        await q(
           `UPDATE "Interview" SET status = $1::interview_status_enum, comments = $2, date = $3, "timeSlot" = $4, "updatedAt" = now() WHERE id = $5`,
           [proposedStatus, mergedComments, d.toISOString(), slot, interviewId]
         );
@@ -69,45 +71,52 @@ export async function applyInterviewFinishOutcome(interviewId, {
     } else if (gaveSchedule) {
       throw new AppError('Invalid or incomplete reschedule date / time.', 400);
     } else if (writeTrainerReview) {
-      await query(
+      await q(
         `UPDATE "Interview" SET status = $1::interview_status_enum, comments = $2,
          "trainerReviewRating" = $3, "trainerReviewNotes" = $4, "updatedAt" = now() WHERE id = $5`,
         [proposedStatus, mergedComments, ratingDb, notesDb, interviewId]
       );
     } else {
-      await query(
+      await q(
         `UPDATE "Interview" SET status = $1::interview_status_enum, comments = $2, "updatedAt" = now() WHERE id = $3`,
         [proposedStatus, mergedComments, interviewId]
       );
     }
   } else if (writeTrainerReview) {
-    await query(
+    await q(
       `UPDATE "Interview" SET status = $1::interview_status_enum, comments = $2,
        "trainerReviewRating" = $3, "trainerReviewNotes" = $4, "updatedAt" = now() WHERE id = $5`,
       [proposedStatus, mergedComments, ratingDb, notesDb, interviewId]
     );
   } else {
-    await query(
+    await q(
       `UPDATE "Interview" SET status = $1::interview_status_enum, comments = $2, "updatedAt" = now() WHERE id = $3`,
       [proposedStatus, mergedComments, interviewId]
     );
   }
 
   if (proposedTrainerIds != null) {
-    await query('DELETE FROM "InterviewTrainer" WHERE "interviewId" = $1', [interviewId]);
-    for (const tid of proposedTrainerIds) {
-      const chk = await query(`SELECT id FROM "User" WHERE id = $1 AND role = 'TRAINER'`, [tid]);
-      if (chk.rows[0]) {
-        await query(
-          `INSERT INTO "InterviewTrainer" ("interviewId", "trainerId", "notifiedAt") VALUES ($1, $2, now())
-           ON CONFLICT ("interviewId", "trainerId") DO NOTHING`,
-          [interviewId, tid]
-        );
+    const ids = [...new Set(proposedTrainerIds.map(String).filter(Boolean))];
+    if (ids.length) {
+      const chk = await q(
+        `SELECT id FROM "User" WHERE id = ANY($1::text[]) AND role = 'TRAINER'`,
+        [ids]
+      );
+      if (chk.rows.length !== ids.length) {
+        throw new AppError('One or more trainer IDs are invalid', 400);
       }
+    }
+    await q('DELETE FROM "InterviewTrainer" WHERE "interviewId" = $1', [interviewId]);
+    for (const tid of ids) {
+      await q(
+        `INSERT INTO "InterviewTrainer" ("interviewId", "trainerId", "notifiedAt") VALUES ($1, $2, now())
+         ON CONFLICT ("interviewId", "trainerId") DO NOTHING`,
+        [interviewId, tid]
+      );
     }
   }
 
-  const updated = await query(
+  const updated = await q(
     'SELECT i.*, s.id as "s_id", s.name, s.email, s.course as "s_course" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.id = $1',
     [interviewId]
   );
@@ -127,7 +136,7 @@ export async function applyInterviewFinishOutcome(interviewId, {
     await sendStatusUpdate(u.email, u.name, u.company, proposedStatus);
   }
   if (u) {
-    const tr = await query(
+    const tr = await q(
       `SELECT it."trainerId", u.id as "u_id", u.name as "u_name" FROM "InterviewTrainer" it
        JOIN "User" u ON u.id = it."trainerId" WHERE it."interviewId" = $1`,
       [interviewId]
@@ -139,7 +148,7 @@ export async function applyInterviewFinishOutcome(interviewId, {
     });
 
     if (proposedStatus === 'RESCHEDULED' && dateOk && slot) {
-      await query('DELETE FROM "Notification" WHERE "interviewId" = $1 AND type = $2', [
+      await q('DELETE FROM "Notification" WHERE "interviewId" = $1 AND type = $2', [
         interviewId,
         'INTERVIEW_30MIN_REMINDER',
       ]);

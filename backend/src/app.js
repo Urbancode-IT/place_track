@@ -9,6 +9,11 @@ import { getGoogleChatBoardDiagnostics } from './jobs/googleChatBoard.job.js';
 
 const app = express();
 
+// Behind Render / nginx / Vercel proxies so rate limits use client IP.
+if (process.env.TRUST_PROXY !== 'false') {
+  app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : Number(process.env.TRUST_PROXY) || 1);
+}
+
 function normalizeOrigin(url) {
   if (!url || typeof url !== 'string') return '';
   return url.trim().replace(/\/+$/, '');

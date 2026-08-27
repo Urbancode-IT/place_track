@@ -13,7 +13,7 @@ router.get('/', ctrl.list);
 router.patch('/read-all', ctrl.readAll);
 router.get('/settings', ctrl.getSettings);
 router.put('/settings', ctrl.updateSettings);
-router.post('/trigger', ctrl.trigger);
+router.post('/trigger', requireAdmin, ctrl.trigger);
 router.post(
   '/test-interview-email',
   requireAdmin,

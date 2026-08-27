@@ -12,7 +12,7 @@ export const studentApi = {
   uploadResume: (id, file) => {
     const form = new FormData();
     form.append('resume', file);
-    return api.post(`/students/${id}/resume`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return api.post(`/students/${id}/resume`, form);
   },
   addQa: (id, data) => api.post(`/students/${id}/qa`, data),
 };

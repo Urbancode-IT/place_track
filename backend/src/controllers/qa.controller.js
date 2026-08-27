@@ -1,10 +1,12 @@
 import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { assertCanAccessStudent } from '../utils/interviewAccess.utils.js';
 
 export async function list(req, res, next) {
   try {
     const { id } = req.validated;
+    await assertCanAccessStudent(req.user, id);
     const r = await query('SELECT * FROM "QAEntry" WHERE "studentId" = $1 ORDER BY "createdAt" DESC', [id]);
     return success(res, r.rows);
   } catch (err) {
@@ -15,6 +17,7 @@ export async function list(req, res, next) {
 export async function create(req, res, next) {
   try {
     const { id, question, answer, category, status } = req.validated;
+    await assertCanAccessStudent(req.user, id);
     const s = await query('SELECT id FROM "Student" WHERE id = $1', [id]);
     if (!s.rows[0]) throw new AppError('Student not found', 404);
     const r = await query(
@@ -30,6 +33,9 @@ export async function create(req, res, next) {
 export async function update(req, res, next) {
   try {
     const { id, question, answer, category, status } = req.validated;
+    const existing = await query('SELECT "studentId" FROM "QAEntry" WHERE id = $1', [id]);
+    if (!existing.rows[0]) throw new AppError('QA entry not found', 404);
+    await assertCanAccessStudent(req.user, existing.rows[0].studentId);
     const updates = [];
     const vals = [];
     let i = 1;
@@ -53,6 +59,9 @@ export async function update(req, res, next) {
 export async function remove(req, res, next) {
   try {
     const { id } = req.validated;
+    const existing = await query('SELECT "studentId" FROM "QAEntry" WHERE id = $1', [id]);
+    if (!existing.rows[0]) throw new AppError('QA entry not found', 404);
+    await assertCanAccessStudent(req.user, existing.rows[0].studentId);
     await query('DELETE FROM "QAEntry" WHERE id = $1', [id]);
     return success(res, null, 'QA entry deleted');
   } catch (err) {

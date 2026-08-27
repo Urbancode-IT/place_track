@@ -2,7 +2,6 @@ import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { getTrainersForInterview, resolveInterviewForFinish } from '../services/interviewFinishLookup.service.js';
-import { applyInterviewFinishOutcome } from '../services/interviewFinishApply.service.js';
 
 async function resolveStudentByEmail(studentEmail) {
   const norm = studentEmail.trim().toLowerCase();
@@ -30,10 +29,7 @@ export async function previewFinish(req, res, next) {
         404
       );
     }
-    const [trainers, trainerOptions] = await Promise.all([
-      getTrainersForInterview(interview.id),
-      query(`SELECT id, name FROM "User" WHERE role = 'TRAINER' ORDER BY name`),
-    ]);
+    const trainers = await getTrainersForInterview(interview.id);
     const s = await query('SELECT name FROM "Student" WHERE id = $1', [studentId]);
     return success(res, {
       studentName: s.rows[0]?.name,
@@ -45,13 +41,18 @@ export async function previewFinish(req, res, next) {
         status: interview.status,
       },
       trainers,
-      trainerOptions: trainerOptions.rows,
+      // Only trainers already on this interview (no global directory leak).
+      trainerOptions: trainers.map((t) => ({ id: t.id, name: t.name })),
     });
   } catch (err) {
     next(err);
   }
 }
 
+/**
+ * Public finish → enqueue InterviewFinishRequest (admin must approve).
+ * Does NOT mutate the live interview.
+ */
 export async function applyFinishOpen(req, res, next) {
   try {
     const {
@@ -74,22 +75,72 @@ export async function applyFinishOpen(req, res, next) {
       );
     }
     const interviewId = interview.id;
-    /* undefined/omit = leave trainers unchanged; [] would clear all — treat missing as null */
+
     const proposedTrainerIds =
-      trainerIds === undefined || trainerIds === null ? null : trainerIds;
+      trainerIds === undefined || trainerIds === null ? null : [...new Set(trainerIds.map(String))];
 
-    await applyInterviewFinishOutcome(interviewId, {
-      proposedStatus,
-      feedback: feedback || null,
-      trainerReviewRating,
-      trainerReviewNotes: trainerReviewNotes?.trim() || null,
-      proposedTrainerIds,
-      rescheduleDate: proposedStatus === 'RESCHEDULED' ? rescheduleDate : undefined,
-      rescheduleTimeSlot: proposedStatus === 'RESCHEDULED' ? rescheduleTimeSlot : undefined,
-    });
+    if (proposedTrainerIds != null && proposedTrainerIds.length) {
+      const chk = await query(
+        `SELECT id FROM "User" WHERE id = ANY($1::text[]) AND role = 'TRAINER'`,
+        [proposedTrainerIds]
+      );
+      if (chk.rows.length !== proposedTrainerIds.length) {
+        throw new AppError('One or more trainer IDs are invalid', 400);
+      }
+    }
 
-    return success(res, { ok: true }, 'Recorded. Interview status and schedule are updated now.');
+    const existing = await query(
+      `SELECT id FROM "InterviewFinishRequest"
+       WHERE "interviewId" = $1 AND status = 'SUBMITTED' LIMIT 1`,
+      [interviewId]
+    );
+    if (existing.rows[0]) {
+      throw new AppError(
+        'A finish submission for this interview is already waiting for approval. Contact placement if you need to change it.',
+        409
+      );
+    }
+
+    const rescheduleTs =
+      proposedStatus === 'RESCHEDULED' && rescheduleDate
+        ? new Date(rescheduleDate)
+        : null;
+    const rescheduleOk = rescheduleTs && !Number.isNaN(rescheduleTs.getTime());
+
+    await query(
+      `INSERT INTO "InterviewFinishRequest" (
+         "studentId", "interviewId", "proposedStatus", feedback, "proposedTrainerIds",
+         "trainerReviewRating", "trainerReviewNotes", "rescheduleDate", "rescheduleTimeSlot",
+         status, "submittedAt"
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'SUBMITTED', now())`,
+      [
+        studentId,
+        interviewId,
+        proposedStatus,
+        feedback || null,
+        proposedTrainerIds,
+        trainerReviewRating || null,
+        trainerReviewNotes?.trim() || null,
+        proposedStatus === 'RESCHEDULED' && rescheduleOk ? rescheduleTs.toISOString() : null,
+        proposedStatus === 'RESCHEDULED' ? rescheduleTimeSlot || null : null,
+      ]
+    );
+
+    return success(
+      res,
+      { ok: true, pendingApproval: true },
+      'Submitted. Your placement team will review and update the interview.'
+    );
   } catch (err) {
+    // Columns missing if migrate not run — surface clear message
+    if (err?.code === '42703') {
+      return next(
+        new AppError(
+          'Server needs InterviewFinishRequest migration (trainer review / reschedule columns). Run: node scripts/migrate-interview-finish-extra.js',
+          500
+        )
+      );
+    }
     next(err);
   }
 }

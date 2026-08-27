@@ -1,6 +1,6 @@
 import { cn } from '@/utils/helpers';
 
-const TABS = ['Overview', 'Resume', 'Self Intro', 'Q&A', 'Schedule History', 'Notes'];
+const TABS = ['Overview', 'Resume', 'Self Intro', 'Q&A', 'Schedule History'];
 
 export function ProfileTabs({ active, onChange }) {
   return (

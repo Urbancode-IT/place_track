@@ -58,8 +58,10 @@ export function parseTimeSlotStart(timeSlot) {
   if (lone) {
     const h = parseInt(lone[1], 10);
     if (h >= 13 && h <= 23) return { hour: h, minute: 0 };
-    if (h >= 1 && h <= 11) return { hour: h + 12, minute: 0 };
+    // Ambiguous 1–11 without am/pm: treat as morning (campus default), not forced PM.
+    if (h >= 1 && h <= 11) return { hour: h, minute: 0 };
     if (h === 12) return { hour: 12, minute: 0 };
+    if (h === 0) return { hour: 0, minute: 0 };
   }
 
   return null;

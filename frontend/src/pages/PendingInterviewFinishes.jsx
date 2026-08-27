@@ -52,8 +52,8 @@ export default function PendingInterviewFinishes() {
           <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">Queue</p>
           <h1 className="font-arial text-[20px] font-medium">Interview finish submissions</h1>
           <p className="text-sm text-[var(--text2)] mt-1">
-            New finish forms update the interview immediately. This queue only shows older items still marked submitted (if
-            any). Approve to apply them, or reject to leave the interview unchanged.
+            Student finish forms wait here until you approve. Approving updates interview status, trainers, and
+            schedule; rejecting leaves the interview unchanged.
           </p>
         </div>
         <Link to="/" className="text-sm text-[var(--cyan)] hover:underline">

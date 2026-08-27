@@ -48,6 +48,7 @@ export function useUpdateInterview() {
       qc.invalidateQueries({ queryKey: ['interviews'] });
       qc.invalidateQueries({ queryKey: ['interview', id] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['trainer-interviews'] });
     },
   });
 }
@@ -74,13 +75,10 @@ export function useUpdateInterviewStatus() {
       await qc.cancelQueries({ queryKey: ['interviews'] });
       const previous = qc.getQueriesData({ queryKey: ['interviews'] });
       qc.setQueriesData({ queryKey: ['interviews'] }, (old) => {
-        if (!old?.data?.data) return old;
+        if (!old || !Array.isArray(old.data)) return old;
         return {
           ...old,
-          data: {
-            ...old.data,
-            data: old.data.data.map((i) => (i.id == id ? { ...i, status } : i)),
-          },
+          data: old.data.map((i) => (i.id == id ? { ...i, status } : i)),
         };
       });
       return { previous };
@@ -93,6 +91,7 @@ export function useUpdateInterviewStatus() {
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['interviews'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['trainer-interviews'] });
     },
   });
 }

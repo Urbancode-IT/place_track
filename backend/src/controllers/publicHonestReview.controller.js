@@ -90,12 +90,18 @@ export async function submitByToken(req, res, next) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+      const claim = await client.query(
+        `UPDATE "HonestReviewLink" SET "usedAt" = now() WHERE token = $1 AND "usedAt" IS NULL RETURNING token, "studentId"`,
+        [token]
+      );
+      if (!claim.rows[0]) {
+        throw new AppError('This link was already used', 400);
+      }
       const ins = await client.query(
         `INSERT INTO "StudentHonestReview" ("studentId", "linkToken", content)
          VALUES ($1, $2, $3) RETURNING id`,
-        [row.studentId, token, content.trim()]
+        [claim.rows[0].studentId, token, content.trim()]
       );
-      await client.query(`UPDATE "HonestReviewLink" SET "usedAt" = now() WHERE token = $1`, [token]);
       await client.query('COMMIT');
       return success(res, { id: ins.rows[0].id }, 'Thank you. Your student review was submitted.', 201);
     } catch (err) {

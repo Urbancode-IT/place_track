@@ -47,15 +47,19 @@ export function QABank({ studentId }) {
       </div>
       <ul className="space-y-2">
         {qa.map((entry) => (
-          <li key={entry.id} className="border border-border rounded-lg p-3 bg-white">
-            <p className="font-medium text-gray-900">{entry.question}</p>
-            <p className="text-sm text-gray-600 mt-1">{entry.answer || '—'}</p>
+          <li
+            key={entry.id}
+            className="rounded-lg p-3 border border-[var(--border)]"
+            style={{ background: 'var(--panel)' }}
+          >
+            <p className="font-medium text-[var(--text)]">{entry.question}</p>
+            <p className="text-sm text-[var(--text2)] mt-1">{entry.answer || '—'}</p>
             <div className="flex items-center gap-2 mt-2">
               <Badge className={QA_STATUS[entry.status]?.bg}>{entry.status}</Badge>
               <select
                 value={entry.status}
                 onChange={(e) => updateQa.mutate({ id: entry.id, data: { status: e.target.value } })}
-                className="text-xs border rounded px-2 py-1"
+                className="text-xs rounded px-2 py-1 border border-[var(--border)] bg-[rgba(0,0,0,0.25)] text-[var(--text)]"
               >
                 <option value="PENDING">Pending</option>
                 <option value="PREPARED">Prepared</option>

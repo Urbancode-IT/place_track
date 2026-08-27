@@ -19,18 +19,20 @@ export async function createInterviewWithTrainers({
   comments,
   trainerIds = [],
   broadcastEmailToAllTrainersIfUnassigned = false,
+  dbQuery = query,
 }) {
-  const s = await query('SELECT * FROM "Student" WHERE id = $1', [studentId]);
+  const q = dbQuery;
+  const s = await q('SELECT * FROM "Student" WHERE id = $1', [studentId]);
   const student = s.rows[0];
   if (!student) throw new AppError('Student not found', 404);
-  const r = await query(
+  const r = await q(
     `INSERT INTO "Interview" ("studentId", company, round, date, "timeSlot", "hrNumber", room, comments) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
     [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null]
   );
   const interview = r.rows[0];
   const ids = trainerIds || [];
   for (const trainerId of ids) {
-    await query(
+    await q(
       'INSERT INTO "InterviewTrainer" ("interviewId", "trainerId", "notifiedAt") VALUES ($1, $2, now()) ON CONFLICT DO NOTHING',
       [interview.id, trainerId]
     );
@@ -47,7 +49,7 @@ export async function createInterviewWithTrainers({
 
   let notifyTrainerIds = ids;
   if (!notifyTrainerIds.length && broadcastEmailToAllTrainersIfUnassigned) {
-    const allT = await query(`SELECT id FROM "User" WHERE role IN ('TRAINER', 'ADMIN')`);
+    const allT = await q(`SELECT id FROM "User" WHERE role IN ('TRAINER', 'ADMIN')`);
     notifyTrainerIds = allT.rows.map((row) => row.id);
   }
   // Run notifications in background - don't block the API response

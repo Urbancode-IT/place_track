@@ -36,4 +36,24 @@ export async function query(text, params) {
   return await pool.query(text, params);
 }
 
+/** Run work inside a single client transaction. */
+export async function withTransaction(fn) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      /* ignore rollback errors */
+    }
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export default pool;

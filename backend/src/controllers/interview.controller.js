@@ -7,6 +7,7 @@ import { notifyTrainersForInterview, notifyTrainersInterviewScheduleUpdated } fr
 import { emitInterviewUpdated } from '../services/socket.service.js';
 import { sendStatusUpdate, sendStudentInterviewRescheduled } from '../services/email.service.js';
 import { notifyGoogleChatInterviewScheduled } from '../services/googleChatInterviewNotify.service.js';
+import { assertCanAccessInterview } from '../utils/interviewAccess.utils.js';
 
 export async function list(req, res, next) {
   try {
@@ -115,6 +116,7 @@ export async function create(req, res, next) {
 export async function update(req, res, next) {
   try {
     const { id, ...data } = req.validated;
+    await assertCanAccessInterview(req.user, id);
     const beforeIv = await query(
       `SELECT i.*, s.name as "studentName" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.id = $1`,
       [id]
@@ -237,6 +239,7 @@ export async function update(req, res, next) {
 export async function remove(req, res, next) {
   try {
     const { id } = req.validated;
+    await assertCanAccessInterview(req.user, id);
     await query('DELETE FROM "Interview" WHERE id = $1', [id]);
     return success(res, null, 'Interview deleted');
   } catch (err) {
@@ -247,6 +250,7 @@ export async function remove(req, res, next) {
 export async function updateStatus(req, res, next) {
   try {
     const { id, status } = req.validated;
+    await assertCanAccessInterview(req.user, id);
     const beforeIv = await query(
       'SELECT i.*, s.name as "studentName", s.email as "studentEmail" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.id = $1',
       [id]
@@ -305,6 +309,7 @@ export async function updateStatus(req, res, next) {
 export async function addTrainers(req, res, next) {
   try {
     const { id, trainerIds } = req.validated;
+    await assertCanAccessInterview(req.user, id);
     const i = await query('SELECT i.*, s.name FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.id = $1', [id]);
     const interview = i.rows[0];
     if (!interview) throw new AppError('Interview not found', 404);
@@ -333,6 +338,7 @@ export async function addTrainers(req, res, next) {
 export async function removeTrainer(req, res, next) {
   try {
     const { id, trainerId } = req.validated;
+    await assertCanAccessInterview(req.user, id);
     await query('DELETE FROM "InterviewTrainer" WHERE "interviewId" = $1 AND "trainerId" = $2', [id, trainerId]);
     return success(res, null, 'Trainer removed');
   } catch (err) {

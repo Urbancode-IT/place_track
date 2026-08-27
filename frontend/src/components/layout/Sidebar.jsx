@@ -95,11 +95,12 @@ const mainNav = [
   { to: '/', icon: 'dashboard', label: 'Dashboard' },
   { to: '/students', icon: 'students', label: 'Students' },
   { to: '/schedule', icon: 'schedule', label: 'Schedule' },
-  { to: '/trainers', icon: 'trainers', label: 'Trainers' },
+  { to: '/trainers', icon: 'trainers', label: 'Trainers', adminOnly: true },
 ];
 
 const secondaryNav = [
   { to: '/pending-self-submits', icon: 'clipboard', label: 'Student submits' },
+  { to: '/pending-interview-finishes', icon: 'clipboard', label: 'Finish queue' },
   { to: '/honest-review-link', icon: 'honestReview', label: 'Student review link', trainerOrAdmin: true },
   { to: '/notifications', icon: 'notifications', label: 'Notifications' },
   { to: '/analytics', icon: 'analytics', label: 'Analytics', adminOnly: true },

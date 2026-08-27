@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { trainerApi } from '@/api/trainer.api';
 import { interviewApi } from '@/api/interview.api';
 import { Button } from '@/components/ui/Button';
-import { Toggle } from '@/components/ui/Toggle';
 import { AddTrainerModal } from '@/components/trainers/AddTrainerModal';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
@@ -46,9 +45,10 @@ function TrainerAvatar({ name, index = 0, size = 'md' }) {
 }
 
 export default function TrainerView() {
+  const queryClient = useQueryClient();
   const [selectedTrainerId, setSelectedTrainerId] = useState(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [notifyChannels, setNotifyChannels] = useState({ email: true, sms: false, whatsapp: true, push: true });
+  const [notifyInterviewId, setNotifyInterviewId] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -135,8 +135,9 @@ export default function TrainerView() {
   };
 
   const handleSendNotificationNow = () => {
-    if (!selectedTrainerId || !interviews.length) return;
-    notifyTrainer.mutate({ trainerId: selectedTrainerId, interviewId: interviews[0].id });
+    const interviewId = notifyInterviewId || interviews[0]?.id;
+    if (!selectedTrainerId || !interviewId) return;
+    notifyTrainer.mutate({ trainerId: selectedTrainerId, interviewId });
   };
   const handleAssignInterview = () => {
     if (!selectedTrainerId || !selectedInterviewId) return;
@@ -146,6 +147,8 @@ export default function TrainerView() {
         addToast({ type: 'success', message: 'Interview assigned to trainer' });
         setAssignOpen(false);
         setSelectedInterviewId('');
+        queryClient.invalidateQueries({ queryKey: ['trainer-interviews'] });
+        queryClient.invalidateQueries({ queryKey: ['interviews'] });
       })
       .catch(() => addToast({ type: 'error', message: 'Failed to assign interview' }));
   };
@@ -284,25 +287,26 @@ export default function TrainerView() {
                 <h3 className="font-arial text-[13px] font-medium text-white mb-3">
                   Notify {selectedTrainer.name}
                 </h3>
-                <div className="flex flex-wrap gap-4">
-                  {['email', 'sms', 'whatsapp', 'push'].map((ch) => (
-                    <div key={ch} className="flex items-center gap-2">
-                      <span className="text-[12px] text-[var(--text2)] capitalize">{ch}</span>
-                      <Toggle
-                        checked={notifyChannels[ch]}
-                        onChange={(v) => setNotifyChannels((s) => ({ ...s, [ch]: v }))}
-                      />
-                    </div>
+                <p className="text-[11px] text-[var(--text3)] mb-2">Sends email for the selected interview.</p>
+                <select
+                  value={notifyInterviewId || interviews[0]?.id || ''}
+                  onChange={(e) => setNotifyInterviewId(e.target.value)}
+                  className="w-full text-[12px] rounded-lg px-2 py-2 mb-3 bg-[var(--tc-bg)] border border-[var(--border)] text-[var(--text)]"
+                >
+                  {interviews.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.company} · {i.student?.name || 'Student'}
+                    </option>
                   ))}
-                </div>
+                </select>
                 <Button
                   type="button"
-                  className="w-full mt-4 rounded-lg font-medium text-[13px] py-2.5"
+                  className="w-full rounded-lg font-medium text-[13px] py-2.5"
                   style={{ background: 'var(--tc-primary)', color: '#fff' }}
                   onClick={handleSendNotificationNow}
                   disabled={!interviews.length || notifyTrainer.isPending}
                 >
-                  Send Notification Now
+                  Send email notification
                 </Button>
               </div>
             </>
@@ -415,9 +419,11 @@ export default function TrainerView() {
                       >
                         <option value="SCHEDULED">Scheduled</option>
                         <option value="SHORTLISTED">Shortlisted</option>
+                        <option value="SELECTED">Selected</option>
                         <option value="REJECTED">Rejected</option>
                         <option value="AWAITING_RESPONSE">Awaiting</option>
                         <option value="RESCHEDULED">Rescheduled</option>
+                        <option value="NO_RESPONSE">No response</option>
                       </select>
                       <Button
                         size="sm"
