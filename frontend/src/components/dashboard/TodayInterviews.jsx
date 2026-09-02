@@ -168,16 +168,16 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
           <select
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
-            className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2.5 py-1 text-[9px] font-medium uppercase tracking-wider text-[var(--cyan)] focus:outline-none focus:border-[var(--cyan)] transition-all cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
+            className="bg-[var(--surface-muted)] border border-[var(--panel-border)] rounded-lg px-2.5 py-1 text-[9px] font-medium uppercase tracking-wider text-[var(--cyan)] focus:outline-none focus:border-[var(--cyan)] transition-all cursor-pointer hover:bg-[var(--surface-hover)]"
           >
             {courses.map((c) => (
-              <option key={c} value={c} className="bg-[#0f172a] text-white">
+              <option key={c} value={c} className="bg-[var(--bg)] text-[var(--text)]">
                 {c === 'ALL' ? '⚡ ALL COURSES' : c}
               </option>
             ))}
           </select>
           <label
-            className="inline-flex items-center gap-1.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2 py-1 text-[9px] font-medium uppercase tracking-wider text-[var(--cyan)] cursor-pointer hover:bg-[rgba(0,186,224,0.05)]"
+            className="inline-flex items-center gap-1.5 bg-[var(--surface-muted)] border border-[var(--panel-border)] rounded-lg px-2 py-1 text-[9px] font-medium uppercase tracking-wider text-[var(--cyan)] cursor-pointer hover:bg-[var(--surface-hover)]"
             title="Filter board by date"
           >
             <CalendarIcon className="opacity-90" />
@@ -189,7 +189,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
             />
           </label>
         </div>
-        <span className="font-arial text-[9px] text-[var(--text3)] uppercase tracking-widest bg-[rgba(255,255,255,0.03)] px-2 py-0.5 rounded-full">
+        <span className="font-arial text-[9px] text-[var(--text3)] uppercase tracking-widest bg-[var(--surface-muted)] px-2 py-0.5 rounded-full">
           {prettyDate ? `${prettyDate} · ` : ''}{filteredInterviews?.length || 0} OF {initialInterviews?.length || 0}
         </span>
       </div>
@@ -218,8 +218,8 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                 <tr
                   key={i.id}
                   className={cn(
-                    "border-t border-[rgba(255,255,255,0.03)] transition-colors",
-                    isClash ? "bg-[rgba(244,63,94,0.1)] hover:bg-[rgba(244,63,94,0.15)]" : "hover:bg-[rgba(255,255,255,0.02)]"
+                    "border-t border-[var(--border)] transition-colors",
+                    isClash ? "bg-[rgba(244,63,94,0.1)] hover:bg-[rgba(244,63,94,0.15)]" : "hover:bg-[var(--surface-hover)]"
                   )}
                 >
                 <td className="px-4 py-3">

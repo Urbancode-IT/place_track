@@ -7,7 +7,7 @@ export default function AppLayout() {
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
 
   return (
-    <div className="min-h-screen" style={{ color: 'var(--text)' }}>
+    <div className="min-h-screen bg-[var(--bg)]" style={{ color: 'var(--text)' }}>
       <Sidebar />
       <div
         className={`relative min-h-screen flex flex-col transition-[margin] duration-200 ease-out ${sidebarCollapsed ? 'md:ml-[4.5rem]' : 'md:ml-64'}`}

@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useUIStore } from '@/store/ui.store';
-import { useThemeStore } from '@/store/theme.store';
 
 function Icon({ name, className = 'h-5 w-5' }) {
   const common = { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 1.8 };
@@ -157,8 +156,6 @@ export function Sidebar() {
   const toggleSidebarCollapsed = useUIStore((s) => s.toggleSidebarCollapsed);
   const mobileOpen = useUIStore((s) => s.sidebarMobileOpen);
   const closeSidebarMobile = useUIStore((s) => s.closeSidebarMobile);
-  const theme = useThemeStore((s) => s.theme);
-  const toggleTheme = useThemeStore((s) => s.toggleTheme);
 
   const initials =
     user?.name
@@ -186,12 +183,9 @@ export function Sidebar() {
         />
       )}
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-transform duration-200 ease-out md:transition-[width] ${translateClass} ${widthClass}`}
+        className={`shell-surface fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-transform duration-200 ease-out md:transition-[width] border-r ${translateClass} ${widthClass}`}
         style={{
-          background: 'rgba(10,14,20,0.75)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
+          borderColor: 'var(--shell-border)',
           paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
         }}
       >
@@ -216,7 +210,7 @@ export function Sidebar() {
             <button
               type="button"
               onClick={toggleSidebarCollapsed}
-              className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text2)] transition hover:text-[var(--text)] hover:bg-[rgba(255,255,255,0.05)]"
+              className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text2)] transition hover:text-[var(--text)] hover:bg-[var(--surface-hover)]"
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               aria-expanded={!collapsed}
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -239,7 +233,7 @@ export function Sidebar() {
             ))}
           </nav>
 
-          <div className="my-3 mx-auto h-px w-8" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          <div className="my-3 mx-auto h-px w-8 bg-[var(--shell-border)]" />
 
           <nav className="flex flex-col gap-1">
             {secondaryNav.filter(canSee).map((item) => (
@@ -249,33 +243,8 @@ export function Sidebar() {
         </div>
 
         <div className={`mt-3 shrink-0 flex flex-col gap-2 ${collapsed ? 'items-center' : ''}`}>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className={`flex items-center rounded-xl transition hover:bg-[rgba(255,255,255,0.05)] ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5 w-full'}`}
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-xl text-[var(--text2)]" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-              {theme === 'dark' ? (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <circle cx="12" cy="12" r="4" />
-                  <path strokeLinecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-                </svg>
-              ) : (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                </svg>
-              )}
-            </span>
-            {!collapsed && (
-              <span className="text-sm text-[var(--text2)]">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-            )}
-          </button>
-
           <div
-            className={`flex items-center rounded-2xl ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'}`}
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+            className={`flex items-center rounded-2xl bg-[var(--surface-muted)] border border-[var(--shell-border)] ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'}`}
             title={collapsed ? `${user?.name || 'Admin'} · ${user?.role || 'ADMIN'}` : undefined}
           >
             <div

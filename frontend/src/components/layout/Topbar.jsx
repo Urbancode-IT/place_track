@@ -31,23 +31,15 @@ export function Topbar() {
 
   return (
     <header
-      className="sticky top-0 z-20 flex items-center justify-between px-5 h-14"
-      style={{
-        background: 'rgba(10,14,20,0.65)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}
+      className="shell-surface sticky top-0 z-20 flex items-center justify-between px-5 h-14 border-b"
+      style={{ borderColor: 'var(--shell-border)' }}
     >
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={toggleSidebarMobile}
-          className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition hover:bg-[rgba(255,255,255,0.05)]"
-          style={{
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: 'var(--text2)',
-          }}
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition hover:bg-[var(--surface-hover)] border border-[var(--shell-border)]"
+          style={{ color: 'var(--text2)' }}
           aria-label="Open menu"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -64,11 +56,7 @@ export function Topbar() {
 
       <div className="flex items-center gap-2 sm:gap-3">
         <div
-          className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
+          className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--shell-border)]"
         >
           <svg className="h-4 w-4 text-[var(--text3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <circle cx="11" cy="11" r="7" />

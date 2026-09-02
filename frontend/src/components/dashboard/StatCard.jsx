@@ -21,7 +21,7 @@ function ProgressRing({ progress, size = 56 }) {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="rgba(255,255,255,0.06)"
+        stroke="var(--track-bg)"
         strokeWidth={stroke}
       />
       <circle
@@ -95,7 +95,7 @@ export function StatCard({ title, value, sub, progress, variant = 'mini', classN
         </span>
       </div>
       {progress != null && (
-        <div className="mt-3 h-[3px] w-full rounded-full overflow-hidden bg-[rgba(255,255,255,0.06)]">
+        <div className="mt-3 h-[3px] w-full rounded-full overflow-hidden bg-[var(--track-bg)]">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
