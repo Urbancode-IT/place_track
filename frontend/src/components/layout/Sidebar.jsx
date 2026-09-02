@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useUIStore } from '@/store/ui.store';
+import { useThemeStore } from '@/store/theme.store';
 
 function Icon({ name, className = 'h-5 w-5' }) {
   const common = { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 1.8 };
@@ -108,9 +109,6 @@ const secondaryNav = [
 ];
 
 function NavItem({ item, end, collapsed, onNavigate }) {
-  const sub =
-    item.to === '/' ? 'OVERVIEW' : item.to.replace(/^\//, '').replace(/\//g, '-').toUpperCase();
-
   return (
     <NavLink
       to={item.to}
@@ -119,44 +117,33 @@ function NavItem({ item, end, collapsed, onNavigate }) {
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         [
-          'group relative flex items-center rounded-xl py-2.5 transition',
-          collapsed ? 'justify-center px-2' : 'gap-3 px-3',
-          isActive ? 'text-[var(--text)]' : 'text-[var(--text2)] hover:text-[var(--text)]',
+          'group relative flex items-center rounded-xl transition-all duration-200',
+          collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2',
+          isActive ? 'text-[var(--cyan)]' : 'text-[var(--text2)] hover:text-[var(--text)]',
         ].join(' ')
       }
-      style={({ isActive }) => ({
-        background: isActive ? 'rgba(54,153,255,0.12)' : 'transparent',
-        border: '1px solid',
-        borderColor: isActive ? 'rgba(54,153,255,0.22)' : 'transparent',
-      })}
     >
       {({ isActive }) => (
         <>
           <span
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-lg"
-            style={{
-              background: isActive ? 'rgba(54,153,255,0.14)' : 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: isActive ? '0 12px 30px rgba(54,153,255,0.12)' : 'none',
-            }}
+            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-all duration-200"
+            style={
+              isActive
+                ? {
+                    background: 'rgba(0,212,255,0.15)',
+                    boxShadow: '0 0 24px rgba(0,212,255,0.35), inset 0 0 12px rgba(0,212,255,0.08)',
+                    border: '1px solid rgba(0,212,255,0.25)',
+                  }
+                : {
+                    background: 'transparent',
+                    border: '1px solid transparent',
+                  }
+            }
           >
             <Icon name={item.icon} className="h-5 w-5" />
           </span>
           {!collapsed && (
-            <div className="flex min-w-0 flex-col leading-tight">
-              <span className="text-sm font-medium">{item.label}</span>
-              <span className="text-[10px] font-arial tracking-wide text-[var(--text3)]">{sub}</span>
-            </div>
-          )}
-
-          {isActive && (
-            <span
-              aria-hidden="true"
-              className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r"
-              style={{
-                background: 'linear-gradient(180deg, rgba(0,212,255,0.85), rgba(155,93,255,0.85))',
-              }}
-            />
+            <span className="text-sm font-medium truncate">{item.label}</span>
           )}
         </>
       )}
@@ -170,6 +157,8 @@ export function Sidebar() {
   const toggleSidebarCollapsed = useUIStore((s) => s.toggleSidebarCollapsed);
   const mobileOpen = useUIStore((s) => s.sidebarMobileOpen);
   const closeSidebarMobile = useUIStore((s) => s.closeSidebarMobile);
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
 
   const initials =
     user?.name
@@ -191,112 +180,122 @@ export function Sidebar() {
     <>
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
           onClick={closeSidebarMobile}
           aria-hidden="true"
         />
       )}
       <aside
-      className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-transform duration-200 ease-out md:transition-[width] ${translateClass} ${widthClass}`}
-      style={{
-        background: 'rgba(10,13,24,0.70)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
-        borderRight: '1px solid var(--border)',
-        paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
-      }}
-    >
-      {/* Header: brand — stays visible */}
-      <div className="shrink-0">
-        {/* Brand + collapse toggle */}
-        <div
-          className={`flex px-1 ${collapsed ? 'flex-col items-center gap-3' : 'items-start justify-between gap-2'}`}
-        >
-          <div className={`flex min-w-0 items-center gap-3 ${collapsed ? '' : 'flex-1'}`}>
-            <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-              style={{ filter: 'drop-shadow(0 0 10px rgba(0,212,255,0.40))' }}
-            >
-              <img src="/placetrack-icon.png" alt="Placetrack" className="h-10 w-10 object-contain" />
-            </div>
-            {!collapsed && (
-              <div className="min-w-0 flex flex-col">
-                <span className="font-arial text-sm font-medium tracking-tight">PlaceTrack</span>
-                <span className="font-arial text-[10px] tracking-[0.16em] text-[var(--text3)]">PLACEMENT PORTAL</span>
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={toggleSidebarCollapsed}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text)] transition hover:opacity-90 active:scale-95"
-            style={{
-              background: 'rgba(0,0,0,0.45)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-transform duration-200 ease-out md:transition-[width] ${translateClass} ${widthClass}`}
+        style={{
+          background: 'rgba(10,14,20,0.75)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
+          paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <div className="shrink-0">
+          <div
+            className={`flex px-1 ${collapsed ? 'flex-col items-center gap-3' : 'items-start justify-between gap-2'}`}
           >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-              {collapsed ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            <div className={`flex min-w-0 items-center gap-3 ${collapsed ? '' : 'flex-1'}`}>
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ filter: 'drop-shadow(0 0 14px rgba(0,212,255,0.45))' }}
+              >
+                <img src="/placetrack-icon.png" alt="Placetrack" className="h-10 w-10 object-contain" />
+              </div>
+              {!collapsed && (
+                <div className="min-w-0 flex flex-col">
+                  <span className="text-sm font-semibold tracking-tight">PlaceTrack</span>
+                  <span className="text-[10px] tracking-[0.16em] text-[var(--text3)]">PLACEMENT PORTAL</span>
+                </div>
               )}
-            </svg>
-          </button>
+            </div>
+            <button
+              type="button"
+              onClick={toggleSidebarCollapsed}
+              className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text2)] transition hover:text-[var(--text)] hover:bg-[rgba(255,255,255,0.05)]"
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-expanded={!collapsed}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                {collapsed ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Scrollable nav — Settings + links stay reachable above taskbar / small viewports */}
-      <div className="scrollbar-none mt-4 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pr-0.5">
-        <div>
-          {!collapsed && (
-            <p className="px-2 pb-2 font-arial text-[10px] tracking-[0.18em] text-[var(--text3)]">MAIN</p>
-          )}
+        <div className="scrollbar-none mt-5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
           <nav className="flex flex-col gap-1">
             {mainNav.filter(canSee).map((item) => (
               <NavItem key={item.to} item={item} end={item.to === '/'} collapsed={collapsed} onNavigate={closeSidebarMobile} />
             ))}
           </nav>
-        </div>
 
-        <div className="mt-6 pb-2">
-          {!collapsed && (
-            <p className="px-2 pb-2 font-arial text-[10px] tracking-[0.18em] text-[var(--text3)]">TOOLS</p>
-          )}
+          <div className="my-3 mx-auto h-px w-8" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
           <nav className="flex flex-col gap-1">
             {secondaryNav.filter(canSee).map((item) => (
               <NavItem key={item.to} item={item} collapsed={collapsed} onNavigate={closeSidebarMobile} />
             ))}
           </nav>
         </div>
-      </div>
 
-      {/* Bottom user — pinned below scroll area */}
-      <div
-        className={`mt-3 shrink-0 flex items-center rounded-2xl border py-3 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'}`}
-        style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}
-        title={collapsed ? `${user?.name || 'Admin'} · ${user?.role || 'ADMIN'}` : undefined}
-      >
-        <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-arial text-[12px] font-medium"
-          style={{
-            background: 'linear-gradient(135deg,#00D4FF,#9B5DFF)',
-            color: '#000',
-            boxShadow: '0 0 18px rgba(0,212,255,0.35)',
-          }}
-        >
-          {initials}
-        </div>
-        {!collapsed && (
-          <div className="min-w-0">
-            <div className="truncate text-sm font-medium">{user?.name || 'Admin'}</div>
-            <div className="truncate font-arial text-[10px] tracking-wide text-[var(--text3)]">{user?.role || 'ADMIN'}</div>
+        <div className={`mt-3 shrink-0 flex flex-col gap-2 ${collapsed ? 'items-center' : ''}`}>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`flex items-center rounded-xl transition hover:bg-[rgba(255,255,255,0.05)] ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5 w-full'}`}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-xl text-[var(--text2)]" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+              {theme === 'dark' ? (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <circle cx="12" cy="12" r="4" />
+                  <path strokeLinecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                </svg>
+              ) : (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                </svg>
+              )}
+            </span>
+            {!collapsed && (
+              <span className="text-sm text-[var(--text2)]">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+            )}
+          </button>
+
+          <div
+            className={`flex items-center rounded-2xl ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'}`}
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+            title={collapsed ? `${user?.name || 'Admin'} · ${user?.role || 'ADMIN'}` : undefined}
+          >
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-semibold"
+              style={{
+                background: 'linear-gradient(135deg,#00D4FF,#9B5DFF)',
+                color: '#000',
+                boxShadow: '0 0 20px rgba(0,212,255,0.4)',
+              }}
+            >
+              {initials}
+            </div>
+            {!collapsed && (
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium">{user?.name || 'Admin'}</div>
+                <div className="truncate text-[10px] tracking-wide text-[var(--text3)]">{user?.role || 'ADMIN'}</div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
       </aside>
     </>
   );

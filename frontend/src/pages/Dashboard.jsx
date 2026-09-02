@@ -7,8 +7,6 @@ import { dashboardApi } from '@/api/dashboard.api';
 import { studentApi } from '@/api/student.api';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { TodayInterviews } from '@/components/dashboard/TodayInterviews';
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
-import { TrainerWorkload } from '@/components/dashboard/TrainerWorkload';
 import { Spinner } from '@/components/ui/Spinner';
 import { useSocket } from '@/hooks/useSocket';
 import { AddScheduleModal } from '@/components/interviews/AddScheduleModal';
@@ -17,6 +15,61 @@ import { useNotificationStore } from '@/store/notification.store';
 import { DashboardCreateStudentLink } from '@/components/dashboard/DashboardCreateStudentLink';
 import { todayLocalISO } from '@/utils/formatDate';
 
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good Morning';
+  if (h < 17) return 'Good Afternoon';
+  return 'Good Evening';
+}
+
+function GreetingWave() {
+  return (
+    <svg viewBox="0 0 400 40" className="w-full h-10 mt-2" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="rgba(0,212,255,0)" />
+          <stop offset="30%" stopColor="rgba(0,212,255,0.8)" />
+          <stop offset="70%" stopColor="rgba(155,93,255,0.8)" />
+          <stop offset="100%" stopColor="rgba(155,93,255,0)" />
+        </linearGradient>
+        <filter id="waveGlow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <path
+        d="M0,20 Q50,5 100,20 T200,20 T300,20 T400,20"
+        fill="none"
+        stroke="url(#waveGrad)"
+        strokeWidth="2"
+        filter="url(#waveGlow)"
+      />
+    </svg>
+  );
+}
+
+function DashboardGreeting({ name }) {
+  const greeting = getGreeting();
+  const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const firstName = name?.split(' ')[0] || 'Admin';
+
+  return (
+    <div className="glass-surface glass-surface-glow rounded-[20px] p-5 relative overflow-hidden">
+      <div className="relative z-10">
+        <p className="text-[11px] tracking-wide text-[var(--text3)] uppercase">Welcome back</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mt-1">
+          {greeting}, <span className="text-gradient-cyan">{firstName}</span>
+        </h1>
+        <p className="text-lg text-[var(--text2)] mt-1 font-medium">{time}</p>
+      </div>
+      <GreetingWave />
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [boardDate, setBoardDate] = useState(todayLocalISO);
   const qc = useQueryClient();
@@ -24,6 +77,7 @@ export default function Dashboard() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const hydrated = useAuthHydrated();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const user = useAuthStore((s) => s.user);
   const updateInterview = useUpdateInterview();
   const addToast = useNotificationStore((s) => s.addToast);
   const dashboardReady = hydrated && !!accessToken;
@@ -55,28 +109,15 @@ export default function Dashboard() {
     ...queryOptions,
     staleTime: 1000 * 60, // Today's list is more sensitive (1 min)
   });
-  const { data: activityData } = useQuery({
-    queryKey: ['dashboard', 'activity'],
-    queryFn: () => dashboardApi.activity().then((r) => r.data),
-    ...queryOptions,
-  });
-  const { data: analyticsData } = useQuery({
-    queryKey: ['dashboard', 'analytics'],
-    queryFn: () => dashboardApi.analytics().then((r) => r.data),
-    ...queryOptions,
-    staleTime: 1000 * 60 * 10, // Analytics can be much staler
-  });
 
   useSocket({
     'interview:created': () => {
       qc.invalidateQueries({ queryKey: ['dashboard', 'today'] });
       qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
-      qc.invalidateQueries({ queryKey: ['dashboard', 'activity'] });
     },
     'interview:updated': () => {
       qc.invalidateQueries({ queryKey: ['dashboard', 'today'] });
       qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
-      qc.invalidateQueries({ queryKey: ['dashboard', 'activity'] });
     },
   });
 
@@ -97,21 +138,20 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col h-full gap-6 text-[var(--text)]">
-      <div className="flex flex-col md:flex-row flex-1 min-h-0 gap-6">
-      {/* Left column */}
-      <div className="flex-1 flex flex-col gap-4 md:pr-4 md:border-r min-w-0" style={{ borderColor: 'var(--border)' }}>
+    <div className="flex flex-col h-full gap-5 text-[var(--text)]">
+      <DashboardGreeting name={user?.name} />
+
+      <div className="flex flex-col flex-1 min-h-0 gap-4">
         {pendingCount > 0 && (
           <Link
             to="/pending-self-submits"
-            className="block rounded-2xl px-4 py-3 text-sm font-medium transition hover:opacity-95"
+            className="block rounded-[20px] px-4 py-3 text-sm font-medium transition hover:opacity-95 glass-surface"
             style={{
-              background: 'linear-gradient(90deg, rgba(255,214,10,0.15), rgba(0,212,255,0.12))',
-              border: '1px solid rgba(255,214,10,0.35)',
-              color: 'var(--text)',
+              borderColor: 'rgba(255,214,10,0.35)',
+              boxShadow: '0 0 30px rgba(255,214,10,0.08)',
             }}
           >
-            <span className="font-arial text-[10px] tracking-wider text-[var(--yellow)]">ACTION</span>
+            <span className="text-[10px] tracking-wider text-[var(--yellow)] font-medium">ACTION</span>
             <span className="block mt-0.5">
               {pendingCount} student interview submission{pendingCount === 1 ? '' : 's'} waiting for approval — open queue →
             </span>
@@ -121,14 +161,13 @@ export default function Dashboard() {
         {pendingFinishCount > 0 && (
           <Link
             to="/pending-interview-finishes"
-            className="block rounded-2xl px-4 py-3 text-sm font-medium transition hover:opacity-95"
+            className="block rounded-[20px] px-4 py-3 text-sm font-medium transition hover:opacity-95 glass-surface"
             style={{
-              background: 'linear-gradient(90deg, rgba(155,93,255,0.18), rgba(0,212,255,0.08))',
-              border: '1px solid rgba(155,93,255,0.35)',
-              color: 'var(--text)',
+              borderColor: 'rgba(155,93,255,0.35)',
+              boxShadow: '0 0 30px rgba(155,93,255,0.1)',
             }}
           >
-            <span className="font-arial text-[10px] tracking-wider text-[var(--violet)]">ACTION</span>
+            <span className="text-[10px] tracking-wider text-[var(--violet)] font-medium">ACTION</span>
             <span className="block mt-0.5">
               {pendingFinishCount} interview finish submission{pendingFinishCount === 1 ? '' : 's'} waiting — open queue →
             </span>
@@ -175,13 +214,6 @@ export default function Dashboard() {
             setEditModalOpen(true);
           }}
         />
-      </div>
-
-      {/* Right column */}
-      <div className="w-full md:w-[360px] flex-shrink-0 flex flex-col gap-4 md:pl-2">
-        <ActivityFeed items={activityData?.data} />
-        <TrainerWorkload data={analyticsData?.data?.trainerPerformance} />
-      </div>
       </div>
 
       <AddScheduleModal

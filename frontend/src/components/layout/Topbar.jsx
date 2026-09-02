@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
-import { useThemeStore } from '@/store/theme.store';
 import { useUIStore } from '@/store/ui.store';
 import { authApi } from '@/api/auth.api';
 import { Button } from '@/components/ui/Button';
@@ -11,16 +10,15 @@ function formatNow() {
   const date = d
     .toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
     .toUpperCase();
-  const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
-  return `${day} · ${date} · ${time}`;
+  const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return { day, date, time };
 }
 
 export function Topbar() {
-  const { user, logout } = useAuthStore();
+  const { logout } = useAuthStore();
   const navigate = useNavigate();
-  const theme = useThemeStore((s) => s.theme);
-  const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const toggleSidebarMobile = useUIStore((s) => s.toggleSidebarMobile);
+  const { day, date, time } = formatNow();
 
   const handleLogout = async () => {
     try {
@@ -33,23 +31,22 @@ export function Topbar() {
 
   return (
     <header
-      className="sticky top-0 z-20 flex items-center justify-between px-6 h-14"
+      className="sticky top-0 z-20 flex items-center justify-between px-5 h-14"
       style={{
-        background: 'rgba(10,13,24,0.8)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid var(--border)',
+        background: 'rgba(10,14,20,0.65)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}
     >
-      {/* Left: hamburger (mobile) + breadcrumb + title */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={toggleSidebarMobile}
-          className="md:hidden flex items-center justify-center w-8 h-8 rounded-full shrink-0"
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition hover:bg-[rgba(255,255,255,0.05)]"
           style={{
-            background: 'rgba(255,255,255,0.04)',
             border: '1px solid rgba(255,255,255,0.08)',
-            color: 'var(--text3)',
+            color: 'var(--text2)',
           }}
           aria-label="Open menu"
         >
@@ -57,60 +54,37 @@ export function Topbar() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
           </svg>
         </button>
-        <div className="flex flex-col">
-          <span className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
-            01 ▸ DASHBOARD ▸ COMMAND CENTER
+        <div className="hidden sm:flex flex-col">
+          <span className="text-[10px] tracking-[0.14em] uppercase text-[var(--text3)]">
+            {day} · {date}
           </span>
-          <span className="font-arial text-[13px] font-medium text-[var(--text)]">
-            Command Center — Admin
-          </span>
+          <span className="text-sm font-medium text-[var(--text)]">{time}</span>
         </div>
       </div>
 
-      {/* Middle: date */}
-      <div className="hidden md:flex items-center justify-center font-arial text-[10px] text-[var(--text3)]">
-        {formatNow()}
-      </div>
-
-      {/* Right: theme + search + schedule + logout */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="flex items-center justify-center w-8 h-8 rounded-full text-[13px]"
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div
+          className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl"
           style={{
             background: 'rgba(255,255,255,0.04)',
             border: '1px solid rgba(255,255,255,0.08)',
-            color: 'var(--text3)',
-          }}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {theme === 'dark' ? '☾' : '☀︎'}
-        </button>
-
-        <div
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full"
-          style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
           }}
         >
+          <svg className="h-4 w-4 text-[var(--text3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <circle cx="11" cy="11" r="7" />
+            <path strokeLinecap="round" d="M20 20l-3-3" />
+          </svg>
           <span className="text-[12px] text-[var(--text3)]">Search students, companies</span>
-          <span
-            className="font-arial text-[9px] px-2 py-0.5 rounded-md"
-            style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text3)' }}
-          >
-            ⌘K
-          </span>
         </div>
 
         <Button
           size="sm"
-          className="font-arial text-[11px] font-medium px-4 py-1.5 rounded-lg"
+          className="text-[11px] font-semibold px-4 py-2 rounded-xl"
           style={{
-            background: 'var(--cyan)',
+            background: 'linear-gradient(135deg, #00D4FF, #00a8cc)',
             color: '#000',
-            boxShadow: '0 0 12px rgba(0,212,255,0.45)',
+            boxShadow: '0 0 20px rgba(0,212,255,0.4)',
+            border: 'none',
           }}
           onClick={() => navigate('/schedule')}
         >
@@ -120,7 +94,7 @@ export function Topbar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="font-arial text-[10px] text-[var(--text3)] hover:text-[var(--cyan)]"
+          className="text-[11px] text-[var(--text3)] hover:text-[var(--cyan)] transition px-2"
         >
           Logout
         </button>

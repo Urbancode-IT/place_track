@@ -23,8 +23,7 @@ export function TrainerWorkload({ data }) {
 
   return (
     <div
-      className="rounded-2xl p-4"
-      style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
+      className="rounded-[20px] p-4 glass-surface"
     >
       <h3 className="font-arial text-[12px] font-medium text-[var(--text)] mb-3">
         Trainer Workload

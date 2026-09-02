@@ -148,7 +148,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
   return (
     <>
     <div
-      className="rounded-2xl overflow-hidden flex flex-col glass-surface"
+      className="rounded-[20px] overflow-hidden flex flex-col glass-surface"
     >
       <div
         className="flex items-center justify-between px-5 py-3"

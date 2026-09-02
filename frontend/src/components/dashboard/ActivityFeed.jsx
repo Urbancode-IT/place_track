@@ -55,8 +55,7 @@ export function ActivityFeed({ items }) {
   return (
     <>
     <div
-      className="rounded-2xl p-4 flex flex-col"
-      style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
+      className="rounded-[20px] p-4 flex flex-col glass-surface"
     >
       <div className="flex items-center justify-between mb-2">
         <span className="font-arial text-[12px] font-medium text-[var(--text)]">

@@ -9,8 +9,8 @@ const COLOR_TOKENS = [
   { name: 'Yellow - Warning', var: '--yellow', value: '#FFD60A' },
   { name: 'Violet - Accent', var: '--violet', value: '#9B5DFF' },
   { name: 'Orange - Trainer', var: '--orange', value: '#FF6B35' },
-  { name: 'Canvas', var: '--bg', value: '#06080F' },
-  { name: 'Panel / Sidebar', var: '--bg2', value: '#0A0D18' },
+  { name: 'Canvas', var: '--bg', value: '#0A0E14' },
+  { name: 'Panel / Sidebar', var: '--bg2', value: '#0D1117' },
   { name: 'Card / Surface', var: '--panel', value: 'rgba(255,255,255,0.03)' },
 ];
 

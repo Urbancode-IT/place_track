@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 
 export const useUIStore = create((set) => ({
-  /** false = full labels, true = icon-only rail */
-  sidebarCollapsed: false,
+  /** false = full labels, true = icon-only rail (reference dashboard default) */
+  sidebarCollapsed: true,
   toggleSidebarCollapsed: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   /** off-canvas sidebar drawer, mobile only */
   sidebarMobileOpen: false,

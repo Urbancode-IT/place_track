@@ -4,6 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Outfit', 'system-ui', 'sans-serif'],
         syne: ['Syne', 'system-ui', 'sans-serif'],
         mono: ['IBM Plex Mono', 'monospace'],
         outfit: ['Outfit', 'system-ui', 'sans-serif'],
