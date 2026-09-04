@@ -1,6 +1,20 @@
+import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useUIStore } from '@/store/ui.store';
+
+const DRAG_OPEN_PX = 36;
+const EDGE_SWIPE_ZONE = 24;
+
+function getPointerPoint(event) {
+  if (event.touches?.length) {
+    return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }
+  if (event.changedTouches?.length) {
+    return { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
+  }
+  return { x: event.clientX, y: event.clientY };
+}
 
 function Icon({ name, className = 'h-5 w-5' }) {
   const common = { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 1.8 };
@@ -107,12 +121,20 @@ const secondaryNav = [
   { to: '/settings', icon: 'settings', label: 'Settings' },
 ];
 
-function NavItem({ item, end, collapsed, onNavigate }) {
+function NavItem({ item, end, collapsed, onNavigate, onExpandRequest }) {
   return (
     <NavLink
       to={item.to}
       end={end}
-      onClick={onNavigate}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (collapsed) {
+          e.preventDefault();
+          onExpandRequest?.();
+          return;
+        }
+        onNavigate?.();
+      }}
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         [
@@ -151,11 +173,137 @@ function NavItem({ item, end, collapsed, onNavigate }) {
 }
 
 export function Sidebar() {
+  const asideRef = useRef(null);
+  const dragRef = useRef({ tracking: false, startX: 0, startY: 0, dragged: false });
   const user = useAuthStore((s) => s.user);
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
-  const toggleSidebarCollapsed = useUIStore((s) => s.toggleSidebarCollapsed);
+  const expandSidebarCollapsed = useUIStore((s) => s.expandSidebarCollapsed);
+  const collapseSidebarCollapsed = useUIStore((s) => s.collapseSidebarCollapsed);
   const mobileOpen = useUIStore((s) => s.sidebarMobileOpen);
+  const openSidebarMobile = useUIStore((s) => s.openSidebarMobile);
   const closeSidebarMobile = useUIStore((s) => s.closeSidebarMobile);
+
+  const railCollapsed = collapsed && !mobileOpen;
+
+  const openSidebar = () => {
+    expandSidebarCollapsed();
+    if (window.innerWidth < 768) openSidebarMobile();
+  };
+
+  const stopDrag = () => {
+    dragRef.current.tracking = false;
+  };
+
+  const handleDragStart = (event) => {
+    if (!railCollapsed) return;
+    const { x, y } = getPointerPoint(event);
+    dragRef.current = { tracking: true, startX: x, startY: y, dragged: false };
+  };
+
+  const handleDragMove = (event) => {
+    if (!dragRef.current.tracking || !railCollapsed) return;
+
+    const { x, y } = getPointerPoint(event);
+    const dx = x - dragRef.current.startX;
+    const dy = y - dragRef.current.startY;
+
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+      if (Math.abs(dy) > Math.abs(dx)) {
+        stopDrag();
+        return;
+      }
+      dragRef.current.dragged = true;
+    }
+
+    if (dx >= DRAG_OPEN_PX) {
+      openSidebar();
+      stopDrag();
+    }
+  };
+
+  const handleSidebarSurfaceClick = () => {
+    if (dragRef.current.dragged) {
+      dragRef.current.dragged = false;
+      return;
+    }
+    if (railCollapsed) openSidebar();
+  };
+
+  const handleMouseEnter = () => {
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && railCollapsed) {
+      openSidebar();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !mobileOpen) {
+      collapseSidebarCollapsed();
+    }
+  };
+
+  useEffect(() => {
+    if (mobileOpen) return undefined;
+
+    const edgeDrag = { tracking: false, startX: 0, startY: 0 };
+
+    const onTouchStart = (event) => {
+      const x = event.touches[0]?.clientX ?? 0;
+      if (x > EDGE_SWIPE_ZONE) return;
+      edgeDrag.tracking = true;
+      edgeDrag.startX = x;
+      edgeDrag.startY = event.touches[0]?.clientY ?? 0;
+    };
+
+    const onTouchMove = (event) => {
+      if (!edgeDrag.tracking) return;
+      const x = event.touches[0]?.clientX ?? 0;
+      const y = event.touches[0]?.clientY ?? 0;
+      const dx = x - edgeDrag.startX;
+      const dy = y - edgeDrag.startY;
+
+      if (Math.abs(dy) > Math.abs(dx)) {
+        edgeDrag.tracking = false;
+        return;
+      }
+
+      if (dx >= DRAG_OPEN_PX) {
+        useUIStore.getState().expandSidebarCollapsed();
+        if (window.innerWidth < 768) useUIStore.getState().openSidebarMobile();
+        edgeDrag.tracking = false;
+      }
+    };
+
+    const onTouchEnd = () => {
+      edgeDrag.tracking = false;
+    };
+
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onTouchEnd);
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    if (railCollapsed) return;
+
+    const handleOutside = (event) => {
+      if (asideRef.current && !asideRef.current.contains(event.target)) {
+        collapseSidebarCollapsed();
+        closeSidebarMobile();
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('touchstart', handleOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('touchstart', handleOutside);
+    };
+  }, [railCollapsed, collapseSidebarCollapsed, closeSidebarMobile]);
 
   const initials =
     user?.name
@@ -170,7 +318,7 @@ export function Sidebar() {
     return true;
   };
 
-  const widthClass = collapsed ? 'w-64 px-4 md:w-[4.5rem] md:px-2' : 'w-64 px-4';
+  const widthClass = collapsed && !mobileOpen ? 'w-64 px-4 md:w-[4.5rem] md:px-2' : 'w-64 px-4';
   const translateClass = mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0';
 
   return (
@@ -183,53 +331,57 @@ export function Sidebar() {
         />
       )}
       <aside
-        className={`shell-surface fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-transform duration-200 ease-out md:transition-[width] border-r ${translateClass} ${widthClass}`}
+        ref={asideRef}
+        onClick={handleSidebarSurfaceClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onPointerDown={handleDragStart}
+        onPointerMove={handleDragMove}
+        onPointerUp={stopDrag}
+        onPointerCancel={stopDrag}
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={stopDrag}
+        className={`shell-surface fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] flex-col py-5 transition-[transform,width] duration-200 ease-out border-r touch-pan-y select-none ${translateClass} ${widthClass} ${railCollapsed ? 'md:cursor-pointer' : ''}`}
         style={{
           borderColor: 'var(--shell-border)',
           paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
         }}
+        aria-expanded={!railCollapsed}
       >
         <div className="shrink-0">
-          <div
-            className={`flex px-1 ${collapsed ? 'flex-col items-center gap-3' : 'items-start justify-between gap-2'}`}
-          >
-            <div className={`flex min-w-0 items-center gap-3 ${collapsed ? '' : 'flex-1'}`}>
+          <div className={`flex px-1 ${railCollapsed ? 'flex-col items-center' : 'items-center gap-3'}`}>
+            <div
+              className={`flex min-w-0 items-center gap-3 ${railCollapsed ? 'cursor-pointer' : ''}`}
+              title={railCollapsed ? 'Hover, tap, or drag right to expand sidebar' : undefined}
+            >
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
                 style={{ filter: 'drop-shadow(0 0 14px rgba(0,212,255,0.45))' }}
               >
                 <img src="/placetrack-icon.png" alt="Placetrack" className="h-10 w-10 object-contain" />
               </div>
-              {!collapsed && (
+              {!railCollapsed && (
                 <div className="min-w-0 flex flex-col">
                   <span className="text-sm font-semibold tracking-tight">PlaceTrack</span>
                   <span className="text-[10px] tracking-[0.16em] text-[var(--text3)]">PLACEMENT PORTAL</span>
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={toggleSidebarCollapsed}
-              className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text2)] transition hover:text-[var(--text)] hover:bg-[var(--surface-hover)]"
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-expanded={!collapsed}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                {collapsed ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                )}
-              </svg>
-            </button>
           </div>
         </div>
 
         <div className="scrollbar-none mt-5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
           <nav className="flex flex-col gap-1">
             {mainNav.filter(canSee).map((item) => (
-              <NavItem key={item.to} item={item} end={item.to === '/'} collapsed={collapsed} onNavigate={closeSidebarMobile} />
+              <NavItem
+                key={item.to}
+                item={item}
+                end={item.to === '/'}
+                collapsed={railCollapsed}
+                onNavigate={closeSidebarMobile}
+                onExpandRequest={openSidebar}
+              />
             ))}
           </nav>
 
@@ -237,15 +389,21 @@ export function Sidebar() {
 
           <nav className="flex flex-col gap-1">
             {secondaryNav.filter(canSee).map((item) => (
-              <NavItem key={item.to} item={item} collapsed={collapsed} onNavigate={closeSidebarMobile} />
+              <NavItem
+                key={item.to}
+                item={item}
+                collapsed={railCollapsed}
+                onNavigate={closeSidebarMobile}
+                onExpandRequest={openSidebar}
+              />
             ))}
           </nav>
         </div>
 
-        <div className={`mt-3 shrink-0 flex flex-col gap-2 ${collapsed ? 'items-center' : ''}`}>
+        <div className={`mt-3 shrink-0 flex flex-col gap-2 ${railCollapsed ? 'items-center' : ''}`}>
           <div
-            className={`flex items-center rounded-2xl bg-[var(--surface-muted)] border border-[var(--shell-border)] ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'}`}
-            title={collapsed ? `${user?.name || 'Admin'} · ${user?.role || 'ADMIN'}` : undefined}
+            className={`flex items-center rounded-2xl bg-[var(--surface-muted)] border border-[var(--shell-border)] ${railCollapsed ? 'justify-center p-2 cursor-pointer' : 'gap-3 px-3 py-2.5'}`}
+            title={railCollapsed ? 'Hover, tap, or drag right to expand sidebar' : `${user?.name || 'Admin'} · ${user?.role || 'ADMIN'}`}
           >
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-semibold"
@@ -257,7 +415,7 @@ export function Sidebar() {
             >
               {initials}
             </div>
-            {!collapsed && (
+            {!railCollapsed && (
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{user?.name || 'Admin'}</div>
                 <div className="truncate text-[10px] tracking-wide text-[var(--text3)]">{user?.role || 'ADMIN'}</div>
