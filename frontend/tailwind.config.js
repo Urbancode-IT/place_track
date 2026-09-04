@@ -4,11 +4,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Outfit', 'system-ui', 'sans-serif'],
-        syne: ['Syne', 'system-ui', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'monospace'],
-        outfit: ['Outfit', 'system-ui', 'sans-serif'],
-        arial: ['Arial', 'Helvetica', 'sans-serif'],
+        sans: ['"Outfit"', 'system-ui', 'sans-serif'],
+        syne: ['"Outfit"', 'system-ui', 'sans-serif'],
+        mono: ['"Outfit"', 'system-ui', 'sans-serif'],
+        outfit: ['"Outfit"', 'system-ui', 'sans-serif'],
+        arial: ['"Outfit"', 'system-ui', 'sans-serif'],
       },
     },
   },

@@ -39,7 +39,7 @@ export default function HonestReviewLinkPage() {
     <>
     <div className="mx-auto max-w-3xl space-y-8 text-[var(--text)]">
       <div>
-        <h1 className="font-arial text-[22px] font-medium">Student review link</h1>
+        <h1 className="text-[22px] font-medium">Student review link</h1>
       </div>
 
       <div>
@@ -56,7 +56,7 @@ export default function HonestReviewLinkPage() {
         className="rounded-2xl border p-6 space-y-4"
         style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'var(--border)' }}
       >
-        <h2 className="font-arial text-lg font-medium">Recent submissions</h2>
+        <h2 className="text-lg font-medium">Recent submissions</h2>
         {listLoading ? (
           <Spinner size="sm" />
         ) : recentRows.length === 0 ? (
@@ -74,7 +74,7 @@ export default function HonestReviewLinkPage() {
                   <span>{format(new Date(row.createdAt), 'MMM d, yyyy h:mm a')}</span>
                 </div>
                 {row.studentEmail && (
-                  <p className="mt-0.5 text-[11px] font-arial text-[var(--text3)]">{row.studentEmail}</p>
+                  <p className="mt-0.5 text-[11px] text-[var(--text3)]">{row.studentEmail}</p>
                 )}
                 <p className="mt-2 whitespace-pre-wrap text-[var(--text2)]">{row.content}</p>
                 <Link
@@ -102,7 +102,7 @@ export default function HonestReviewLinkPage() {
         required.
       </p>
       {lastUrl && (
-        <p className="mt-3 text-[11px] font-arial text-[var(--cyan)] break-all rounded-lg p-2 bg-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.2)]">
+        <p className="mt-3 text-[11px] text-[var(--cyan)] break-all rounded-lg p-2 bg-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.2)]">
           {lastUrl}
         </p>
       )}

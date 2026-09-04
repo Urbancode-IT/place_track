@@ -90,7 +90,7 @@ export function InterviewTimeline({ interviews }) {
               <p
                 title="Place Track does not record physical check-ins. Use outcome status or trainer review to confirm follow-up."
                 className={cn(
-                  'text-[10px] font-arial leading-snug max-w-md',
+                  'text-[10px] leading-snug max-w-md',
                   followUp.tone === 'warn' && 'text-amber-400/90',
                   followUp.tone === 'ok' && 'text-emerald-400/85',
                   followUp.tone === 'neutral' && 'text-[var(--text3)]'
@@ -104,7 +104,7 @@ export function InterviewTimeline({ interviews }) {
                 className="rounded-lg border px-2.5 py-2 text-[11px] space-y-1"
                 style={{ borderColor: 'var(--border)', background: 'rgba(155,93,255,0.06)' }}
               >
-                <p className="text-[10px] font-arial uppercase tracking-wide text-[var(--text3)]">
+                <p className="text-[10px] uppercase tracking-wide text-[var(--text3)]">
                   Student trainer review
                 </p>
                 {trLabel && (

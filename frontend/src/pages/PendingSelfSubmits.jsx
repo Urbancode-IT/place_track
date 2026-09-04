@@ -96,8 +96,8 @@ export default function PendingSelfSubmits() {
     <div className="space-y-4 text-[var(--text)]">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Queue</p>
-          <h1 className="font-arial text-[20px] font-medium">Student interview submissions</h1>
+          <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Queue</p>
+          <h1 className="text-[20px] font-medium">Student interview submissions</h1>
           <p className="text-sm text-[var(--text2)] mt-1">
             Students submit via the link you share from their profile. Approve to add a real interview to the schedule and dashboard.
           </p>
@@ -143,7 +143,7 @@ export default function PendingSelfSubmits() {
             <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
-                <tr className="text-left text-[var(--text3)] font-arial text-[10px] uppercase tracking-wider border-b" style={{ borderColor: 'var(--border)' }}>
+                <tr className="text-left text-[var(--text3)] text-[10px] uppercase tracking-wider border-b" style={{ borderColor: 'var(--border)' }}>
                   <th className="p-3 w-10">
                     <input
                       type="checkbox"

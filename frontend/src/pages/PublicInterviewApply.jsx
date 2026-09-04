@@ -155,7 +155,7 @@ export default function PublicInterviewApply() {
           className="max-w-md w-full rounded-2xl p-8 text-center space-y-3"
           style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
         >
-          <h1 className="font-arial text-xl font-medium">Thank you</h1>
+          <h1 className="text-xl font-medium">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
             {submitMut.data?.message || 'Submitted. Your placement team will review it.'}
           </p>
@@ -182,8 +182,8 @@ export default function PublicInterviewApply() {
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">PlaceTrack</p>
-            <h1 className="mt-1 font-arial text-[22px] font-medium">Interview details</h1>
+            <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">PlaceTrack</p>
+            <h1 className="mt-1 text-[22px] font-medium">Interview details</h1>
             <div className="flex items-center gap-3 mt-2">
               <p className="text-sm text-[var(--text2)]">
                 Use your <strong className="text-[var(--text)]">Email or Phone Number</strong> on file.
@@ -247,7 +247,7 @@ export default function PublicInterviewApply() {
                           {item.round}
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-arial text-[var(--text2)]">{item.timeSlot}</span>
+                          <span className="text-[10px] text-[var(--text2)]">{item.timeSlot}</span>
                           <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-widest ${item.pending ? 'bg-primary/80 text-white' : 'bg-emerald-500 text-white'
                             }`}>
                             {item.pending ? 'PENDING' : 'READY'}

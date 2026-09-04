@@ -75,16 +75,16 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
       {/* Top row: name/company + compact tags */}
       <div className="flex justify-between items-start gap-2 min-w-0">
         <div className="min-w-0 flex-1">
-          <p className="font-arial text-[12px] font-medium text-[var(--text)] leading-tight truncate">
+          <p className="text-[12px] font-medium text-[var(--text)] leading-tight truncate">
             {interview.student?.name || 'Unnamed student'}
           </p>
-          <p className="font-arial text-[10px] text-[var(--text2)] mt-0.5 truncate">
+          <p className="text-[10px] text-[var(--text2)] mt-0.5 truncate">
             {interview.company}
           </p>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink min-w-0 max-w-[58%]">
           <span
-            className="uppercase font-arial text-[9px] font-medium px-2 py-0.5 rounded-md shrink-0"
+            className="uppercase text-[9px] font-medium px-2 py-0.5 rounded-md shrink-0"
             style={{
               background: style.bg,
               border: `1px solid ${style.border}`,
@@ -95,7 +95,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
           </span>
           {interview.round && (
             <span
-              className="font-arial text-[9px] px-1.5 py-0.5 rounded truncate min-w-0 max-w-[150px]"
+              className="text-[9px] px-1.5 py-0.5 rounded truncate min-w-0 max-w-[150px]"
               title={interview.round}
               style={{
                 background: `${columnAccent}22`,
@@ -115,7 +115,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
           {trainers.slice(0, 3).map((t, idx) => (
             <span
               key={t?.id ?? idx}
-              className="w-5 h-5 rounded-full flex items-center justify-center font-arial text-[9px] font-medium text-white border border-white/20 shrink-0"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-medium text-white border border-white/20 shrink-0"
               style={{ background: getCircleColor(idx) }}
               title={t?.name}
             >
@@ -123,7 +123,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
             </span>
           ))}
         </div>
-        <div className="flex items-center gap-1 font-arial text-[10px] text-[var(--text3)]">
+        <div className="flex items-center gap-1 text-[10px] text-[var(--text3)]">
           <span className="opacity-80" aria-hidden>🕐</span>
           <span>{interview.timeSlot || '—'}</span>
         </div>
@@ -131,7 +131,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
 
       {/* Optional note line */}
       {note && (
-        <p className="font-arial text-[9px] text-[var(--text3)] flex items-center gap-1">
+        <p className="text-[9px] text-[var(--text3)] flex items-center gap-1">
           {pipeline === 'SHORTLISTED' && (
             <span className="text-[var(--green)]" aria-hidden>✓</span>
           )}
@@ -158,7 +158,7 @@ export function KanbanCard({ interview, columnAccent, onEdit, onDelete }) {
           {onEdit && (
             <button
               type="button"
-              className="text-[10px] font-arial text-primary hover:underline"
+              className="text-[10px] text-primary hover:underline"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();

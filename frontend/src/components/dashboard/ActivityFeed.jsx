@@ -58,10 +58,10 @@ export function ActivityFeed({ items }) {
       className="rounded-[20px] p-4 flex flex-col glass-surface"
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="font-arial text-[12px] font-medium text-[var(--text)]">
+        <span className="text-[12px] font-medium text-[var(--text)]">
           Activity Stream
         </span>
-        <span className="font-arial text-[9px] text-[var(--text3)]">ALL</span>
+        <span className="text-[9px] text-[var(--text3)]">ALL</span>
       </div>
       <ul className="space-y-2 mt-1">
         {items?.slice(0, 10).map((a) => (
@@ -69,7 +69,7 @@ export function ActivityFeed({ items }) {
             <span className="mt-1 w-1.5 h-1.5 rounded-full shrink-0 bg-[var(--cyan)]" />
             <div className="flex-1 min-w-0">
               <div className="text-[var(--text)]">{a.message}</div>
-              <div className="font-arial text-[9px] text-[var(--text3)]">
+              <div className="text-[9px] text-[var(--text3)]">
                 {formatDate(a.timestamp, 'HH:mm')}
               </div>
             </div>

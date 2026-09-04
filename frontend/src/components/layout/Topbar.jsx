@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useUIStore } from '@/store/ui.store';
@@ -19,6 +20,7 @@ export function Topbar() {
   const navigate = useNavigate();
   const toggleSidebarMobile = useUIStore((s) => s.toggleSidebarMobile);
   const { day, date, time } = formatNow();
+  const [search, setSearch] = useState('');
 
   const handleLogout = async () => {
     try {
@@ -27,6 +29,12 @@ export function Topbar() {
       logout();
       navigate('/login');
     }
+  };
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const q = search.trim();
+    navigate(q ? `/students?search=${encodeURIComponent(q)}` : '/students');
   };
 
   return (
@@ -46,31 +54,33 @@ export function Topbar() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
           </svg>
         </button>
-        <div className="hidden sm:flex flex-col">
-          <span className="text-[10px] tracking-[0.14em] uppercase text-[var(--text3)]">
-            {day} · {date}
-          </span>
-          <span className="text-sm font-medium text-[var(--text)]">{time}</span>
-        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <div
+        <form
+          onSubmit={handleSearch}
           className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--shell-border)]"
         >
-          <svg className="h-4 w-4 text-[var(--text3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <svg className="h-4 w-4 shrink-0 text-[var(--text3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <circle cx="11" cy="11" r="7" />
             <path strokeLinecap="round" d="M20 20l-3-3" />
           </svg>
-          <span className="text-[12px] text-[var(--text3)]">Search students, companies</span>
-        </div>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search students, companies"
+            className="w-48 bg-transparent text-[12px] text-[var(--text)] placeholder:text-[var(--text3)] outline-none"
+            aria-label="Search students"
+          />
+        </form>
 
         <Button
           size="sm"
           className="text-[11px] font-semibold px-4 py-2 rounded-xl"
           style={{
             background: 'linear-gradient(135deg, #00D4FF, #00a8cc)',
-            color: '#000',
+            color: '#fff',
             boxShadow: '0 0 20px rgba(0,212,255,0.4)',
             border: 'none',
           }}
@@ -78,6 +88,13 @@ export function Topbar() {
         >
           + Schedule
         </Button>
+
+        <div className="hidden sm:flex flex-col items-end">
+          <span className="text-[10px] tracking-[0.14em] uppercase text-[var(--text3)]">
+            {day} · {date}
+          </span>
+          <span className="text-sm font-medium text-[var(--text)]">{time}</span>
+        </div>
 
         <button
           type="button"

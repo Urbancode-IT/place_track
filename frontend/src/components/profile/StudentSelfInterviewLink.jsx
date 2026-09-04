@@ -36,7 +36,7 @@ export function StudentSelfInterviewLink({ children = null }) {
         Same link for everyone. Student uses their institute email on the form; you approve under Student submits.
       </p>
       {lastUrl && (
-        <p className="text-[9px] font-arial text-[var(--text2)] break-all max-w-full">{lastUrl}</p>
+        <p className="text-[9px] text-[var(--text2)] break-all max-w-full">{lastUrl}</p>
       )}
     </div>
   );

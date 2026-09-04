@@ -159,7 +159,7 @@ export default function PublicInterviewFinish() {
           className="max-w-md w-full rounded-2xl p-8 text-center space-y-3"
           style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
         >
-          <h1 className="font-arial text-xl font-medium">Thank you</h1>
+          <h1 className="text-xl font-medium">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
             {submitMut.data?.message ||
               'Submitted for approval. Your placement team will update the schedule after review.'}
@@ -177,8 +177,8 @@ export default function PublicInterviewFinish() {
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-            <h1 className="mt-1 font-arial text-[22px] font-medium">Interview finish</h1>
+            <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
+            <h1 className="mt-1 text-[22px] font-medium">Interview finish</h1>
             <div className="flex items-center gap-3 mt-2">
               <p className="text-sm text-[var(--text2)]">
                 Record the outcome of your completed interview.
@@ -299,7 +299,7 @@ export default function PublicInterviewFinish() {
                 {preview.interview?.round} · {preview.interview?.timeSlot} · status {preview.interview?.status}
               </p>
               <div>
-                <p className="text-[10px] font-arial uppercase text-[var(--text3)] mb-1">
+                <p className="text-[10px] uppercase text-[var(--text3)] mb-1">
                   Trainers (select who should be on this interview)
                 </p>
                 <p className="text-[11px] text-[var(--text3)] mb-2">

@@ -56,7 +56,7 @@ export default function PublicHonestReviewCommon() {
           className="max-w-lg w-full rounded-2xl p-8 text-center space-y-3"
           style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
         >
-          <h1 className="font-arial text-xl font-medium">Thank you</h1>
+          <h1 className="text-xl font-medium">Thank you</h1>
           <p className="text-sm text-[var(--text2)]">
             {submitMut.data?.message || 'Your student review was submitted.'}
           </p>
@@ -76,8 +76,8 @@ export default function PublicHonestReviewCommon() {
         style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
       >
         <div>
-          <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-          <h1 className="mt-2 font-arial text-2xl font-medium">Student review</h1>
+          <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
+          <h1 className="mt-2 text-2xl font-medium">Student review</h1>
           <p className="mt-2 text-sm text-[var(--text2)]">
             {meta?.message || 'Use your registered email, then share your student review.'}
           </p>

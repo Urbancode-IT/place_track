@@ -25,12 +25,12 @@ export function KanbanColumn({ column, items, renderCard }) {
               boxShadow: `0 0 10px ${column.accent}88`,
             }}
           />
-          <p className="font-arial text-[10px] tracking-[0.12em] uppercase text-[var(--text)] truncate">
+          <p className="text-[10px] tracking-[0.12em] uppercase text-[var(--text)] truncate">
             {column.title}
           </p>
         </div>
         <span
-          className="font-arial text-[11px] font-medium px-2 py-0.5 rounded shrink-0"
+          className="text-[11px] font-medium px-2 py-0.5 rounded shrink-0"
           style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid var(--border)',

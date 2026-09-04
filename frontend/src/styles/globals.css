@@ -182,13 +182,24 @@
 
   html {
     color-scheme: dark;
+    font-family: 'Outfit', system-ui, sans-serif;
   }
 
   body {
     margin: 0;
     background: linear-gradient(160deg, #0A0E14 0%, #06080F 50%, #0A0E14 100%);
     color: var(--text);
-    font-family: Outfit, system-ui, sans-serif;
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+
+  #root,
+  body,
+  button,
+  input,
+  select,
+  textarea,
+  optgroup {
+    font-family: 'Outfit', system-ui, sans-serif;
   }
 
   body::before {

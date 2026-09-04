@@ -37,7 +37,7 @@ export default function StudentProfile() {
         className="max-w-lg mx-auto rounded-2xl border p-8 space-y-4 text-center"
         style={{ background: 'var(--panel)', borderColor: 'var(--border)', color: 'var(--text)' }}
       >
-        <h1 className="font-arial text-lg font-medium">Student profile</h1>
+        <h1 className="text-lg font-medium">Student profile</h1>
         <p className="text-sm text-[var(--text2)]">{errMsg}</p>
         <p className="text-xs text-[var(--text3)]">
           Trainers only see students who have at least one interview assigned to them. Admins see everyone.
@@ -97,7 +97,7 @@ export default function StudentProfile() {
       >
         {tab === 'Overview' && (
           <div>
-            <h3 className="font-arial text-[13px] font-medium text-[var(--text)] mb-3">
+            <h3 className="text-[13px] font-medium text-[var(--text)] mb-3">
               Interview timeline
             </h3>
             <InterviewTimeline interviews={student.interviews} />

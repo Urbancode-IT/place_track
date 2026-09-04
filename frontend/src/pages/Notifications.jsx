@@ -21,15 +21,15 @@ export default function Notifications() {
     <div className="space-y-5 text-[var(--text)]">
       <div className="flex justify-between items-center">
         <div>
-          <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
+          <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">
             04 ▸ Alerts Center
           </p>
-          <h1 className="mt-1 font-arial text-[18px] font-medium">Alerts & notifications</h1>
+          <h1 className="mt-1 text-[18px] font-medium">Alerts & notifications</h1>
         </div>
         <Button
           variant="secondary"
           size="sm"
-          className="font-arial text-[10px]"
+          className="text-[10px]"
           onClick={readAll}
         >
           Mark all as read
@@ -48,7 +48,7 @@ export default function Notifications() {
         >
           <span>Alerts</span>
           {unreadCount > 0 && (
-            <span className="font-arial text-[10px] text-[var(--cyan)]">
+            <span className="text-[10px] text-[var(--cyan)]">
               {unreadCount} unread
             </span>
           )}

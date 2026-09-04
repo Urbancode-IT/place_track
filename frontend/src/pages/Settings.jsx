@@ -20,8 +20,8 @@ export default function Settings() {
   return (
     <div className="space-y-6 text-[var(--text)]">
       <div>
-        <p className="font-arial text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Settings</p>
-        <h1 className="font-arial text-[22px] font-medium">Workspace</h1>
+        <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Settings</p>
+        <h1 className="text-[22px] font-medium">Workspace</h1>
         <p className="text-sm text-[var(--text2)] mt-1">
           Notification toggles live on the <Link to="/notifications" className="text-[var(--cyan)] hover:underline">Notifications</Link> page.
         </p>
@@ -31,9 +31,9 @@ export default function Settings() {
         className="rounded-2xl border p-6 space-y-4"
         style={{ background: 'var(--panel)', borderColor: 'var(--border)' }}
       >
-        <h2 className="font-arial text-sm font-medium">Email delivery (trainers)</h2>
+        <h2 className="text-sm font-medium">Email delivery (trainers)</h2>
         <p className="text-xs text-[var(--text3)] leading-relaxed">
-          Interview emails use SMTP from <span className="font-arial text-[var(--text2)]">placetrack/backend/.env</span>. If mail never arrives, check this first.
+          Interview emails use SMTP from <span className="text-[var(--text2)]">placetrack/backend/.env</span>. If mail never arrives, check this first.
         </p>
 
         {isLoading && (
@@ -47,7 +47,7 @@ export default function Settings() {
         )}
 
         {!isLoading && !isError && mail && (
-          <ul className="text-sm space-y-2 font-arial text-[12px]">
+          <ul className="text-sm space-y-2 text-[12px]">
             <li className="flex flex-wrap gap-2">
               <span className="text-[var(--text3)]">SMTP configured:</span>
               <span className={mail.configured ? 'text-[var(--green)]' : 'text-[var(--pink)]'}>
@@ -90,7 +90,7 @@ export default function Settings() {
 
         {!isLoading && !isError && !ok && (
           <p className="text-xs text-[var(--text2)] leading-relaxed">
-            After fixing <span className="font-arial">.env</span>, restart the backend. Gmail needs an{' '}
+            After fixing <span className="">.env</span>, restart the backend. Gmail needs an{' '}
             <strong className="text-[var(--text)]">App Password</strong>, not your normal password.
           </p>
         )}

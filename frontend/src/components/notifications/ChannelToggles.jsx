@@ -63,7 +63,7 @@ export function ChannelToggles() {
       <button
         type="button"
         onClick={setupPush}
-        className="ml-auto px-3 py-1.5 rounded-lg text-[11px] font-arial"
+        className="ml-auto px-3 py-1.5 rounded-lg text-[11px] "
         style={{ background: 'var(--panel2)', border: '1px solid var(--border)' }}
       >
         Enable push on this device

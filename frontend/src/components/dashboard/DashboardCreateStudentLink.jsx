@@ -50,7 +50,7 @@ export function DashboardCreateStudentLink() {
           approval.
         </p>
         {lastUrl && (
-          <p className="mt-3 text-[11px] font-arial text-[var(--cyan)] break-all rounded-lg p-2 bg-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.2)]">
+          <p className="mt-3 text-[11px] text-[var(--cyan)] break-all rounded-lg p-2 bg-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.2)]">
             {lastUrl}
           </p>
         )}

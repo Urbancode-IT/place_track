@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { studentApi } from '@/api/student.api';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { listQueryOptions } from '@/lib/queryDefaults';
@@ -14,11 +15,22 @@ import { useCreateStudent } from '@/hooks/useStudents';
 import { downloadStudentsCsv } from '@/api/export.api';
 
 export default function Students() {
+  const [searchParams] = useSearchParams();
+  const urlSearch = searchParams.get('search') || '';
   const [view, setView] = useState('card');
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState(() => (urlSearch ? { search: urlSearch } : {}));
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const debouncedSearch = useDebouncedValue(filters.search ?? '', 400);
+
+  useEffect(() => {
+    setPage(1);
+    setFilters((prev) => {
+      const current = prev.search || '';
+      if (current === urlSearch) return prev;
+      return { ...prev, search: urlSearch };
+    });
+  }, [urlSearch]);
 
   const handleFiltersChange = (next) => {
     setPage(1);
@@ -64,18 +76,32 @@ export default function Students() {
       </div>
       <StudentFilters filters={filters} onChange={handleFiltersChange} />
       {isFetching && !showInitialLoader ? (
-        <p className="text-xs text-[var(--text3)] font-arial">Updating…</p>
+        <p className="text-xs text-[var(--text3)] ">Updating…</p>
       ) : null}
       <div className="flex gap-2">
-        <Button variant={view === 'card' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('card')}>Cards</Button>
-        <Button variant={view === 'table' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('table')}>Table</Button>
+        <Button
+          variant={view === 'card' ? 'primary' : 'secondary'}
+          size="sm"
+          className={view === 'table' ? 'bg-[var(--surface-muted)] text-[var(--text)] border border-[var(--shell-border)] hover:bg-[var(--surface-hover)]' : 'text-white'}
+          onClick={() => setView('card')}
+        >
+          Cards
+        </Button>
+        <Button
+          variant={view === 'table' ? 'primary' : 'secondary'}
+          size="sm"
+          className={view === 'card' ? 'bg-[var(--surface-muted)] text-[var(--text)] border border-[var(--shell-border)] hover:bg-[var(--surface-hover)]' : 'text-white'}
+          onClick={() => setView('table')}
+        >
+          Table
+        </Button>
       </div>
       {showInitialLoader ? (
         <div className="flex justify-center py-12">
           <Spinner size="lg" />
         </div>
       ) : view === 'card' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid gap-2.5 justify-start [grid-template-columns:repeat(auto-fill,minmax(200px,220px))]">
           {students.map((s) => (
             <StudentCard key={s.id} student={s} />
           ))}
