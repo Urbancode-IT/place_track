@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+const apiTarget = 'http://127.0.0.1:5001';
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -30,11 +32,24 @@ export default defineConfig({
       },
     },
   },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.{js,jsx}'],
+  },
   server: {
     port: 5173,
+    watch: {
+      ignored: ['**/*.test.js', '**/*.test.jsx', '**/e2e/**'],
+    },
     proxy: {
-      '/api': { target: 'http://localhost:5001', changeOrigin: true },
-      '/socket.io': { target: 'http://localhost:5001', ws: true },
+      '/api': {
+        target: apiTarget,
+        changeOrigin: true,
+        timeout: 60_000,
+        proxyTimeout: 60_000,
+      },
+      '/health': { target: apiTarget, changeOrigin: true },
+      '/socket.io': { target: apiTarget, changeOrigin: true, ws: true },
     },
   },
 });

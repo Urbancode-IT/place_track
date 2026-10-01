@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useUIStore } from '@/store/ui.store';
 import { authApi } from '@/api/auth.api';
 import { Button } from '@/components/ui/Button';
+import { useModulePath } from '@/lib/modulePath';
 
 function formatNow() {
   const d = new Date();
@@ -18,6 +19,7 @@ function formatNow() {
 export function Topbar() {
   const { logout } = useAuthStore();
   const navigate = useNavigate();
+  const to = useModulePath();
   const toggleSidebarMobile = useUIStore((s) => s.toggleSidebarMobile);
   const { day, date, time } = formatNow();
   const [search, setSearch] = useState('');
@@ -34,7 +36,7 @@ export function Topbar() {
   const handleSearch = (event) => {
     event.preventDefault();
     const q = search.trim();
-    navigate(q ? `/students?search=${encodeURIComponent(q)}` : '/students');
+    navigate(q ? to(`/students?search=${encodeURIComponent(q)}`) : to('/students'));
   };
 
   return (
@@ -84,7 +86,7 @@ export function Topbar() {
             boxShadow: '0 0 20px rgba(0,212,255,0.4)',
             border: 'none',
           }}
-          onClick={() => navigate('/schedule')}
+          onClick={() => navigate(to('/schedule'))}
         >
           + Schedule
         </Button>

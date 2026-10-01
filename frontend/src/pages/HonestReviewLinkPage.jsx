@@ -5,11 +5,13 @@ import { format } from 'date-fns';
 import { honestReviewApi } from '@/api/honestReview.api';
 import { useNotificationStore } from '@/store/notification.store';
 import { Button } from '@/components/ui/Button';
+import { useModulePath } from '@/lib/modulePath';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 
 export default function HonestReviewLinkPage() {
   const addToast = useNotificationStore((s) => s.addToast);
+  const to = useModulePath();
   const [lastUrl, setLastUrl] = useState('');
   const [copyModalOpen, setCopyModalOpen] = useState(false);
 
@@ -78,7 +80,7 @@ export default function HonestReviewLinkPage() {
                 )}
                 <p className="mt-2 whitespace-pre-wrap text-[var(--text2)]">{row.content}</p>
                 <Link
-                  to={`/students/${row.studentId}`}
+                  to={to(`/students/${row.studentId}`)}
                   className="mt-2 inline-block text-xs font-medium text-[var(--cyan)] hover:underline"
                 >
                   Open student profile →

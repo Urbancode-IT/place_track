@@ -4,11 +4,13 @@ export function success(res, data = null, message = 'Success', statusCode = 200)
   return res.status(statusCode).json(body);
 }
 
-export function successWithPagination(res, data, pagination, message = 'Success') {
-  return res.status(200).json({
+export function successWithPagination(res, data, pagination, message = 'Success', extra = null) {
+  const body = {
     success: true,
     data,
     pagination,
     message,
-  });
+  };
+  if (extra && typeof extra === 'object') Object.assign(body, extra);
+  return res.status(200).json(body);
 }

@@ -10,6 +10,7 @@ import { MultiSelect } from '@/components/ui/MultiSelect';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { useNotificationStore } from '@/store/notification.store';
+import { useModulePath } from '@/lib/modulePath';
 
 export default function PendingSelfSubmits() {
   const qc = useQueryClient();
@@ -17,6 +18,7 @@ export default function PendingSelfSubmits() {
   const [approveTargets, setApproveTargets] = useState(null); // array of rows being approved, or null
   const [trainerIds, setTrainerIds] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
+  const to = useModulePath();
 
   const { data, isLoading } = useQuery({
     queryKey: ['self-interview-requests', { status: 'SUBMITTED' }],
@@ -29,7 +31,9 @@ export default function PendingSelfSubmits() {
   });
 
   const rows = data?.data || [];
-  const trainers = (trainersRes?.data || []).map((t) => ({ value: t.id, label: t.name }));
+  const trainers = (trainersRes?.data || [])
+    .filter((t) => t.allowed === true)
+    .map((t) => ({ value: t.id, label: t.name }));
 
   const allSelected = rows.length > 0 && selectedIds.length === rows.length;
   const toggleSelectAll = () => setSelectedIds(allSelected ? [] : rows.map((r) => r.id));
@@ -102,7 +106,7 @@ export default function PendingSelfSubmits() {
             Students submit via the link you share from their profile. Approve to add a real interview to the schedule and dashboard.
           </p>
         </div>
-        <Link to="/" className="text-sm text-[var(--cyan)] hover:underline">
+        <Link to={to('/')} className="text-sm text-[var(--cyan)] hover:underline">
           ← Dashboard
         </Link>
       </div>
@@ -173,7 +177,7 @@ export default function PendingSelfSubmits() {
                       />
                     </td>
                     <td className="p-3">
-                      <Link className="text-[var(--cyan)] hover:underline" to={`/students/${r.studentId}`}>
+                      <Link className="text-[var(--cyan)] hover:underline" to={to(`/students/${r.studentId}`)}>
                         {r.studentName}
                       </Link>
                       <div className="text-[10px] text-[var(--text3)]">{r.course}</div>

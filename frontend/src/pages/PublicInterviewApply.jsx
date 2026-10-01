@@ -13,6 +13,7 @@ import { useNotificationStore } from '@/store/notification.store';
 import { InterviewRoundFields } from '@/components/interviews/InterviewRoundFields';
 import { resolveSubmittedRound } from '@/constants/interviewRounds';
 import { todayLocalISO } from '@/utils/formatDate';
+import { isValidHttpUrl, normalizeMeetingLink } from '@/utils/jobApplication';
 
 function EyeIcon({ className }) {
   return (
@@ -56,6 +57,12 @@ const schema = z.object({
     errorMap: () => ({ message: 'Select your course' })
   }),
   hrNumber: z.string().optional(),
+  room: z
+    .string()
+    .min(1, 'Meeting link is required')
+    .refine((v) => isValidHttpUrl(normalizeMeetingLink(v)), {
+      message: 'Paste a valid meeting URL (https://…)',
+    }),
   comments: z.string().optional(),
 }).refine(data => data.studentEmail || data.studentPhone, {
   message: "Provide either Email or Phone Number to identify yourself",
@@ -101,6 +108,7 @@ export default function PublicInterviewApply() {
       timeSlot: '',
       course: '',
       hrNumber: '',
+      room: '',
       comments: '',
     },
   });
@@ -169,6 +177,7 @@ export default function PublicInterviewApply() {
       ...values,
       round: resolveSubmittedRound(values.round, values.customRound),
       date: new Date(values.date).toISOString(),
+      room: normalizeMeetingLink(values.room),
     };
     delete payload.customRound;
     submitMut.mutate(payload);
@@ -330,6 +339,19 @@ export default function PublicInterviewApply() {
               <Input label="Company" {...register('company')} error={errors.company?.message} />
 
               <InterviewRoundFields register={register} errors={errors} watchRound={round} />
+
+              <Input
+                label="Meeting link"
+                type="url"
+                inputMode="url"
+                autoComplete="off"
+                placeholder="Paste Zoom, Meet, or Teams URL"
+                {...register('room')}
+                error={errors.room?.message}
+              />
+              <p className="text-[11px] text-[var(--text3)] -mt-2">
+                Paste the link from your invite. Match the company, date, and time your SPOC logged.
+              </p>
 
               <Input label="HR / contact (optional)" {...register('hrNumber')} />
               <div>

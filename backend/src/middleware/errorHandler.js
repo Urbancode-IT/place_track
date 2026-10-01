@@ -58,7 +58,16 @@ export function errorHandler(err, _req, res, _next) {
     message = mapped.message;
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  const isJwtError =
+    err?.name === 'TokenExpiredError' ||
+    err?.name === 'JsonWebTokenError' ||
+    err?.name === 'NotBeforeError';
+  if (isJwtError) {
+    status = 401;
+    message = 'Invalid or expired token';
+  }
+
+  if (process.env.NODE_ENV === 'development' && !isJwtError) {
     console.error(err);
   }
 
@@ -71,14 +80,18 @@ export function errorHandler(err, _req, res, _next) {
   res.status(status).json({
     success: false,
     message: safeMessage,
+    ...(err.code ? { code: err.code } : {}),
+    ...(err.data !== undefined ? { data: err.data } : {}),
     ...(process.env.NODE_ENV === 'development' && err.stack && { stack: err.stack }),
   });
 }
 
 export class AppError extends Error {
-  constructor(message, statusCode = 500) {
+  constructor(message, statusCode = 500, extras = {}) {
     super(message);
     this.statusCode = statusCode;
     this.status = statusCode;
+    if (extras.code) this.code = extras.code;
+    if (extras.data !== undefined) this.data = extras.data;
   }
 }

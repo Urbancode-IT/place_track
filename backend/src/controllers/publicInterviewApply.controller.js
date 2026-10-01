@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { scheduleDayBoundsFromInput } from '../utils/date.utils.js';
+import { attachStudentMeetingLink } from '../services/jobApplicationSlots.service.js';
 
 /**
  * Shared form URL — any student posts once; row goes to SUBMITTED queue (no per-student token).
@@ -51,6 +52,13 @@ export async function applyOpen(req, res, next) {
       ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, 'SUBMITTED', now())`,
       [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null]
     );
+    await attachStudentMeetingLink({
+      studentId,
+      company,
+      date,
+      timeSlot,
+      meetingLink: room,
+    });
     return success(res, { ok: true }, 'Submitted. Your placement team will review it.');
   } catch (err) {
     console.error('[PublicApply Error]', err);

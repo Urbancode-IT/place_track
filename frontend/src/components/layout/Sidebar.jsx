@@ -100,6 +100,14 @@ function Icon({ name, className = 'h-5 w-5' }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.5 14h1.5M12 14h3.5" />
         </svg>
       );
+    case 'jobApplications':
+      return (
+        <svg {...common}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 4.75h10A2.25 2.25 0 0119.25 7v12.5A1.75 1.75 0 0117.5 21.25h-11A1.75 1.75 0 014.75 19.5V7A2.25 2.25 0 017 4.75Z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 4.75V3.5a1 1 0 011-1h4a1 1 0 011 1v1.25" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -109,6 +117,7 @@ const mainNav = [
   { to: '/', icon: 'dashboard', label: 'Dashboard' },
   { to: '/students', icon: 'students', label: 'Students' },
   { to: '/schedule', icon: 'schedule', label: 'Schedule' },
+  { to: '/job-applications', icon: 'jobApplications', label: 'Job Applications', trainerOrAdmin: true },
   { to: '/trainers', icon: 'trainers', label: 'Trainers', adminOnly: true },
 ];
 
@@ -119,6 +128,23 @@ const secondaryNav = [
   { to: '/notifications', icon: 'notifications', label: 'Notifications' },
   { to: '/analytics', icon: 'analytics', label: 'Analytics', adminOnly: true },
   { to: '/settings', icon: 'settings', label: 'Settings' },
+];
+
+const adminMainNav = [
+  { to: '/admin', icon: 'dashboard', label: 'Dashboard' },
+  { to: '/admin/students', icon: 'students', label: 'Students' },
+  { to: '/admin/schedule', icon: 'schedule', label: 'Schedule' },
+  { to: '/admin/job-applications', icon: 'jobApplications', label: 'Job Applications' },
+  { to: '/admin/trainers', icon: 'trainers', label: 'Trainers' },
+];
+
+const adminSecondaryNav = [
+  { to: '/admin/pending-self-submits', icon: 'clipboard', label: 'Student submits' },
+  { to: '/admin/pending-interview-finishes', icon: 'clipboard', label: 'Finish queue' },
+  { to: '/admin/honest-review-link', icon: 'honestReview', label: 'Student review link' },
+  { to: '/admin/notifications', icon: 'notifications', label: 'Notifications' },
+  { to: '/admin/analytics', icon: 'analytics', label: 'Analytics' },
+  { to: '/admin/settings', icon: 'settings', label: 'Settings' },
 ];
 
 function NavItem({ item, end, collapsed, onNavigate, onExpandRequest }) {
@@ -312,11 +338,14 @@ export function Sidebar() {
       .join('')
       .toUpperCase() || 'AD';
 
+  const isAdmin = user?.role === 'ADMIN';
   const canSee = (item) => {
-    if (item.adminOnly && user?.role !== 'ADMIN') return false;
-    if (item.trainerOrAdmin && user?.role !== 'TRAINER' && user?.role !== 'ADMIN') return false;
+    if (item.adminOnly && !isAdmin) return false;
+    if (item.trainerOrAdmin && user?.role !== 'TRAINER' && !isAdmin) return false;
     return true;
   };
+  const primaryNav = (isAdmin ? adminMainNav : mainNav).filter(canSee);
+  const extraNav = (isAdmin ? adminSecondaryNav : secondaryNav).filter(canSee);
 
   const widthClass = collapsed && !mobileOpen ? 'w-64 px-4 md:w-[4.5rem] md:px-2' : 'w-64 px-4';
   const translateClass = mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0';
@@ -372,12 +401,15 @@ export function Sidebar() {
         </div>
 
         <div className="scrollbar-none mt-5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
+          {isAdmin && !railCollapsed && (
+            <p className="px-3 pb-2 text-[10px] tracking-[0.16em] uppercase text-[var(--text3)]">Admin</p>
+          )}
           <nav className="flex flex-col gap-1">
-            {mainNav.filter(canSee).map((item) => (
+            {primaryNav.map((item) => (
               <NavItem
                 key={item.to}
                 item={item}
-                end={item.to === '/'}
+                end={item.to === '/' || item.to === '/admin'}
                 collapsed={railCollapsed}
                 onNavigate={closeSidebarMobile}
                 onExpandRequest={openSidebar}
@@ -388,7 +420,7 @@ export function Sidebar() {
           <div className="my-3 mx-auto h-px w-8 bg-[var(--shell-border)]" />
 
           <nav className="flex flex-col gap-1">
-            {secondaryNav.filter(canSee).map((item) => (
+            {extraNav.map((item) => (
               <NavItem
                 key={item.to}
                 item={item}

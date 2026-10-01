@@ -14,6 +14,7 @@ import { useUpdateInterview } from '@/hooks/useInterviews';
 import { useNotificationStore } from '@/store/notification.store';
 import { DashboardCreateStudentLink } from '@/components/dashboard/DashboardCreateStudentLink';
 import { todayLocalISO } from '@/utils/formatDate';
+import { useModulePath } from '@/lib/modulePath';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -78,6 +79,7 @@ export default function Dashboard() {
   const hydrated = useAuthHydrated();
   const accessToken = useAuthStore((s) => s.accessToken);
   const user = useAuthStore((s) => s.user);
+  const to = useModulePath();
   const updateInterview = useUpdateInterview();
   const addToast = useNotificationStore((s) => s.addToast);
   const dashboardReady = hydrated && !!accessToken;
@@ -144,7 +146,7 @@ export default function Dashboard() {
       <div className="flex flex-col flex-1 min-h-0 gap-4">
         {pendingCount > 0 && (
           <Link
-            to="/pending-self-submits"
+            to={to('/pending-self-submits')}
             className="block rounded-[20px] px-4 py-3 text-sm font-medium transition hover:opacity-95 glass-surface"
             style={{
               borderColor: 'rgba(255,214,10,0.35)',
@@ -160,7 +162,7 @@ export default function Dashboard() {
 
         {pendingFinishCount > 0 && (
           <Link
-            to="/pending-interview-finishes"
+            to={to('/pending-interview-finishes')}
             className="block rounded-[20px] px-4 py-3 text-sm font-medium transition hover:opacity-95 glass-surface"
             style={{
               borderColor: 'rgba(155,93,255,0.35)',

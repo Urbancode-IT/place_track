@@ -13,10 +13,12 @@ import { StudentSelfInterviewLink } from '@/components/profile/StudentSelfInterv
 import { StudentHonestReviews } from '@/components/profile/StudentHonestReviews';
 import { useAuthStore } from '@/store/auth.store';
 import { cn } from '@/utils/helpers';
+import { useModulePath } from '@/lib/modulePath';
 
 export default function StudentProfile() {
   const { id } = useParams();
   const role = useAuthStore((s) => s.user?.role);
+  const to = useModulePath();
   const { data, isLoading, isError, error, refetch } = useStudent(id);
   const [tab, setTab] = useState('Overview');
 
@@ -47,7 +49,7 @@ export default function StudentProfile() {
             Try again
           </Button>
           <Link
-            to="/students"
+            to={to('/students')}
             className="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-sm bg-primary text-white hover:bg-primary/90"
           >
             Back to students
@@ -61,7 +63,7 @@ export default function StudentProfile() {
     return (
       <div className="text-center py-12 space-y-3 text-[var(--text2)]">
         <p>Student not found.</p>
-        <Link to="/students" className="text-[var(--cyan)] text-sm hover:underline">
+        <Link to={to('/students')} className="text-[var(--cyan)] text-sm hover:underline">
           ← Back to students
         </Link>
       </div>
@@ -76,7 +78,7 @@ export default function StudentProfile() {
           <StudentSelfInterviewLink>
             {(role === 'TRAINER' || role === 'ADMIN') && (
               <Link
-                to="/honest-review-link"
+                to={to('/honest-review-link')}
                 className={cn(
                   'inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-sm transition-colors shrink-0',
                   'bg-primary text-white shadow-md shadow-primary/25 border border-primary/90',

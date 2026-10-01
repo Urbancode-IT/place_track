@@ -26,7 +26,7 @@ export function Modal({ open, onClose, title, children, size = 'md', variant = '
       <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden />
       <div
         className={cn(
-          'relative w-full rounded-xl shadow-xl',
+          'relative flex w-full max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-xl shadow-xl',
           sizes[size],
           isDark
             ? 'bg-[var(--tc-panel)] border border-[var(--border)] text-[var(--text)]'
@@ -37,7 +37,7 @@ export function Modal({ open, onClose, title, children, size = 'md', variant = '
         {title && (
           <div
             className={cn(
-              'flex items-center justify-between px-6 py-4 border-b',
+              'flex shrink-0 items-center justify-between px-6 py-4 border-b',
               isDark ? 'border-[var(--border)]' : 'border-border'
             )}
           >
@@ -51,7 +51,9 @@ export function Modal({ open, onClose, title, children, size = 'md', variant = '
             </button>
           </div>
         )}
-        <div className="px-6 py-4">{children}</div>
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-6 py-4 job-apps-select-scroll">
+          {children}
+        </div>
       </div>
     </div>,
     document.body

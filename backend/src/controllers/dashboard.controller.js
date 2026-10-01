@@ -105,10 +105,6 @@ export async function getToday(req, res, next) {
       vals.push(todayStart, todayEnd);
     }
 
-    if (req.user.role === 'TRAINER') {
-      sql += ` AND EXISTS (SELECT 1 FROM "InterviewTrainer" it WHERE it."interviewId" = i.id AND it."trainerId" = $${idx++})`;
-      vals.push(req.user.id);
-    }
     sql += ' ORDER BY i.date ASC';
     const r = await query(sql, vals);
 
@@ -148,10 +144,6 @@ export async function getActivity(req, res, next) {
     const limit = Math.min(Number(req.query.limit) || 20, 50);
     let sql = `SELECT i.id, i.company, i.status, i."updatedAt", s.name as "s_name" FROM "Interview" i JOIN "Student" s ON s.id = i."studentId"`;
     const vals = [];
-    if (req.user.role === 'TRAINER') {
-      sql += ` WHERE EXISTS (SELECT 1 FROM "InterviewTrainer" it WHERE it."interviewId" = i.id AND it."trainerId" = $1)`;
-      vals.push(req.user.id);
-    }
     sql += ` ORDER BY i."updatedAt" DESC LIMIT $${vals.length + 1}`;
     vals.push(limit);
     const r = await query(sql, vals);

@@ -14,6 +14,7 @@ model User {
   password       String
   role           Role     @default(TRAINER)
   phone          String?
+  allowed        Boolean  @default(false)
   createdAt      DateTime @default(now())
   interviews     InterviewTrainer[]
   notifications  Notification[]

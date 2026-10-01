@@ -8,6 +8,7 @@ import {
   getEffectivePipelineLabel,
 } from '@/utils/interviewEffectiveStatus';
 import { format, isValid, parseISO } from 'date-fns';
+import { useModulePath } from '@/lib/modulePath';
 
 function scheduleParts(interview) {
   if (!interview) return { round: '', when: '' };
@@ -24,6 +25,7 @@ function scheduleParts(interview) {
 }
 
 function StudentCardInner({ student }) {
+  const to = useModulePath();
   const latestInterview = student.interviews?.[0];
   const eff = latestInterview ? getEffectiveInterviewStatus(latestInterview) : null;
   const pipelineLabel = latestInterview ? getEffectivePipelineLabel(latestInterview) : null;
@@ -32,7 +34,7 @@ function StudentCardInner({ student }) {
 
   return (
     <Link
-      to={`/students/${student.id}`}
+      to={to(`/students/${student.id}`)}
       className="group block w-full rounded-2xl px-3 py-2.5 glass-surface transition-all duration-200 hover:border-[rgba(0,212,255,0.25)]"
     >
       <div className="flex items-center gap-2.5">

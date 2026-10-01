@@ -33,6 +33,7 @@ async function main() {
       password: trainerPass,
       role: 'TRAINER',
       phone: '+919876543211',
+      allowed: false,
     },
   });
 
@@ -45,6 +46,7 @@ async function main() {
       password: trainerPass,
       role: 'TRAINER',
       phone: '+919876543212',
+      allowed: false,
     },
   });
 

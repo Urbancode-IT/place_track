@@ -8,6 +8,7 @@ import { useDeleteInterview } from '@/hooks/useInterviews';
 import { useNotificationStore } from '@/store/notification.store';
 import { useAuthStore } from '@/store/auth.store';
 import { cn } from '@/utils/helpers';
+import { useModulePath } from '@/lib/modulePath';
 
 const CIRCLE_COLORS = ['#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#f43f5e', '#f97316'];
 
@@ -90,6 +91,7 @@ function CalendarIcon({ className }) {
 
 export function TodayInterviews({ interviews: initialInterviews, boardDate, onBoardDateChange, onEdit }) {
   const role = useAuthStore((s) => s.user?.role);
+  const to = useModulePath();
   const canDelete = role === 'ADMIN' || role === 'TRAINER';
   const del = useDeleteInterview();
   const addToast = useNotificationStore((s) => s.addToast);
@@ -234,7 +236,7 @@ export function TodayInterviews({ interviews: initialInterviews, boardDate, onBo
                     </div>
                     <div className="min-w-0">
                       <Link
-                        to={`/students/${i.student?.id}`}
+                        to={to(`/students/${i.student?.id}`)}
                         className="text-[12px] text-[var(--text)] hover:text-[var(--cyan)] truncate block"
                       >
                         {i.student?.name || 'Unnamed'}

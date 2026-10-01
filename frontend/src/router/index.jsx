@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useAuthHydrated } from '@/hooks/useAuthHydrated';
 import { Spinner } from '@/components/ui/Spinner';
@@ -24,6 +24,7 @@ const PendingInterviewFinishes = lazy(() => import('@/pages/PendingInterviewFini
 const HonestReviewLinkPage = lazy(() => import('@/pages/HonestReviewLinkPage'));
 const PublicHonestReview = lazy(() => import('@/pages/PublicHonestReview'));
 const PublicHonestReviewCommon = lazy(() => import('@/pages/PublicHonestReviewCommon'));
+const JobApplications = lazy(() => import('@/pages/JobApplications'));
 
 function PageLoader() {
   return (
@@ -37,7 +38,7 @@ function Lazy({ children }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
 
-function ProtectedRoute({ children, adminOnly }) {
+function ProtectedRoute({ children, adminOnly, trainerOrAdmin }) {
   const hydrated = useAuthHydrated();
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
@@ -52,6 +53,9 @@ function ProtectedRoute({ children, adminOnly }) {
 
   if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: location }} />;
   if (adminOnly && user?.role !== 'ADMIN') return <Navigate to="/" replace />;
+  if (trainerOrAdmin && user?.role !== 'ADMIN' && user?.role !== 'TRAINER') {
+    return <Navigate to="/" replace />;
+  }
   return children;
 }
 
@@ -147,6 +151,26 @@ const routes = [
         ),
       },
       {
+        path: 'job-applications',
+        element: (
+          <ProtectedRoute trainerOrAdmin>
+            <Lazy>
+              <JobApplications />
+            </Lazy>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'job-applications/history',
+        element: (
+          <ProtectedRoute trainerOrAdmin>
+            <Lazy>
+              <JobApplications />
+            </Lazy>
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'trainers',
         element: (
           <ProtectedRoute adminOnly>
@@ -213,6 +237,29 @@ const routes = [
             <HonestReviewLinkPage />
           </Lazy>
         ),
+      },
+      {
+        path: 'admin',
+        element: (
+          <ProtectedRoute adminOnly>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Lazy><Dashboard /></Lazy> },
+          { path: 'students', element: <Lazy><Students /></Lazy> },
+          { path: 'students/:id', element: <Lazy><StudentProfile /></Lazy> },
+          { path: 'schedule', element: <Lazy><Schedule /></Lazy> },
+          { path: 'job-applications', element: <Lazy><JobApplications /></Lazy> },
+          { path: 'job-applications/history', element: <Lazy><JobApplications /></Lazy> },
+          { path: 'trainers', element: <Lazy><TrainerView /></Lazy> },
+          { path: 'pending-self-submits', element: <Lazy><PendingSelfSubmits /></Lazy> },
+          { path: 'pending-interview-finishes', element: <Lazy><PendingInterviewFinishes /></Lazy> },
+          { path: 'honest-review-link', element: <Lazy><HonestReviewLinkPage /></Lazy> },
+          { path: 'notifications', element: <Lazy><Notifications /></Lazy> },
+          { path: 'analytics', element: <Lazy><Analytics /></Lazy> },
+          { path: 'settings', element: <Lazy><Settings /></Lazy> },
+        ],
       },
     ],
   },

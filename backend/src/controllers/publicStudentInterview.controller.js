@@ -1,6 +1,7 @@
 import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { attachStudentMeetingLink } from '../services/jobApplicationSlots.service.js';
 
 export async function getByToken(req, res, next) {
   try {
@@ -44,7 +45,7 @@ export async function submitByToken(req, res, next) {
        SET company = $1, round = $2, date = $3, "timeSlot" = $4, "hrNumber" = $5, room = $6, comments = $7,
            status = 'SUBMITTED', "submittedAt" = now(), "updatedAt" = now()
        WHERE token = $8 AND status = 'ISSUED'
-       RETURNING id`,
+       RETURNING id, "studentId"`,
       [company, round, date, timeSlot, hrNumber || null, room || null, comments || null, token]
     );
     if (!claim.rows[0]) {
@@ -52,6 +53,13 @@ export async function submitByToken(req, res, next) {
       if (!r.rows[0]) throw new AppError('Invalid or expired link', 404);
       throw new AppError('This link was already used or is no longer available', 400);
     }
+    await attachStudentMeetingLink({
+      studentId: claim.rows[0].studentId,
+      company,
+      date,
+      timeSlot,
+      meetingLink: room,
+    });
     return success(res, { ok: true }, 'Submitted. Your placement team will review it.');
   } catch (err) {
     next(err);

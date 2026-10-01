@@ -36,6 +36,14 @@ function parseOrigins() {
     set.add('https://placetrack.urbancode.in');
     set.add('https://www.placetrack.urbancode.in');
   }
+  // Browsers may use 127.0.0.1 while env lists localhost (or the reverse).
+  for (const origin of [...set]) {
+    if (origin.includes('://localhost')) {
+      set.add(origin.replace('://localhost', '://127.0.0.1'));
+    } else if (origin.includes('://127.0.0.1')) {
+      set.add(origin.replace('://127.0.0.1', '://localhost'));
+    }
+  }
   return [...set];
 }
 

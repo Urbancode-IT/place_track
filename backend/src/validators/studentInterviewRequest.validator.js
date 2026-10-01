@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  normalizeMeetingLink,
+  isValidHttpUrl,
+} from '../utils/jobApplication.utils.js';
 
 export const createLinkSchema = z.object({
   studentId: z.string().uuid(),
@@ -8,13 +12,22 @@ export const tokenParamSchema = z.object({
   token: z.string().uuid(),
 });
 
+const meetingLinkSchema = z
+  .string()
+  .min(1, 'Meeting link is required')
+  .max(2000)
+  .transform((v) => normalizeMeetingLink(v))
+  .refine((v) => isValidHttpUrl(v), {
+    message: 'Paste a valid meeting URL (https://…)',
+  });
+
 export const publicSubmitSchema = z.object({
   company: z.string().min(1).max(200),
   round: z.string().min(1).max(100),
   date: z.coerce.date(),
-  timeSlot: z.string().min(1).max(50),
+  timeSlot: z.string().min(1).max(80),
   hrNumber: z.string().optional(),
-  room: z.string().optional(),
+  room: meetingLinkSchema,
   comments: z.string().optional(),
   course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT']).optional(),
 });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils/helpers';
 import { API_BASE_URL, getApiHealthUrl } from '@/lib/apiConfig';
+import { isTransientNetworkError, retryOnNetworkError, shouldRetryLogin } from '@/lib/networkError';
+import { landingPath } from '@/lib/modulePath';
 
 const schema = z.object({
   email: z.string().email('Invalid email'),
@@ -19,36 +21,52 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const inFlightRef = useRef(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
   });
 
+  const user = useAuthStore((s) => s.user);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(landingPath(user?.role, location.state?.from?.pathname), { replace: true });
+    }
+  }, [isAuthenticated, navigate, location.state, user?.role]);
+
   const onSubmit = async (data) => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setError('');
     setIsSubmitting(true);
     let finishedOnPage = true;
     try {
-      const { data: res } = await authApi.login(data);
+      const { data: res } = await retryOnNetworkError(() => authApi.login(data), {
+        attempts: 3,
+        delayMs: 400,
+        shouldRetry: shouldRetryLogin,
+      });
       setAuth(res.data.user, res.data.accessToken);
-      navigate(location.state?.from?.pathname || '/', { replace: true });
+      navigate(landingPath(res.data.user?.role, location.state?.from?.pathname), { replace: true });
       finishedOnPage = false;
     } catch (err) {
-      const networkFail =
-        !err.response ||
-        err.code === 'ERR_NETWORK' ||
-        err.code === 'ECONNABORTED' ||
-        String(err.message || '').includes('Network Error');
+      const networkFail = isTransientNetworkError(err);
       if (networkFail) {
         setError(
           import.meta.env.DEV
             ? 'Cannot reach the API. Open another terminal: cd backend → npm run dev — you must see “PlaceTrack API running on port 5001”. (Vite proxies /api to that port.) If you see “EADDRINUSE”, only one backend can use 5001 — close the extra terminal.'
             : `Cannot reach the API (${API_BASE_URL}). Check backend health: ${getApiHealthUrl()} — Render free tier may need 30–60s to wake up. Ensure Render has DATABASE_URL set and redeploy backend.`,
         );
+        return;
+      }
+      if (!err.response) {
+        setError(err.message || 'Login failed');
         return;
       }
       const status = err.response.status;
@@ -80,6 +98,7 @@ export default function Login() {
         setError(msg || 'Login failed');
       }
     } finally {
+      inFlightRef.current = false;
       if (finishedOnPage) setIsSubmitting(false);
     }
   };

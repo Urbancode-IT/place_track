@@ -3,4 +3,5 @@ export default {
   transform: {},
   testMatch: ['**/tests/**/*.test.js'],
   moduleFileExtensions: ['js'],
+  forceExit: true,
 };

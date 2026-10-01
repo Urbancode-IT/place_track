@@ -16,6 +16,8 @@
     "db:migrate-student-honest-review": "node scripts/migrate-student-honest-review.js",
     "db:migrate-interview-trainer-review": "node scripts/migrate-interview-trainer-review.js",
     "db:migrate-interview-finish-extra": "node scripts/migrate-interview-finish-extra.js",
+    "db:migrate-job-applications": "node scripts/migrate-job-application-daily.js",
+    "db:migrate-user-allowed": "node scripts/migrate-user-allowed.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "chat:ping": "node scripts/ping-google-chat.js",
     "chat:board": "node scripts/run-google-chat-board-once.js"

@@ -4,10 +4,12 @@ import { interviewFinishRequestApi } from '@/api/interviewFinishRequest.api';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useNotificationStore } from '@/store/notification.store';
+import { useModulePath } from '@/lib/modulePath';
 
 export default function PendingInterviewFinishes() {
   const qc = useQueryClient();
   const addToast = useNotificationStore((s) => s.addToast);
+  const to = useModulePath();
 
   const { data, isLoading } = useQuery({
     queryKey: ['interview-finish-requests'],
@@ -56,7 +58,7 @@ export default function PendingInterviewFinishes() {
             schedule; rejecting leaves the interview unchanged.
           </p>
         </div>
-        <Link to="/" className="text-sm text-[var(--cyan)] hover:underline">
+        <Link to={to('/')} className="text-sm text-[var(--cyan)] hover:underline">
           ← Dashboard
         </Link>
       </div>
@@ -85,7 +87,7 @@ export default function PendingInterviewFinishes() {
               {rows.map((r) => (
                 <tr key={r.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   <td className="p-3">
-                    <Link className="text-[var(--cyan)] hover:underline" to={`/students/${r.studentId}`}>
+                    <Link className="text-[var(--cyan)] hover:underline" to={to(`/students/${r.studentId}`)}>
                       {r.studentName}
                     </Link>
                     <div className="text-[10px] text-[var(--text3)]">{r.course}</div>

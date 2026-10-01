@@ -110,6 +110,9 @@
   input[type='date'].glass-input,
   input[type='datetime-local'].glass-input {
     color-scheme: dark;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   input[type='date'].glass-input::-webkit-calendar-picker-indicator,
@@ -172,6 +175,261 @@
     display: none;
     width: 0;
     height: 0;
+  }
+
+  /* Equal-size chips: Daily Entry / History + date presets. */
+  .job-apps-tab-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.375rem;
+  }
+  .job-apps-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 7.75rem;
+    min-width: 7.75rem;
+    height: 2rem;
+    padding: 0 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Filter controls wrap to keep date + select fields usable. */
+  .job-apps-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .job-apps-filter-row > * {
+    flex: 1 1 9.5rem;
+    min-width: 9.5rem;
+    max-width: 14rem;
+    width: auto;
+  }
+  .job-apps-filter-row .glass-input {
+    height: 2.5rem;
+    box-sizing: border-box;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  .job-apps-filter-row input.glass-input,
+  .job-apps-filter-row button.glass-input {
+    min-width: 0;
+    width: 100%;
+  }
+  button.glass-input {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .job-apps-filter-row .job-apps-filter-action {
+    flex: 0 0 auto;
+    min-width: auto;
+    max-width: none;
+    width: auto;
+    padding-top: 1.375rem;
+  }
+  .job-apps-filter-row .job-apps-filter-action .job-apps-add-btn {
+    height: 2.5rem;
+    min-width: 7.75rem;
+  }
+  @media (max-width: 767px) {
+    .job-apps-filter-row > * {
+      flex: 1 1 calc(50% - 0.375rem);
+      max-width: calc(50% - 0.375rem);
+    }
+    .job-apps-filter-row .job-apps-filter-action {
+      flex: 1 1 100%;
+      max-width: 100%;
+      padding-top: 0;
+    }
+  }
+
+  .job-apps-select-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 212, 255, 0.45) rgba(255, 255, 255, 0.06);
+  }
+  .job-apps-select-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .job-apps-select-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+  }
+  .job-apps-select-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00D4FF, #00a8cc);
+    border-radius: 999px;
+  }
+
+  /* Quiet fields inside interview slot cards — no glass shimmer / ring overflow. */
+  .slot-quiet-input {
+    box-sizing: border-box;
+    min-height: 2.5rem;
+    background: rgba(8, 12, 22, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    color: var(--text);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  .slot-quiet-input:focus,
+  .slot-quiet-input:focus-visible {
+    outline: none;
+    border-color: rgba(0, 212, 255, 0.45);
+    box-shadow: none;
+  }
+  button.slot-quiet-input {
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  /* 7-column calendar — minmax(0,1fr) so weekday cells never wrap. */
+  .pt-cal {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.85rem 0.85rem 0.75rem;
+  }
+  .pt-cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+  }
+  .pt-cal-title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  .pt-cal-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+  }
+  .pt-cal-nav:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .pt-cal-week,
+  .pt-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    width: 100%;
+  }
+  .pt-cal-week > div {
+    min-width: 0;
+    height: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  .pt-cal-day {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text2);
+  }
+  .pt-cal-day.is-muted {
+    color: var(--text3);
+  }
+  .pt-cal-day.is-in-month:hover {
+    color: var(--text);
+  }
+  .pt-cal-day.is-in-range {
+    color: var(--text);
+  }
+  .pt-cal-day.is-in-range::before,
+  .pt-cal-day.is-range-start::before,
+  .pt-cal-day.is-range-end::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    height: 1.85rem;
+    transform: translateY(-50%);
+    background: rgba(0, 212, 255, 0.16);
+    pointer-events: none;
+  }
+  .pt-cal-day.is-in-range::before {
+    left: 0;
+    right: 0;
+  }
+  .pt-cal-day.is-range-start::before {
+    left: 50%;
+    right: 0;
+  }
+  .pt-cal-day.is-range-end::before {
+    left: 0;
+    right: 50%;
+  }
+  .pt-cal-day.is-selected {
+    color: #06080f;
+    font-weight: 600;
+  }
+  .pt-cal-day-mark {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1.85rem;
+    height: 1.85rem;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  .pt-cal-day-mark.is-fill {
+    background: linear-gradient(135deg, #00D4FF, #00a8cc);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+  }
+  .pt-cal-day-mark.is-ring {
+    border: 1px solid rgba(0, 212, 255, 0.5);
+  }
+  .pt-cal-day-n {
+    position: relative;
+    z-index: 1;
+    font-variant-numeric: tabular-nums;
   }
 }
 

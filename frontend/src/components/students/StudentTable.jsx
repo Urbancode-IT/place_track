@@ -8,10 +8,12 @@ import {
   getEffectiveInterviewStatus,
   getEffectivePipelineLabel,
 } from '@/utils/interviewEffectiveStatus';
+import { useModulePath } from '@/lib/modulePath';
 
 function StudentTableInner({ data }) {
+  const to = useModulePath();
   const columns = [
-    { field: 'name', header: 'Name', render: (val, row) => <Link to={`/students/${row.id}`} className="text-primary hover:underline font-medium">{val}</Link> },
+    { field: 'name', header: 'Name', render: (val, row) => <Link to={to(`/students/${row.id}`)} className="text-primary hover:underline font-medium">{val}</Link> },
     { field: 'email', header: 'Email' },
     { field: 'course', header: 'Course', render: (val) => <Badge className={COURSE_COLORS[val]}>{val}</Badge> },
     { field: 'batchId', header: 'Batch' },

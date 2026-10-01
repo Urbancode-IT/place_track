@@ -25,14 +25,14 @@ async function seed() {
       [hashedAdmin]
     );
     await client.query(
-      `INSERT INTO "User" (id, name, email, password, role, phone)
-       VALUES (gen_random_uuid()::text, 'Trainer One', 'trainer1@kattraan.com', $1, 'TRAINER', '+919876543211')
+      `INSERT INTO "User" (id, name, email, password, role, phone, allowed)
+       VALUES (gen_random_uuid()::text, 'Trainer One', 'trainer1@kattraan.com', $1, 'TRAINER', '+919876543211', false)
        ON CONFLICT (email) DO NOTHING`,
       [hashedTrainer]
     );
     await client.query(
-      `INSERT INTO "User" (id, name, email, password, role, phone)
-       VALUES (gen_random_uuid()::text, 'Trainer Two', 'trainer2@kattraan.com', $1, 'TRAINER', '+919876543212')
+      `INSERT INTO "User" (id, name, email, password, role, phone, allowed)
+       VALUES (gen_random_uuid()::text, 'Trainer Two', 'trainer2@kattraan.com', $1, 'TRAINER', '+919876543212', false)
        ON CONFLICT (email) DO NOTHING`,
       [hashedTrainer]
     );

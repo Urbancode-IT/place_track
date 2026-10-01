@@ -29,6 +29,57 @@ export const COURSE_SELECT_OPTIONS = [
   { value: 'REACT', label: 'React / Frontend' },
 ];
 
+/** Full course filter list for job application history (includes catalog + enum courses). */
+export const JOB_APPLICATION_COURSE_OPTIONS = [
+  { value: 'FSD', label: 'FSD' },
+  { value: 'SDET', label: 'SDET' },
+  { value: 'BI_DS', label: 'BI_DS' },
+  { value: 'NETWORKING', label: 'NETWORKING' },
+  { value: 'AWS', label: 'AWS' },
+  { value: 'JAVA', label: 'JAVA' },
+  { value: 'REACT', label: 'REACT' },
+  { value: 'Other', label: 'Other' },
+  { value: 'Data Science', label: 'Data Science' },
+  { value: 'Cloud Devops', label: 'Cloud Devops' },
+  { value: 'Digital Marketing', label: 'Digital Marketing' },
+  { value: 'RPA', label: 'RPA' },
+  { value: 'Salesforce', label: 'Salesforce' },
+  { value: 'UI/UX', label: 'UI/UX' },
+  { value: 'Graphic designing', label: 'Graphic designing' },
+  { value: 'Python', label: 'Python' },
+  { value: 'BI', label: 'BI' },
+  { value: 'MB/COM', label: 'MB/COM' },
+  { value: 'MC', label: 'MC' },
+  { value: 'CCNA', label: 'CCNA' },
+  { value: 'AWS/GD', label: 'AWS/GD' },
+  { value: 'SP', label: 'SP' },
+  { value: 'AWS/FSD', label: 'AWS/FSD' },
+  { value: 'DE', label: 'DE' },
+  { value: 'AIML', label: 'AIML' },
+  { value: 'kids', label: 'kids' },
+  { value: 'FSD/PA', label: 'FSD/PA' },
+  { value: 'GEN AI', label: 'GEN AI' },
+  { value: 'Programming Languages', label: 'Programming Languages' },
+];
+
+/** Default job portals for filters and form suggestions. */
+export const JOB_APPLICATION_PORTALS = [
+  'Naukri',
+  'Monster India',
+  'LinkedIn',
+  'Shine',
+  'TimesJobs',
+  'Indeed',
+  'Glassdoor',
+  'loop CV',
+  'Instahyre',
+  'foundit',
+  'Cutshort',
+  'wellfound',
+  'freshersworld',
+  'hirist.tech',
+];
+
 export const QA_STATUS = {
   PREPARED: { bg: 'bg-success/20', text: 'text-success' },
   NEEDS_WORK: { bg: 'bg-warning/20', text: 'text-warning' },

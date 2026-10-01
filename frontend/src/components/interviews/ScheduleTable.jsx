@@ -3,8 +3,10 @@ import { formatDate } from '@/utils/formatDate';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_COLORS, COURSE_COLORS } from '@/utils/constants';
 import { getEffectiveInterviewStatus } from '@/utils/interviewEffectiveStatus';
+import { useModulePath } from '@/lib/modulePath';
 
 export function ScheduleTable({ data, onStatusChange, onEdit }) {
+  const to = useModulePath();
   return (
     <div
       className="overflow-x-auto rounded-xl border"
@@ -34,7 +36,7 @@ export function ScheduleTable({ data, onStatusChange, onEdit }) {
             <tr key={i.id} className="hover:bg-[rgba(255,255,255,0.03)] transition-colors">
               <td className="px-4 py-2 text-sm">{idx + 1}</td>
               <td className="px-4 py-2">
-                <Link to={`/students/${i.student?.id}`} className="text-primary hover:underline font-medium">
+                <Link to={to(`/students/${i.student?.id}`)} className="text-primary hover:underline font-medium">
                   {i.student?.name}
                 </Link>
               </td>

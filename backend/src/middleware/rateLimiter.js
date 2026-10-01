@@ -1,6 +1,7 @@
 import rateLimit from 'express-rate-limit';
 
 const skipPreflight = (req) => req.method === 'OPTIONS';
+const skipInTests = (req) => skipPreflight(req) || process.env.NODE_ENV === 'test';
 
 export const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -8,12 +9,12 @@ export const rateLimiter = rateLimit({
   message: { success: false, message: 'Too many requests' },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: skipPreflight,
+  skip: skipInTests,
 });
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 50,
   message: { success: false, message: 'Too many auth attempts' },
-  skip: skipPreflight,
+  skip: skipInTests,
 });

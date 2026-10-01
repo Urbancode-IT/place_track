@@ -61,7 +61,7 @@ export function AddScheduleModal({ open, onClose, onSubmit, initialData = null, 
   });
 
   const students = studentsRes?.data || [];
-  const trainers = trainersRes?.data || [];
+  const trainers = (trainersRes?.data || []).filter((trainer) => trainer.allowed === true);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm({
     resolver: zodResolver(schema),

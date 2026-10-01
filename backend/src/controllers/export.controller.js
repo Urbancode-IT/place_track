@@ -21,11 +21,9 @@ export async function exportScheduleCsv(req, res, next) {
     if (dateFrom) { conds.push(`i.date >= $${idx++}`); vals.push(dateFrom); }
     if (dateTo) { conds.push(`i.date <= $${idx++}`); vals.push(dateTo); }
     if (course) { conds.push(`s.course = $${idx++}`); vals.push(course); }
-    let joinSql = '';
-    if (req.user.role === 'TRAINER') { joinSql = ' INNER JOIN "InterviewTrainer" it ON it."interviewId" = i.id AND it."trainerId" = $' + idx; vals.push(req.user.id); idx++; }
     const r = await query(
       `SELECT i.*, s.name as "s_name", s.course as "s_course"
-       FROM "Interview" i JOIN "Student" s ON s.id = i."studentId"${joinSql} WHERE ${conds.join(' AND ')} ORDER BY i.date ASC`,
+       FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE ${conds.join(' AND ')} ORDER BY i.date ASC`,
       vals
     );
     const interviewIds = r.rows.map((i) => i.id);
@@ -70,11 +68,6 @@ export async function exportStudentsCsv(req, res, next) {
     const conds = [];
     const vals = [];
     let idx = 1;
-    if (req.user.role === 'TRAINER') {
-      sql += ` INNER JOIN "Interview" i ON i."studentId" = s.id INNER JOIN "InterviewTrainer" it ON it."interviewId" = i.id AND it."trainerId" = $${idx}`;
-      vals.push(req.user.id);
-      idx++;
-    }
     if (course) { conds.push(`s.course = $${idx++}`); vals.push(course); }
     if (status) {
       if (!sql.includes('JOIN "Interview"')) sql += ` INNER JOIN "Interview" i ON i."studentId" = s.id`;

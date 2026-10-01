@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e:job-applications": "node e2e/jobApplications.browser.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

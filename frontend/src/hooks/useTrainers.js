@@ -12,7 +12,28 @@ export function useCreateTrainer() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data) => trainerApi.create(data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['trainers'] }),
+    onSuccess: () => invalidateTrainerAccess(qc),
+  });
+}
+
+function invalidateTrainerAccess(qc) {
+  qc.invalidateQueries({ queryKey: ['trainers'] });
+  qc.invalidateQueries({ queryKey: ['job-applications', 'spocs'] });
+}
+
+export function useAllowTrainer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => trainerApi.allow(id).then((r) => r.data),
+    onSuccess: () => invalidateTrainerAccess(qc),
+  });
+}
+
+export function useRevokeTrainer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => trainerApi.revoke(id).then((r) => r.data),
+    onSuccess: () => invalidateTrainerAccess(qc),
   });
 }
 

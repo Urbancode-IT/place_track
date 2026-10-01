@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { InterviewRoundFields } from '@/components/interviews/InterviewRoundFields';
 import { resolveSubmittedRound } from '@/constants/interviewRounds';
+import { isValidHttpUrl, normalizeMeetingLink } from '@/utils/jobApplication';
 
 const schema = z
   .object({
@@ -19,7 +20,12 @@ const schema = z
     date: z.string().min(1, 'Interview date is required'),
     timeSlot: z.string().min(1, 'Time slot is required'),
     hrNumber: z.string().optional(),
-    room: z.string().optional(),
+    room: z
+      .string()
+      .min(1, 'Meeting link is required')
+      .refine((v) => isValidHttpUrl(normalizeMeetingLink(v)), {
+        message: 'Paste a valid meeting URL (https://…)',
+      }),
     comments: z.string().optional(),
   })
   .refine(
@@ -113,6 +119,7 @@ export default function PublicInterviewFill() {
       ...values,
       round: resolveSubmittedRound(values.round, values.customRound),
       date: new Date(values.date).toISOString(),
+      room: normalizeMeetingLink(values.room),
     };
     delete payload.customRound;
     submitMut.mutate(payload);
@@ -154,7 +161,18 @@ export default function PublicInterviewFill() {
             error={errors.timeSlot?.message}
           />
           <Input label="HR / contact (optional)" {...register('hrNumber')} />
-          <Input label="Room / link (optional)" {...register('room')} />
+          <Input
+            label="Meeting link"
+            type="url"
+            inputMode="url"
+            autoComplete="off"
+            placeholder="Paste Zoom, Meet, or Teams URL"
+            {...register('room')}
+            error={errors.room?.message}
+          />
+          <p className="text-[11px] text-[var(--text3)] -mt-2">
+            Paste the link from your invite. Match the company, date, and time your SPOC logged.
+          </p>
           <div>
             <label className="block text-xs text-[var(--text2)] mb-1">Notes (optional)</label>
             <textarea

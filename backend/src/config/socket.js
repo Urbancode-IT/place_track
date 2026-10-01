@@ -8,10 +8,20 @@ function getAllowedOrigins() {
     process.env.CORS_ORIGIN ||
     process.env.FRONTEND_URL ||
     'http://localhost:5173';
-  return raw
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const set = new Set(
+    raw
+      .split(',')
+      .map((s) => s.trim().replace(/\/+$/, ''))
+      .filter(Boolean)
+  );
+  for (const origin of [...set]) {
+    if (origin.includes('://localhost')) {
+      set.add(origin.replace('://localhost', '://127.0.0.1'));
+    } else if (origin.includes('://127.0.0.1')) {
+      set.add(origin.replace('://127.0.0.1', '://localhost'));
+    }
+  }
+  return [...set];
 }
 
 export function initSocket(server) {

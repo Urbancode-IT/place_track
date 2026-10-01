@@ -2,7 +2,7 @@ import { query } from '../config/db.js';
 import { success, successWithPagination } from '../utils/response.utils.js';
 import { getPaginationParams, buildPaginationResponse } from '../utils/pagination.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { createInterviewWithTrainers } from '../services/interviewCreate.service.js';
+import { assertTrainersAllowed, createInterviewWithTrainers } from '../services/interviewCreate.service.js';
 import { notifyTrainersForInterview, notifyTrainersInterviewScheduleUpdated } from '../services/notification.service.js';
 import { emitInterviewUpdated } from '../services/socket.service.js';
 import { sendStatusUpdate, sendStudentInterviewRescheduled } from '../services/email.service.js';
@@ -22,9 +22,8 @@ export async function list(req, res, next) {
     if (dateTo) { conds.push(`i.date <= $${idx++}`); vals.push(dateTo); }
     if (course) { conds.push(`s.course = $${idx++}`); vals.push(course); }
     if (trainerId) { conds.push(`it."trainerId" = $${idx++}`); vals.push(trainerId); }
-    if (req.user.role === 'TRAINER') { conds.push(`it."trainerId" = $${idx++}`); vals.push(req.user.id); }
     const whereSql = conds.join(' AND ');
-    const joinSql = (trainerId || req.user.role === 'TRAINER') ? ' INNER JOIN "InterviewTrainer" it ON it."interviewId" = i.id' : '';
+    const joinSql = trainerId ? ' INNER JOIN "InterviewTrainer" it ON it."interviewId" = i.id' : '';
     const countR = await query(
       `SELECT COUNT(*)::int as total FROM "Interview" i INNER JOIN "Student" s ON s.id = i."studentId"${joinSql} WHERE ${whereSql}`,
       vals
@@ -78,10 +77,6 @@ export async function getById(req, res, next) {
     const row = i.rows[0];
     if (!row) throw new AppError('Interview not found', 404);
     const tr = await query('SELECT it."trainerId", u.id, u.name, u.email, u.phone FROM "InterviewTrainer" it JOIN "User" u ON u.id = it."trainerId" WHERE it."interviewId" = $1', [id]);
-    if (req.user.role === 'TRAINER') {
-      const assigned = tr.rows.some((t) => t.trainerId === req.user.id);
-      if (!assigned) throw new AppError('Access denied', 403);
-    }
     const interview = {
       ...row,
       student: { id: row.s_id, name: row.s_name, email: row.s_email, phone: row.s_phone, course: row.s_course },
@@ -95,7 +90,11 @@ export async function getById(req, res, next) {
 
 export async function create(req, res, next) {
   try {
-    const { studentId, company, round, date, timeSlot, hrNumber, room, comments, trainerIds } = req.validated;
+    const { studentId, company, round, date, timeSlot, hrNumber, room, comments, trainerIds: requestedTrainerIds } = req.validated;
+    const trainerIds = [...new Set((requestedTrainerIds || []).map(String))];
+    if (req.user.role === 'TRAINER' && !trainerIds.includes(String(req.user.id))) {
+      trainerIds.push(String(req.user.id));
+    }
     const { interview, student, trainerIds: ids } = await createInterviewWithTrainers({
       studentId,
       company,
@@ -149,6 +148,7 @@ export async function update(req, res, next) {
 
     let addedTrainerIds = [];
     if (Array.isArray(data.trainerIds)) {
+      await assertTrainersAllowed(data.trainerIds);
       await query('DELETE FROM "InterviewTrainer" WHERE "interviewId" = $1', [id]);
       for (const trainerId of data.trainerIds) {
         await query(
@@ -313,6 +313,7 @@ export async function addTrainers(req, res, next) {
     const i = await query('SELECT i.*, s.name FROM "Interview" i JOIN "Student" s ON s.id = i."studentId" WHERE i.id = $1', [id]);
     const interview = i.rows[0];
     if (!interview) throw new AppError('Interview not found', 404);
+    await assertTrainersAllowed(trainerIds);
     for (const trainerId of trainerIds) {
       await query('INSERT INTO "InterviewTrainer" ("interviewId", "trainerId", "notifiedAt") VALUES ($1, $2, now()) ON CONFLICT DO NOTHING', [id, trainerId]);
     }

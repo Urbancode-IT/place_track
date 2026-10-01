@@ -2,6 +2,7 @@ import { query, withTransaction } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { createInterviewWithTrainers } from '../services/interviewCreate.service.js';
+import { attachStudentMeetingLink } from '../services/jobApplicationSlots.service.js';
 
 export async function createLink(req, res, next) {
   try {
@@ -91,6 +92,15 @@ export async function approve(req, res, next) {
         throw new AppError('Only submitted requests can be approved', 400);
       }
       return { interview, student, requestId: id };
+    });
+
+    await attachStudentMeetingLink({
+      studentId: result.student?.id || result.interview?.studentId,
+      company: result.interview?.company,
+      date: result.interview?.date,
+      timeSlot: result.interview?.timeSlot,
+      meetingLink: result.interview?.room,
+      interviewId: result.interview?.id,
     });
 
     return success(res, result, 'Approved — interview is on the schedule');

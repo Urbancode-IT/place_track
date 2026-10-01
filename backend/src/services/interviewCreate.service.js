@@ -4,6 +4,18 @@ import { notifyTrainersForInterview } from './notification.service.js';
 import { emitNewInterview } from './socket.service.js';
 import { notifyGoogleChatInterviewScheduled } from './googleChatInterviewNotify.service.js';
 
+export async function assertTrainersAllowed(trainerIds, dbQuery = query) {
+  const ids = [...new Set((trainerIds || []).filter(Boolean).map(String))];
+  if (!ids.length) return;
+  const r = await dbQuery(
+    `SELECT id FROM "User" WHERE id = ANY($1::text[]) AND role = 'TRAINER' AND allowed IS TRUE`,
+    [ids]
+  );
+  if (r.rows.length !== ids.length) {
+    throw new AppError('Trainer is not allowed', 400);
+  }
+}
+
 /**
  * Creates an Interview row + optional trainer links. Used by admin/trainer API and self-submit approve flow.
  * @param {boolean} [broadcastEmailToAllTrainersIfUnassigned=false] — If true and trainerIds is empty, still email/push/notify every TRAINER (assignment rows stay empty). Used when approving student self-submits without picking trainers.
@@ -22,6 +34,8 @@ export async function createInterviewWithTrainers({
   dbQuery = query,
 }) {
   const q = dbQuery;
+  const ids = [...new Set((trainerIds || []).filter(Boolean).map(String))];
+  await assertTrainersAllowed(ids, q);
   const s = await q('SELECT * FROM "Student" WHERE id = $1', [studentId]);
   const student = s.rows[0];
   if (!student) throw new AppError('Student not found', 404);
@@ -30,7 +44,6 @@ export async function createInterviewWithTrainers({
     [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null]
   );
   const interview = r.rows[0];
-  const ids = trainerIds || [];
   for (const trainerId of ids) {
     await q(
       'INSERT INTO "InterviewTrainer" ("interviewId", "trainerId", "notifiedAt") VALUES ($1, $2, now()) ON CONFLICT DO NOTHING',

@@ -13,11 +13,15 @@ const schema = z.object({
   phone: z.string().optional(),
 });
 
-export function AddTrainerModal({ open, onClose, onSubmit, isLoading }) {
+export function AddTrainerModal({ open, onClose, onSubmit, isLoading, errorMessage }) {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { name: '', email: '', password: '', phone: '' },
   });
+  const nameField = register('name');
+  const emailField = register('email');
+  const passwordField = register('password');
+  const phoneField = register('phone');
 
   useEffect(() => {
     if (!open) reset();
@@ -29,37 +33,62 @@ export function AddTrainerModal({ open, onClose, onSubmit, isLoading }) {
 
   return (
     <Modal open={open} onClose={onClose} title="Add Trainer" size="lg" variant="dark">
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <Input
+          id="add-trainer-name"
           label="Name"
+          required
           error={errors.name?.message}
           labelClassName="text-[var(--text2)]"
           className="bg-[var(--tc-bg)] border-[var(--border)] text-[var(--text)] placeholder-[var(--text3)]"
-          {...register('name')}
+          name={nameField.name}
+          onChange={nameField.onChange}
+          onBlur={nameField.onBlur}
+          ref={nameField.ref}
         />
         <Input
+          id="add-trainer-email"
           label="Email"
           type="email"
+          required
+          autoComplete="off"
           error={errors.email?.message}
           labelClassName="text-[var(--text2)]"
           className="bg-[var(--tc-bg)] border-[var(--border)] text-[var(--text)] placeholder-[var(--text3)]"
-          {...register('email')}
+          name={emailField.name}
+          onChange={emailField.onChange}
+          onBlur={emailField.onBlur}
+          ref={emailField.ref}
         />
         <Input
+          id="add-trainer-password"
           label="Password"
           type="password"
+          passwordToggle
+          required
+          autoComplete="new-password"
           error={errors.password?.message}
           labelClassName="text-[var(--text2)]"
           className="bg-[var(--tc-bg)] border-[var(--border)] text-[var(--text)] placeholder-[var(--text3)]"
-          {...register('password')}
+          name={passwordField.name}
+          onChange={passwordField.onChange}
+          onBlur={passwordField.onBlur}
+          ref={passwordField.ref}
         />
         <Input
+          id="add-trainer-phone"
           label="Phone (optional)"
           error={errors.phone?.message}
           labelClassName="text-[var(--text2)]"
           className="bg-[var(--tc-bg)] border-[var(--border)] text-[var(--text)] placeholder-[var(--text3)]"
-          {...register('phone')}
+          name={phoneField.name}
+          onChange={phoneField.onChange}
+          onBlur={phoneField.onBlur}
+          ref={phoneField.ref}
         />
+        {errorMessage ? (
+          <p className="text-sm text-danger">{errorMessage}</p>
+        ) : null}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel

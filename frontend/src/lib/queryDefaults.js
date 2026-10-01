@@ -8,3 +8,10 @@ export const listQueryOptions = {
   refetchOnWindowFocus: false,
   placeholderData: (prev) => prev,
 };
+
+/** Daily/history must not show a previous date/SPOC/filter result as placeholder rows. */
+export const jobApplicationQueryOptions = {
+  staleTime: QUERY_STALE_MS,
+  gcTime: QUERY_GC_MS,
+  refetchOnWindowFocus: false,
+};

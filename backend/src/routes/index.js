@@ -15,6 +15,7 @@ import interviewFinishRequestRoutes from './interviewFinishRequest.routes.js';
 import honestReviewRoutes from './honestReview.routes.js';
 import trainerHonestReviewRoutes from './trainerHonestReview.routes.js';
 import systemRoutes from './system.routes.js';
+import jobApplicationRoutes from './jobApplication.routes.js';
 
 const router = Router();
 
@@ -33,6 +34,7 @@ router.use('/self-interview-requests', selfInterviewRequestRoutes);
 router.use('/interview-finish-requests', interviewFinishRequestRoutes);
 router.use('/honest-review', honestReviewRoutes);
 router.use('/trainer-honest-reviews', trainerHonestReviewRoutes);
+router.use('/job-applications', jobApplicationRoutes);
 router.use('/system', systemRoutes);
 
 export default router;

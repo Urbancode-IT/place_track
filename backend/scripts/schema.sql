@@ -17,6 +17,7 @@ CREATE TABLE "User" (
   password   TEXT NOT NULL,
   role       role_enum NOT NULL DEFAULT 'TRAINER',
   phone      TEXT,
+  allowed    BOOLEAN NOT NULL DEFAULT false,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -147,3 +148,31 @@ CREATE TABLE "InterviewFinishRequest" (
 CREATE INDEX idx_ifr_interview ON "InterviewFinishRequest"("interviewId");
 CREATE INDEX idx_ifr_status ON "InterviewFinishRequest"(status);
 CREATE INDEX idx_ifr_student ON "InterviewFinishRequest"("studentId");
+
+-- Job Applications: daily application activity (date + SPOC + student + portal)
+CREATE TABLE "JobApplicationDaily" (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  date DATE NOT NULL,
+  "spocUserId" TEXT REFERENCES "User"(id) ON DELETE SET NULL,
+  "spocName" TEXT,
+  "studentId" TEXT NOT NULL REFERENCES "Student"(id) ON DELETE CASCADE,
+  portal TEXT NOT NULL,
+  "applicationCount" INT NOT NULL DEFAULT 0 CHECK ("applicationCount" >= 0),
+  "callsReceived" INT NOT NULL DEFAULT 0 CHECK ("callsReceived" >= 0),
+  "interviewsScheduled" INT NOT NULL DEFAULT 0 CHECK ("interviewsScheduled" >= 0),
+  "companyName" TEXT,
+  "interviewId" TEXT REFERENCES "Interview"(id) ON DELETE SET NULL,
+  "interviewIds" TEXT[] NOT NULL DEFAULT '{}',
+  "interviewLink" TEXT,
+  "interviewSlots" JSONB NOT NULL DEFAULT '[]'::jsonb,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- Case-insensitive unique: Naukri and naukri are the same portal
+CREATE UNIQUE INDEX idx_jad_unique_ci
+  ON "JobApplicationDaily" (date, "spocUserId", "studentId", LOWER(btrim(portal)));
+CREATE INDEX idx_jad_date ON "JobApplicationDaily"(date);
+CREATE INDEX idx_jad_spoc ON "JobApplicationDaily"("spocUserId");
+CREATE INDEX idx_jad_student ON "JobApplicationDaily"("studentId");
+CREATE INDEX idx_jad_portal ON "JobApplicationDaily"(portal);
+CREATE INDEX idx_jad_interview_ids ON "JobApplicationDaily" USING GIN ("interviewIds");

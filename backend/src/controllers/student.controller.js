@@ -20,11 +20,6 @@ export async function list(req, res, next) {
       vals.push(term);
       idx++;
     }
-    if (req.user.role === 'TRAINER') {
-      joinSql = ` INNER JOIN "Interview" i ON i."studentId" = s.id INNER JOIN "InterviewTrainer" it ON it."interviewId" = i.id AND it."trainerId" = $${idx}`;
-      vals.push(req.user.id);
-      idx++;
-    }
     if (req.query.status) {
       if (!joinSql) joinSql = ` INNER JOIN "Interview" i ON i."studentId" = s.id`;
       conds.push(`i.status = $${idx++}`);
@@ -81,10 +76,6 @@ export async function getById(req, res, next) {
       [id]
     );
     const qa = await query('SELECT * FROM "QAEntry" WHERE "studentId" = $1 ORDER BY "createdAt" DESC', [id]);
-    if (req.user.role === 'TRAINER') {
-      const hasAccess = interviews.rows.some((i) => (i.trainers || []).some((t) => t.id === req.user.id));
-      if (!hasAccess) throw new AppError('Access denied', 403);
-    }
     const result = {
       ...student,
       interviews: interviews.rows.map((i) => ({ ...i, trainers: i.trainers || [] })),

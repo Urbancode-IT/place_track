@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { systemApi } from '@/api/system.api';
 import { useAuthStore } from '@/store/auth.store';
 import { Spinner } from '@/components/ui/Spinner';
+import { useModulePath } from '@/lib/modulePath';
 
 export default function Settings() {
   const role = useAuthStore((s) => s.user?.role);
+  const to = useModulePath();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['system', 'mail-status'],
     queryFn: () => systemApi.mailStatus().then((r) => r.data),
@@ -23,7 +25,7 @@ export default function Settings() {
         <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Settings</p>
         <h1 className="text-[22px] font-medium">Workspace</h1>
         <p className="text-sm text-[var(--text2)] mt-1">
-          Notification toggles live on the <Link to="/notifications" className="text-[var(--cyan)] hover:underline">Notifications</Link> page.
+          Notification toggles live on the <Link to={to('/notifications')} className="text-[var(--cyan)] hover:underline">Notifications</Link> page.
         </p>
       </div>
 
@@ -82,7 +84,7 @@ export default function Settings() {
             {trainersWithoutEmail > 0 && (
               <>
                 {' '}
-                — add emails under <Link to="/trainers" className="text-[var(--cyan)] hover:underline">Trainers</Link>.
+                — add emails under <Link to={to('/trainers')} className="text-[var(--cyan)] hover:underline">Trainers</Link>.
               </>
             )}
           </p>

@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { trainerApi } from '@/api/trainer.api';
 import { interviewApi } from '@/api/interview.api';
 import { Button } from '@/components/ui/Button';
@@ -8,7 +7,13 @@ import { AddTrainerModal } from '@/components/trainers/AddTrainerModal';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useUpdateInterview, useUpdateInterviewStatus } from '@/hooks/useInterviews';
-import { useNotifyTrainer, useCreateTrainer, useDeleteTrainer } from '@/hooks/useTrainers';
+import {
+  useNotifyTrainer,
+  useCreateTrainer,
+  useDeleteTrainer,
+  useAllowTrainer,
+  useRevokeTrainer,
+} from '@/hooks/useTrainers';
 import { formatDate } from '@/utils/formatDate';
 import { cn } from '@/utils/helpers';
 import { useNotificationStore } from '@/store/notification.store';
@@ -62,10 +67,16 @@ export default function TrainerView() {
     queryKey: ['trainers'],
     queryFn: () => trainerApi.list().then((r) => r.data),
   });
+  const trainers = Array.isArray(trainersData?.data) ? trainersData.data : [];
+  const selectedTrainer =
+    trainers.find((t) => t?.id && String(t.id) === String(selectedTrainerId)) ||
+    trainers.find((t) => t?.id) ||
+    null;
+  const activeTrainerId = selectedTrainer?.id || null;
   const { data: interviewsData } = useQuery({
-    queryKey: ['trainer-interviews', selectedTrainerId],
-    queryFn: () => trainerApi.getInterviews(selectedTrainerId).then((r) => r.data),
-    enabled: !!selectedTrainerId,
+    queryKey: ['trainer-interviews', activeTrainerId],
+    queryFn: () => trainerApi.getInterviews(activeTrainerId).then((r) => r.data),
+    enabled: !!activeTrainerId,
   });
   const { data: allInterviewsData } = useQuery({
     queryKey: ['interviews', { page: 1, limit: 80, assignPicker: true }],
@@ -80,23 +91,17 @@ export default function TrainerView() {
   const notifyTrainer = useNotifyTrainer();
   const createTrainer = useCreateTrainer();
   const deleteTrainer = useDeleteTrainer();
+  const allowTrainer = useAllowTrainer();
+  const revokeTrainer = useRevokeTrainer();
 
-  const trainers = Array.isArray(trainersData?.data) ? trainersData.data : [];
   const interviews = Array.isArray(interviewsData?.data) ? interviewsData.data : [];
   const allInterviews = Array.isArray(allInterviewsData?.data) ? allInterviewsData.data : [];
-
-  const selectedTrainer = trainers.find((t) => t.id === selectedTrainerId);
-  useEffect(() => {
-    if (!selectedTrainerId && trainers.length) {
-      setSelectedTrainerId(trainers[0].id);
-    }
-  }, [selectedTrainerId, trainers]);
   const selectedTrainerInterviews = useMemo(() => {
-    if (!selectedTrainerId) return [];
+    if (!activeTrainerId) return [];
     return allInterviews.filter((i) =>
-      Array.isArray(i.trainers) && i.trainers.some((t) => t?.trainer?.id === selectedTrainerId)
+      Array.isArray(i.trainers) && i.trainers.some((t) => String(t?.trainer?.id) === String(activeTrainerId))
     );
-  }, [allInterviews, selectedTrainerId]);
+  }, [allInterviews, activeTrainerId]);
   const unassignedForSelectedTrainer = useMemo(
     () => allInterviews.filter((i) => !selectedTrainerInterviews.some((ti) => ti.id === i.id)),
     [allInterviews, selectedTrainerInterviews]
@@ -112,16 +117,61 @@ export default function TrainerView() {
   };
 
   const handleAddTrainer = (data) => {
-    createTrainer.mutate(data, { onSuccess: () => setAddModalOpen(false) });
+    createTrainer.mutate(
+      {
+        name: data.name.trim(),
+        email: data.email.trim(),
+        password: data.password,
+        phone: data.phone?.trim() || undefined,
+      },
+      {
+        onSuccess: (body) => {
+          const createdId = body?.data?.id;
+          if (createdId) setSelectedTrainerId(createdId);
+          setAddModalOpen(false);
+          addToast({ type: 'success', message: 'Trainer added' });
+        },
+        onError: (err) =>
+          addToast({
+            type: 'error',
+            message: err?.response?.data?.message || 'Could not add trainer',
+          }),
+      }
+    );
+  };
+
+  const handleToggleAllowed = (trainer) => {
+    if (!trainer?.id) return;
+    if (trainer.allowed) {
+      const ok = window.confirm(
+        `Reject ${trainer.name}? They will stay on the list but will not be able to sign in.`
+      );
+      if (!ok) return;
+    }
+    const mutation = trainer.allowed ? revokeTrainer : allowTrainer;
+    mutation.mutate(trainer.id, {
+      onSuccess: () =>
+        addToast({
+          type: 'success',
+          message: trainer.allowed
+            ? 'Trainer rejected'
+            : 'Trainer admitted',
+        }),
+      onError: (err) =>
+        addToast({
+          type: 'error',
+          message: err?.response?.data?.message || 'Could not update trainer access',
+        }),
+    });
   };
 
   const handleDeleteTrainer = (trainer) => {
     if (!trainer?.id) return;
-    if (!window.confirm(`Delete trainer ${trainer.name}? This will remove trainer assignments too.`)) return;
+    if (!window.confirm(`Delete trainer ${trainer.name}? Interview assignments are removed. Job application history keeps their name.`)) return;
     deleteTrainer.mutate(trainer.id, {
       onSuccess: () => {
         addToast({ type: 'success', message: 'Trainer deleted' });
-        if (selectedTrainerId === trainer.id) {
+        if (String(activeTrainerId) === String(trainer.id)) {
           const next = trainers.find((t) => t.id !== trainer.id);
           setSelectedTrainerId(next?.id || null);
         }
@@ -136,13 +186,13 @@ export default function TrainerView() {
 
   const handleSendNotificationNow = () => {
     const interviewId = notifyInterviewId || interviews[0]?.id;
-    if (!selectedTrainerId || !interviewId) return;
-    notifyTrainer.mutate({ trainerId: selectedTrainerId, interviewId });
+    if (!activeTrainerId || !interviewId) return;
+    notifyTrainer.mutate({ trainerId: activeTrainerId, interviewId });
   };
   const handleAssignInterview = () => {
-    if (!selectedTrainerId || !selectedInterviewId) return;
+    if (!activeTrainerId || !selectedInterviewId) return;
     interviewApi
-      .addTrainers(selectedInterviewId, [selectedTrainerId])
+      .addTrainers(selectedInterviewId, [activeTrainerId])
       .then(() => {
         addToast({ type: 'success', message: 'Interview assigned to trainer' });
         setAssignOpen(false);
@@ -211,7 +261,7 @@ export default function TrainerView() {
                 key={t.id}
                 className={cn(
                   'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
-                  selectedTrainerId === t.id
+                  String(activeTrainerId) === String(t.id)
                     ? 'bg-[var(--tc-primary-dim)]'
                     : 'hover:bg-[var(--tc-panel-hover)]'
                 )}
@@ -225,7 +275,7 @@ export default function TrainerView() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-[13px] text-white truncate">{t.name}</span>
-                      {selectedTrainerId === t.id && (
+                      {String(activeTrainerId) === String(t.id) && (
                         <span
                           className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded"
                           style={{ background: 'var(--tc-primary-dim)', color: 'var(--tc-primary)' }}
@@ -235,7 +285,7 @@ export default function TrainerView() {
                       )}
                     </div>
                     <p className="text-[11px] text-[var(--text2)] truncate">{t.email}</p>
-                    {selectedTrainerId === t.id && (
+                    {String(activeTrainerId) === String(t.id) && (
                       <p className="text-[10px] text-[var(--text3)] mt-0.5">
                         {interviews.length} Interview{interviews.length !== 1 ? 's' : ''}
                       </p>
@@ -321,7 +371,7 @@ export default function TrainerView() {
               className="rounded-xl p-4 flex flex-wrap items-center gap-4"
               style={{ background: 'var(--tc-panel)', border: '1px solid var(--border)' }}
             >
-              <TrainerAvatar name={selectedTrainer.name} index={trainers.findIndex((t) => t.id === selectedTrainerId)} />
+              <TrainerAvatar name={selectedTrainer.name} index={trainers.findIndex((t) => String(t.id) === String(activeTrainerId))} />
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg font-medium text-white">{selectedTrainer.name}</h2>
                 <p className="text-[12px] text-[var(--text2)]">{selectedTrainer.email}</p>
@@ -465,9 +515,17 @@ export default function TrainerView() {
 
       <AddTrainerModal
         open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        onClose={() => {
+          createTrainer.reset();
+          setAddModalOpen(false);
+        }}
         onSubmit={handleAddTrainer}
         isLoading={createTrainer.isPending}
+        errorMessage={
+          createTrainer.isError
+            ? createTrainer.error?.response?.data?.message || 'Could not add trainer'
+            : ''
+        }
       />
 
       <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="Trainer Profile" variant="dark">
@@ -476,7 +534,18 @@ export default function TrainerView() {
             <p><span className="text-[var(--text3)]">Name:</span> {selectedTrainer.name}</p>
             <p><span className="text-[var(--text3)]">Email:</span> {selectedTrainer.email}</p>
             <p><span className="text-[var(--text3)]">Phone:</span> {selectedTrainer.phone || '-'}</p>
+            <p><span className="text-[var(--text3)]">Access:</span> {selectedTrainer.allowed ? 'Admitted' : 'Rejected'}</p>
             <p><span className="text-[var(--text3)]">Assigned Interviews:</span> {interviews.length}</p>
+            <div className="flex justify-end pt-2">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={allowTrainer.isPending || revokeTrainer.isPending}
+                onClick={() => handleToggleAllowed(selectedTrainer)}
+              >
+                {selectedTrainer.allowed ? 'Reject' : 'Admit'}
+              </Button>
+            </div>
           </div>
         ) : null}
       </Modal>
