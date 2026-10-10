@@ -83,8 +83,8 @@ try {
   await page.getByRole('button', { name: 'History' }).click();
   await page.getByText('Range totals').waitFor();
   assert(
-    (await page.getByRole('link', { name: studentName }).count()) === 0,
-    'Today’s entry should stay off History until the next day'
+    (await page.getByRole('link', { name: studentName }).count()) > 0,
+    'Today’s Daily Entry should appear in History'
   );
 
   await page.getByRole('button', { name: 'Daily Entry', exact: true }).click();
@@ -94,7 +94,7 @@ try {
   await page.getByText('Entry deleted').waitFor();
   await page.getByRole('link', { name: studentName }).waitFor({ state: 'detached' });
 
-  console.log('JA-07 browser pass OK: create → edit → today stays on Daily Entry → delete');
+  console.log('JA-07 browser pass OK: create → edit → today is stored in History → delete');
 } finally {
   if (token && studentId) {
     await page.request.delete(`${BASE}/api/students/${studentId}`, {

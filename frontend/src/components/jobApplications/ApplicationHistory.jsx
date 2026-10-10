@@ -21,7 +21,6 @@ import {
   isDateOnly,
   isUuid,
   uniqueCanonicalPortals,
-  yesterdayLocalISO,
 } from '@/utils/jobApplication';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
@@ -109,7 +108,6 @@ export function ApplicationHistory() {
   const [dateFrom, setDateFrom] = useState(initial.dateFrom);
   const [dateTo, setDateTo] = useState(initial.dateTo);
   const [closed, setClosed] = useState(initial.closed);
-  const historyThrough = yesterdayLocalISO();
   const [spocUserId, setSpocUserId] = useState(initial.spocUserId);
   const [studentId, setStudentId] = useState(initial.studentId);
   const [course, setCourse] = useState(initial.course);
@@ -349,7 +347,6 @@ export function ApplicationHistory() {
         onClose={() => setCustomOpen(false)}
         from={dateFrom}
         to={dateTo}
-        maxISO={historyThrough}
         onPickRange={({ dateFrom: nextFrom, dateTo: nextTo, done }) => {
           applyCustomRange(nextFrom, nextTo);
           if (done) setCustomOpen(false);
@@ -364,7 +361,6 @@ export function ApplicationHistory() {
             value={dateFrom}
             onChange={onFromChange}
             placeholder="From date"
-            maxISO={historyThrough}
           />
         </div>
         <div>
@@ -374,7 +370,6 @@ export function ApplicationHistory() {
             value={dateTo}
             onChange={onToChange}
             placeholder="To date"
-            maxISO={historyThrough}
           />
         </div>
         {!isTrainer && (
@@ -521,7 +516,7 @@ export function ApplicationHistory() {
                     <tr>
                       <td colSpan={9} className="p-8 text-center text-[var(--text3)] text-sm">
                         {closed
-                          ? 'Nothing from this range is in History yet. Today’s entries stay on Daily Entry until the next day.'
+                          ? 'This date range can’t be shown.'
                           : hasActiveFilters
                             ? 'No matches for these filters.'
                             : 'No application history yet.'}

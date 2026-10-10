@@ -25,12 +25,24 @@ const pool = new Pool({
 
 console.log('DB CONFIG => (using DATABASE_URL)');
 
-try {
-  const test = await pool.query('SELECT current_user, current_database()');
-  console.log('DB CONNECTED =>', test.rows);
-} catch (err) {
-  console.error('DB CONNECTION TEST FAILED =>', err);
-}
+// An idle Postgres socket can be closed by the server. Without this listener,
+// Node treats the pool "error" event as fatal and exits, so :5001 refuses
+// connections until the process is started again.
+pool.on('error', (err) => {
+  console.error('[db] idle connection dropped; the pool will reconnect:', err?.message || err);
+});
+
+// Do not block process startup on this ping. The HTTP server must listen
+// immediately; a slow database check used to leave :5001 closed while Vite
+// was already proxying dashboard requests.
+pool
+  .query('SELECT current_user, current_database()')
+  .then((test) => {
+    console.log('DB CONNECTED =>', test.rows);
+  })
+  .catch((err) => {
+    console.error('DB CONNECTION TEST FAILED =>', err);
+  });
 
 export async function query(text, params) {
   return await pool.query(text, params);

@@ -484,7 +484,7 @@ export function DailyEntry({ spocs = [], spocsLoading }) {
                         ? 'No rows match this filter.'
                         : effectiveSpocId
                           ? 'No entries for this date and SPOC. Add the first row to start tracking.'
-                          : 'No entries for this date. Today’s rows stay here until the next day.'}
+                          : 'No entries for this date.'}
                     </td>
                   </tr>
                 ) : (

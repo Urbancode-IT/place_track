@@ -14,8 +14,6 @@ import {
   derivedSlotFields,
   enrichSlotsFromStudentSources,
 } from '../services/jobApplicationSlots.service.js';
-import { calendarDateInScheduleTz } from '../utils/date.utils.js';
-
 function mapPgClientError(err) {
   if (err?.code === '22008' || err?.code === '22007') {
     return new AppError('Invalid date', 400);
@@ -403,9 +401,6 @@ export async function listHistory(req, res, next) {
       conds.push(`j.date <= $${idx++}::date`);
       vals.push(dateTo);
     }
-    // Today stays on Daily Entry until the next calendar day (schedule timezone).
-    conds.push(`j.date < $${idx++}::date`);
-    vals.push(calendarDateInScheduleTz());
     if (studentId) {
       conds.push(`j."studentId" = $${idx++}`);
       vals.push(studentId);

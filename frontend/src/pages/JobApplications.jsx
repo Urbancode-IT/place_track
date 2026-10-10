@@ -25,7 +25,7 @@ export default function JobApplications() {
           <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--text3)]">Placement</p>
           <h1 className="text-[20px] font-medium">Job Applications</h1>
           <p className="text-sm text-[var(--text2)] mt-1">
-            Today’s entries stay on Daily Entry. History shows each earlier day, starting the next day.
+            Rows saved on Daily Entry are stored in History, including today.
           </p>
         </div>
 

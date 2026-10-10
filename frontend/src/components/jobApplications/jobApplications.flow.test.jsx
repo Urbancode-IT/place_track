@@ -102,7 +102,6 @@ vi.mock('@/api/jobApplication.api', () => ({
       }
       if (params.dateFrom) rows = rows.filter((row) => row.date >= params.dateFrom);
       if (params.dateTo) rows = rows.filter((row) => row.date <= params.dateTo);
-      rows = rows.filter((row) => row.date < todayLocalISO());
       return axiosBody(rows, {
         pagination: { total: rows.length, page: 1, totalPages: 1 },
         totals: {
@@ -271,8 +270,10 @@ describe('Job Applications create → edit → delete and History filter refresh
       expect(screen.getByText('Range totals')).toBeTruthy();
     });
     const historyParams = jobApplicationApi.list.mock.calls.at(-1)?.[0];
-    if (historyParams?.dateTo) expect(historyParams.dateTo < todayLocalISO()).toBe(true);
-    expect(screen.queryByRole('link', { name: 'Priya Nair' })).toBeNull();
+    const today = todayLocalISO();
+    expect(historyParams?.dateFrom <= today).toBe(true);
+    expect(historyParams?.dateTo >= today).toBe(true);
+    expect(await screen.findByRole('link', { name: 'Priya Nair' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Daily Entry', exact: true }));
     expect(await screen.findByRole('link', { name: 'Priya Nair' })).toBeTruthy();

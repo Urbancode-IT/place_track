@@ -530,7 +530,7 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
     expect(res.body.pagination.total).toBe(1);
   });
 
-  it('keeps today’s rows on daily entry and out of history', async () => {
+  it('stores today’s daily entry in history', async () => {
     const today = calendarDateInScheduleTz();
     const created = await request(app)
       .post('/api/job-applications')
@@ -559,7 +559,7 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
       .set(auth(adminToken))
       .query({ dateFrom: today, dateTo: today, studentId, portal: 'Shine' });
     expect(history.status).toBe(200);
-    expect(history.body.data.some((row) => row.id === created.body.data.id)).toBe(false);
+    expect(history.body.data.some((row) => row.id === created.body.data.id)).toBe(true);
   });
 
   it('isolates trainer rows from other trainers', async () => {
@@ -1070,7 +1070,7 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
       .set(auth(trainer1Token))
       .query({ dateFrom: '2099-12-01', dateTo: '2099-12-01', portal: 'wellfound' });
     expect(t1History.status).toBe(200);
-    expect(t1History.body.data.some((row) => row.id === created.body.data.id)).toBe(false);
+    expect(t1History.body.data.some((row) => row.id === created.body.data.id)).toBe(true);
 
     const futureDaily = await request(app)
       .get('/api/job-applications/daily')

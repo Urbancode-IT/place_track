@@ -18,17 +18,17 @@ describe('job application frontend helpers', () => {
     expect(uniqueCanonicalPortals(['naukri', 'Naukri', 'LinkedIn'])).toEqual(['Naukri', 'LinkedIn']);
   });
 
-  it('keeps today out of history ranges', () => {
+  it('includes today in history ranges', () => {
     const now = new Date(2026, 8, 29, 17, 35, 0);
     expect(yesterdayLocalISO(now)).toBe('2026-09-28');
     expect(historyPresetRange('THIS_WEEK', now)).toEqual({
       dateFrom: '2026-09-28',
-      dateTo: '2026-09-28',
+      dateTo: '2026-10-04',
       closed: false,
     });
     expect(historyPresetRange('THIS_MONTH', now)).toEqual({
       dateFrom: '2026-09-01',
-      dateTo: '2026-09-28',
+      dateTo: '2026-09-30',
       closed: false,
     });
     expect(historyPresetRange('YESTERDAY', now)).toEqual({
@@ -36,14 +36,22 @@ describe('job application frontend helpers', () => {
       dateTo: '2026-09-28',
       closed: false,
     });
-    expect(clampHistoryDates('2026-09-28', '2026-10-04', now)).toEqual({
+    expect(clampHistoryDates('2026-09-28', '2026-10-04')).toEqual({
       dateFrom: '2026-09-28',
-      dateTo: '2026-09-28',
+      dateTo: '2026-10-04',
       closed: false,
     });
-    expect(clampHistoryDates('2026-09-29', '2026-09-29', now).closed).toBe(true);
+    expect(clampHistoryDates('2026-09-29', '2026-09-29')).toEqual({
+      dateFrom: '2026-09-29',
+      dateTo: '2026-09-29',
+      closed: false,
+    });
     const monday = new Date(2026, 8, 28, 9, 0, 0);
-    expect(historyPresetRange('THIS_WEEK', monday).closed).toBe(true);
+    expect(historyPresetRange('THIS_WEEK', monday)).toEqual({
+      dateFrom: '2026-09-28',
+      dateTo: '2026-10-04',
+      closed: false,
+    });
   });
 
   it('formats DATE-only strings without UTC parseISO shift', () => {

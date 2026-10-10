@@ -37,7 +37,7 @@ export function uniqueCanonicalPortals(portals = []) {
   return [...map.values()];
 }
 
-/** Local calendar yesterday as YYYY-MM-DD. History starts here; today stays on Daily Entry. */
+/** Local calendar yesterday as YYYY-MM-DD. */
 export function yesterdayLocalISO(now = new Date()) {
   const day = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   day.setDate(day.getDate() - 1);
@@ -45,42 +45,39 @@ export function yesterdayLocalISO(now = new Date()) {
 }
 
 /**
- * History only includes dates before today. A range that is entirely today or later
- * is closed so the caller does not fall back to every past row.
+ * Keep a history range as entered, including today. An inverted range is closed
+ * so the caller does not fall back to every saved row.
  */
-export function clampHistoryDates(dateFrom, dateTo, now = new Date()) {
-  const yesterday = yesterdayLocalISO(now);
+export function clampHistoryDates(dateFrom, dateTo) {
   const fromIn = isDateOnly(dateFrom) ? dateFrom : '';
   const toIn = isDateOnly(dateTo) ? dateTo : '';
   if (!fromIn && !toIn) return { dateFrom: '', dateTo: '', closed: false };
-  const from = fromIn && fromIn > yesterday ? '' : fromIn;
-  const to = toIn && toIn > yesterday ? yesterday : toIn;
-  if ((fromIn && !from && (!toIn || toIn > yesterday)) || (from && to && from > to)) {
+  if (fromIn && toIn && fromIn > toIn) {
     return { dateFrom: '', dateTo: '', closed: true };
   }
-  return { dateFrom: from, dateTo: to, closed: false };
+  return { dateFrom: fromIn, dateTo: toIn, closed: false };
 }
 
-/** Preset windows for History. Each window ends on yesterday. */
+/** Preset windows for History. This Week and This Month include today. */
 export function historyPresetRange(presetId, now = new Date()) {
-  const yesterday = yesterdayLocalISO(now);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   if (presetId === 'YESTERDAY') {
+    const yesterday = yesterdayLocalISO(now);
     return { dateFrom: yesterday, dateTo: yesterday, closed: false };
   }
   if (presetId === 'THIS_WEEK') {
-    return clampHistoryDates(
-      toDateOnlyISO(startOfWeek(today, { weekStartsOn: 1 })),
-      toDateOnlyISO(endOfWeek(today, { weekStartsOn: 1 })),
-      now
-    );
+    return {
+      dateFrom: toDateOnlyISO(startOfWeek(today, { weekStartsOn: 1 })),
+      dateTo: toDateOnlyISO(endOfWeek(today, { weekStartsOn: 1 })),
+      closed: false,
+    };
   }
   if (presetId === 'THIS_MONTH') {
-    return clampHistoryDates(
-      toDateOnlyISO(startOfMonth(today)),
-      toDateOnlyISO(endOfMonth(today)),
-      now
-    );
+    return {
+      dateFrom: toDateOnlyISO(startOfMonth(today)),
+      dateTo: toDateOnlyISO(endOfMonth(today)),
+      closed: false,
+    };
   }
   return { dateFrom: '', dateTo: '', closed: false };
 }
