@@ -15,13 +15,13 @@ async function setupAdmin() {
 
     if (existing.rows.length > 0) {
       await query(
-        'UPDATE "User" SET name = $1, password = $2, role = $3 WHERE email = $4',
+        'UPDATE "User" SET name = $1, password = $2, role = $3, allowed = true WHERE email = $4',
         [name, hashed, role, email]
       );
       console.log('Admin user updated successfully.');
     } else {
       await query(
-        'INSERT INTO "User" (name, email, password, role) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO "User" (name, email, password, role, allowed) VALUES ($1, $2, $3, $4, true)',
         [name, email, hashed, role]
       );
       console.log('Admin user created successfully.');
