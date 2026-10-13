@@ -1,12 +1,7 @@
 function resolveApiBaseUrl() {
   const envUrl = (import.meta.env.VITE_API_URL || '').trim();
 
-  // Override dead Linode domain api.placetrack.urbancode.in to same-origin /api
-  if (envUrl.includes('api.placetrack.urbancode.in')) {
-    return '/api';
-  }
-
-  // When deployed on placetrack.urbancode.in, always use same-origin /api (proxied by vercel.json to Render)
+  // In production (placetrack.urbancode.in), use same-origin /api (proxied by vercel.json to Linode: api.placetrack.urbancode.in)
   if (typeof window !== 'undefined' && window.location.hostname.includes('placetrack.urbancode.in')) {
     return '/api';
   }

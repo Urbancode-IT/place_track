@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://place-track-1.onrender.com/api/:path*"
+      "destination": "https://api.placetrack.urbancode.in/api/:path*"
     },
     {
       "source": "/health",
-      "destination": "https://place-track-1.onrender.com/health"
+      "destination": "https://api.placetrack.urbancode.in/health"
     },
     {
       "source": "/(.*)",
