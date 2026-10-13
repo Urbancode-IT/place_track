@@ -14,10 +14,12 @@ export const tokenParamSchema = z.object({
 
 const meetingLinkSchema = z
   .string()
-  .min(1, 'Meeting link is required')
   .max(2000)
-  .transform((v) => normalizeMeetingLink(v))
-  .refine((v) => isValidHttpUrl(v), {
+  .optional()
+  .nullable()
+  .or(z.literal(''))
+  .transform((v) => (v && String(v).trim() ? normalizeMeetingLink(v) : null))
+  .refine((v) => v == null || isValidHttpUrl(v), {
     message: 'Paste a valid meeting URL (https://…)',
   });
 

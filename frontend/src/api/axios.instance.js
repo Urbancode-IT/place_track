@@ -102,12 +102,12 @@ function scheduleAccessRefresh(token) {
     if (!useAuthStore.getState().accessToken) return;
     refreshAccessTokenOnce().catch((err) => {
       const status = err?.response?.status;
-      if (status === 401 || status === 403) {
+      if (status && status >= 400 && status < 500) {
         endSession();
         return;
       }
       const still = useAuthStore.getState().accessToken;
-      if (still) refreshTimer = setTimeout(() => scheduleAccessRefresh(still), 30_000);
+      if (still) refreshTimer = setTimeout(() => scheduleAccessRefresh(still), 60_000);
     });
   }, delay);
 }

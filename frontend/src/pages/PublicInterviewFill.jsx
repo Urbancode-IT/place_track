@@ -22,8 +22,9 @@ const schema = z
     hrNumber: z.string().optional(),
     room: z
       .string()
-      .min(1, 'Meeting link is required')
-      .refine((v) => isValidHttpUrl(normalizeMeetingLink(v)), {
+      .optional()
+      .or(z.literal(''))
+      .refine((v) => !v || !v.trim() || isValidHttpUrl(normalizeMeetingLink(v)), {
         message: 'Paste a valid meeting URL (https://…)',
       }),
     comments: z.string().optional(),
@@ -119,7 +120,7 @@ export default function PublicInterviewFill() {
       ...values,
       round: resolveSubmittedRound(values.round, values.customRound),
       date: new Date(values.date).toISOString(),
-      room: normalizeMeetingLink(values.room),
+      room: values.room?.trim() ? normalizeMeetingLink(values.room) : null,
     };
     delete payload.customRound;
     submitMut.mutate(payload);
@@ -162,7 +163,7 @@ export default function PublicInterviewFill() {
           />
           <Input label="HR / contact (optional)" {...register('hrNumber')} />
           <Input
-            label="Meeting link"
+            label="Meeting link (optional)"
             type="url"
             inputMode="url"
             autoComplete="off"
@@ -171,7 +172,7 @@ export default function PublicInterviewFill() {
             error={errors.room?.message}
           />
           <p className="text-[11px] text-[var(--text3)] -mt-2">
-            Paste the link from your invite. Match the company, date, and time your SPOC logged.
+            Paste the link from your invite (if available). Match the company, date, and time your SPOC logged.
           </p>
           <div>
             <label className="block text-xs text-[var(--text2)] mb-1">Notes (optional)</label>
