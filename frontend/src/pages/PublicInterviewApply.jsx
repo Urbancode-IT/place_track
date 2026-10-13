@@ -178,8 +178,12 @@ export default function PublicInterviewApply() {
       ...values,
       round: resolveSubmittedRound(values.round, values.customRound),
       date: new Date(values.date).toISOString(),
-      room: values.room?.trim() ? normalizeMeetingLink(values.room) : null,
     };
+    if (values.room && values.room.trim()) {
+      payload.room = normalizeMeetingLink(values.room);
+    } else {
+      delete payload.room;
+    }
     delete payload.customRound;
     submitMut.mutate(payload);
   };
