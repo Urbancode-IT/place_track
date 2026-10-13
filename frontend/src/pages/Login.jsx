@@ -11,6 +11,7 @@ import { cn } from '@/utils/helpers';
 import { API_BASE_URL, getApiHealthUrl } from '@/lib/apiConfig';
 import { isTransientNetworkError, retryOnNetworkError, shouldRetryLogin } from '@/lib/networkError';
 import { landingPath } from '@/lib/modulePath';
+import { toast } from '@/components/ui/Toast';
 
 const schema = z.object({
   email: z.string().email('Invalid email'),
@@ -53,20 +54,23 @@ export default function Login() {
         shouldRetry: shouldRetryLogin,
       });
       setAuth(res.data.user, res.data.accessToken);
+      toast.success(`Welcome back, ${res.data?.user?.name || 'User'}!`);
       navigate(landingPath(res.data.user?.role, location.state?.from?.pathname), { replace: true });
       finishedOnPage = false;
     } catch (err) {
       const networkFail = isTransientNetworkError(err);
       if (networkFail) {
-        setError(
-          import.meta.env.DEV
-            ? 'Cannot reach the API. Open another terminal: cd backend → npm run dev — you must see “PlaceTrack API running on port 5001”. (Vite proxies /api to that port.) If you see “EADDRINUSE”, only one backend can use 5001 — close the extra terminal.'
-            : `Cannot reach the API (${API_BASE_URL}). Check backend health: ${getApiHealthUrl()} — Render free tier may need 30–60s to wake up. Ensure Render has DATABASE_URL set and redeploy backend.`,
-        );
+        const netMsg = import.meta.env.DEV
+          ? 'Cannot reach the API. Open another terminal: cd backend → npm run dev — you must see “PlaceTrack API running on port 5001”. (Vite proxies /api to that port.) If you see “EADDRINUSE”, only one backend can use 5001 — close the extra terminal.'
+          : `Cannot reach the API (${API_BASE_URL}). Check backend health: ${getApiHealthUrl()} — Render free tier may need 30–60s to wake up. Ensure Render has DATABASE_URL set and redeploy backend.`;
+        setError(netMsg);
+        toast.error('Cannot reach the backend API server.');
         return;
       }
       if (!err.response) {
-        setError(err.message || 'Login failed');
+        const fallbackMsg = err.message || 'Login failed';
+        setError(fallbackMsg);
+        toast.error(fallbackMsg);
         return;
       }
       const status = err.response.status;
@@ -76,26 +80,25 @@ export default function Login() {
           ? raw.message
           : null;
       if (status === 503) {
-        setError(
-          msg ||
-            'Backend or database unavailable (503). On Render: set a working DATABASE_URL (Render Postgres recommended), then redeploy the API service.',
-        );
+        const s503Msg = msg || 'Backend or database unavailable (503). On Render: set a working DATABASE_URL (Render Postgres recommended), then redeploy the API service.';
+        setError(s503Msg);
+        toast.error(msg || 'Backend or database unavailable (503)');
         return;
       }
       if (status >= 500) {
-        // Vite proxy often returns 500 with no JSON body when nothing listens on :5001 — looks like "server error" but it's connection refused.
         if (import.meta.env.DEV && !msg) {
-          setError(
-            'Backend not running on port 5001. Open a new terminal: cd backend → npm run dev — wait for “PlaceTrack API running on port 5001”. Keep it open; then try Sign in again.',
-          );
+          const devMsg = 'Backend not running on port 5001. Open a new terminal: cd backend → npm run dev — wait for “PlaceTrack API running on port 5001”. Keep it open; then try Sign in again.';
+          setError(devMsg);
+          toast.error('Backend not running on port 5001.');
           return;
         }
-        setError(
-          msg ||
-            'Server error — check the backend terminal and PostgreSQL connection.',
-        );
+        const s500Msg = msg || 'Server error — check the backend terminal and PostgreSQL connection.';
+        setError(s500Msg);
+        toast.error(s500Msg);
       } else {
-        setError(msg || 'Login failed');
+        const defaultErr = msg || 'Login failed';
+        setError(defaultErr);
+        toast.error(defaultErr);
       }
     } finally {
       inFlightRef.current = false;

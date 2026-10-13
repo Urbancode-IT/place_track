@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { studentApi } from '@/api/student.api';
 import { useStudent } from '@/hooks/useStudents';
+import { toast } from '@/components/ui/Toast';
 
 export function SelfIntroEditor({ studentId }) {
   const { data, refetch } = useStudent(studentId);
@@ -19,7 +20,10 @@ export function SelfIntroEditor({ studentId }) {
     setSaving(true);
     try {
       await studentApi.updateSelfIntro(studentId, intro);
+      toast.success('Self introduction updated');
       refetch();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to update self introduction');
     } finally {
       setSaving(false);
     }

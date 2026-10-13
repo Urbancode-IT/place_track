@@ -7,6 +7,7 @@ import { publicHonestReviewApi } from '@/api/publicHonestReview.api';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { toast } from '@/components/ui/Toast';
 
 const schema = z.object({
   email: z.string().trim().min(1, 'Enter your email').email('Enter a valid email'),
@@ -66,7 +67,17 @@ export default function PublicHonestReviewCommon() {
   }
 
   const onSubmit = (values) => {
-    submitMut.mutate({ email: values.email.trim(), content: values.content.trim() });
+    submitMut.mutate(
+      { email: values.email.trim(), content: values.content.trim() },
+      {
+        onSuccess: () => {
+          toast.success('Thank you! Your student review was submitted.');
+        },
+        onError: (err) => {
+          toast.error(err?.response?.data?.message || 'Failed to submit review.');
+        },
+      }
+    );
   };
 
   return (

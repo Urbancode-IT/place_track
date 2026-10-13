@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { QA_STATUS } from '@/utils/constants';
+import { toast } from '@/components/ui/Toast';
 
 export function QABank({ studentId }) {
   const qc = useQueryClient();
@@ -16,15 +17,33 @@ export function QABank({ studentId }) {
   });
   const addQa = useMutation({
     mutationFn: (body) => studentApi.addQa(studentId, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['student', studentId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', studentId] });
+      toast.success('Q&A added');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to add Q&A');
+    },
   });
   const updateQa = useMutation({
     mutationFn: ({ id, data: d }) => qaApi.update(id, d),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['student', studentId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', studentId] });
+      toast.success('Q&A status updated');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to update Q&A');
+    },
   });
   const deleteQa = useMutation({
     mutationFn: (id) => qaApi.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['student', studentId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', studentId] });
+      toast.success('Q&A deleted');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to delete Q&A');
+    },
   });
 
   const [newQ, setNewQ] = useState('');

@@ -118,7 +118,17 @@ export default function Schedule() {
     if (!interview) return;
     const currentEffective = getEffectiveInterviewStatus(interview);
     if (currentEffective === newStatus && interview.status === newStatus) return;
-    updateStatus.mutate({ id: interviewId, status: newStatus });
+    updateStatus.mutate(
+      { id: interviewId, status: newStatus },
+      {
+        onSuccess: () => addToast({ type: 'success', message: `Status updated to ${newStatus}` }),
+        onError: (err) =>
+          addToast({
+            type: 'error',
+            message: err?.response?.data?.message || 'Failed to update status',
+          }),
+      }
+    );
   };
 
   const handleDragCancel = () => setActiveInterview(null);
@@ -158,7 +168,16 @@ export default function Schedule() {
             variant="secondary"
             size="sm"
             className="text-[10px]"
-            onClick={() => downloadScheduleCsv(filters).catch(() => {})}
+            onClick={() => {
+              downloadScheduleCsv(filters)
+                .then(() => addToast({ type: 'success', message: 'Schedule CSV downloaded' }))
+                .catch((err) =>
+                  addToast({
+                    type: 'error',
+                    message: err?.response?.data?.message || 'Failed to download CSV',
+                  })
+                );
+            }}
           >
             Export CSV
           </Button>
@@ -322,7 +341,19 @@ export default function Schedule() {
         ) : (
           <ScheduleTable
             data={interviews}
-            onStatusChange={(id, status) => updateStatus.mutate({ id, status })}
+            onStatusChange={(id, status) =>
+              updateStatus.mutate(
+                { id, status },
+                {
+                  onSuccess: () => addToast({ type: 'success', message: 'Status updated' }),
+                  onError: (e) =>
+                    addToast({
+                      type: 'error',
+                      message: e?.response?.data?.message || 'Failed to update status',
+                    }),
+                }
+              )
+            }
             onEdit={(interview) => {
               setEditingInterview(interview);
               setModalOpen(true);
@@ -348,8 +379,10 @@ export default function Schedule() {
             }
             if (editingInterview?.id) {
               await updateInterview.mutateAsync({ id: editingInterview.id, data: interviewData });
+              addToast({ type: 'success', message: 'Interview updated successfully' });
             } else {
               await createInterview.mutateAsync(interviewData);
+              addToast({ type: 'success', message: 'Interview scheduled successfully' });
             }
           } catch (e) {
             addToast({

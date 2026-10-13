@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationApi } from '@/api/notification.api';
 import { enablePushNotifications } from '@/lib/pushNotifications';
+import { toast } from '@/components/ui/Toast';
 
 export function ChannelToggles() {
   const qc = useQueryClient();
@@ -11,7 +12,13 @@ export function ChannelToggles() {
   });
   const update = useMutation({
     mutationFn: (d) => notificationApi.updateSettings(d),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      toast.success('Notification preferences updated');
+    },
+    onError: () => {
+      toast.error('Failed to update notification preferences');
+    },
   });
   const settings = data?.data || { email: true, push: true };
   const [local, setLocal] = useState(settings);
@@ -31,10 +38,16 @@ export function ChannelToggles() {
     setPushStatus('Requesting permission...');
     try {
       const r = await enablePushNotifications();
-      if (r.ok) setPushStatus('Push enabled on this device.');
-      else setPushStatus(`Push not enabled: ${r.reason}`);
+      if (r.ok) {
+        setPushStatus('Push enabled on this device.');
+        toast.success('Push notifications enabled!');
+      } else {
+        setPushStatus(`Push not enabled: ${r.reason}`);
+        toast.error(`Push not enabled: ${r.reason}`);
+      }
     } catch (e) {
       setPushStatus('Push not enabled: error');
+      toast.error('Could not enable push notifications');
     }
   };
 

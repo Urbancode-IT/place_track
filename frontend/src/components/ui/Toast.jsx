@@ -1,59 +1,64 @@
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useNotificationStore } from '@/store/notification.store';
-import { cn } from '@/utils/helpers';
+import toast, { Toaster as HotToaster } from 'react-hot-toast';
 
-function ToastItem({ id, message, type = 'info', remove }) {
-  useEffect(() => {
-    const t = setTimeout(remove, 4000);
-    return () => clearTimeout(t);
-  }, [id, remove]);
-  const styles = {
-    success: 'bg-success text-white',
-    error: 'bg-danger text-white',
-    warning: 'bg-warning',
-    info: 'bg-info',
-  };
+export { toast };
+
+export const appToast = {
+  success: (msg, opts) => toast.success(msg, opts),
+  error: (msg, opts) => toast.error(msg, opts),
+  info: (msg, opts) => toast(msg, { icon: 'ℹ️', ...opts }),
+  warning: (msg, opts) => toast(msg, { icon: '⚠️', ...opts }),
+  loading: (msg, opts) => toast.loading(msg, opts),
+  dismiss: (id) => toast.dismiss(id),
+  promise: toast.promise,
+};
+
+export function Toaster(props) {
   return (
-    <div
-      role="status"
-      className={cn(
-        'toast-pop-in min-w-[240px] max-w-sm px-4 py-3 rounded-xl shadow-xl border border-white/15',
-        'font-medium text-sm backdrop-blur-sm',
-        styles[type] || styles.info
-      )}
-    >
-      <span>{message}</span>
-    </div>
-  );
-}
-
-export function Toaster() {
-  const { toasts, removeToast } = useNotificationStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || typeof document === 'undefined') return null;
-
-  return createPortal(
-    <div
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-[99999] flex flex-col gap-2 items-stretch sm:items-end pointer-events-none"
-      aria-live="polite"
-    >
-      {toasts.map((t) => (
-        <div key={t.id} className="pointer-events-auto">
-          <ToastItem
-            id={t.id}
-            message={t.message}
-            type={t.type}
-            remove={() => removeToast(t.id)}
-          />
-        </div>
-      ))}
-    </div>,
-    document.body
+    <HotToaster
+      position="top-right"
+      reverseOrder={false}
+      gutter={10}
+      containerStyle={{
+        top: 20,
+        right: 20,
+        zIndex: 99999,
+      }}
+      toastOptions={{
+        duration: 3500,
+        style: {
+          background: '#13141f',
+          color: '#f8fafc',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: '12px',
+          padding: '12px 18px',
+          fontSize: '13px',
+          fontWeight: 500,
+          boxShadow:
+            '0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(16px)',
+        },
+        success: {
+          duration: 3500,
+          iconTheme: {
+            primary: '#10b981',
+            secondary: '#13141f',
+          },
+          style: {
+            borderColor: 'rgba(16, 185, 129, 0.35)',
+          },
+        },
+        error: {
+          duration: 4500,
+          iconTheme: {
+            primary: '#f43f5e',
+            secondary: '#13141f',
+          },
+          style: {
+            borderColor: 'rgba(244, 63, 94, 0.35)',
+          },
+        },
+      }}
+      {...props}
+    />
   );
 }

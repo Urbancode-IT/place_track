@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { InterviewRoundFields } from '@/components/interviews/InterviewRoundFields';
 import { resolveSubmittedRound } from '@/constants/interviewRounds';
 import { isValidHttpUrl, normalizeMeetingLink } from '@/utils/jobApplication';
+import { toast } from '@/components/ui/Toast';
 
 const schema = z
   .object({
@@ -127,7 +128,14 @@ export default function PublicInterviewFill() {
       delete payload.room;
     }
     delete payload.customRound;
-    submitMut.mutate(payload);
+    submitMut.mutate(payload, {
+      onSuccess: () => {
+        toast.success('Interview details submitted successfully!');
+      },
+      onError: (err) => {
+        toast.error(err?.response?.data?.message || 'Failed to submit interview details');
+      },
+    });
   };
 
   return (

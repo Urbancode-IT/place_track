@@ -5,6 +5,7 @@ import { useUIStore } from '@/store/ui.store';
 import { authApi } from '@/api/auth.api';
 import { Button } from '@/components/ui/Button';
 import { useModulePath } from '@/lib/modulePath';
+import { toast } from '@/components/ui/Toast';
 
 function formatNow() {
   const d = new Date();
@@ -30,6 +31,7 @@ export function Topbar() {
     } finally {
       logout();
       navigate('/login');
+      toast.success('Logged out successfully');
     }
   };
 

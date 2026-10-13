@@ -8,6 +8,7 @@ import { publicSelfInterviewApi } from '@/api/publicSelfInterview.api';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/helpers';
+import { toast } from '@/components/ui/Toast';
 
 const FINISH_STATUSES = [
   { value: 'SHORTLISTED', label: 'Shortlisted' },
@@ -84,9 +85,10 @@ export default function PublicInterviewFinish() {
       setPreview(d);
       setLookupComplete(!!d);
     },
-    onError: () => {
+    onError: (err) => {
       setPreview(null);
       setLookupComplete(false);
+      toast.error(err?.response?.data?.message || 'No scheduled interview found for that email & company');
     },
   });
 
@@ -220,7 +222,14 @@ export default function PublicInterviewFinish() {
               payload.rescheduleDate = data.rescheduleDate?.trim();
               payload.rescheduleTimeSlot = data.rescheduleTimeSlot?.trim();
             }
-            submitMut.mutate(payload);
+            submitMut.mutate(payload, {
+              onSuccess: () => {
+                toast.success('Interview outcome submitted for review!');
+              },
+              onError: (err) => {
+                toast.error(err?.response?.data?.message || 'Could not submit outcome.');
+              },
+            });
           })}
           className="space-y-4"
         >

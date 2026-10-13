@@ -7,6 +7,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { publicHonestReviewApi } from '@/api/publicHonestReview.api';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { toast } from '@/components/ui/Toast';
 
 const schema = z.object({
   content: z.string().min(10, 'Write at least 10 characters').max(8000),
@@ -86,7 +87,17 @@ export default function PublicHonestReview() {
   }
 
   const onSubmit = (values) => {
-    submitMut.mutate({ content: values.content.trim() });
+    submitMut.mutate(
+      { content: values.content.trim() },
+      {
+        onSuccess: () => {
+          toast.success('Thank you! Your review has been submitted.');
+        },
+        onError: (err) => {
+          toast.error(err?.response?.data?.message || 'Failed to submit review.');
+        },
+      }
+    );
   };
 
   return (

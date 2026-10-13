@@ -235,6 +235,7 @@ export default function Dashboard() {
               qc.invalidateQueries({ queryKey: ['students'] });
             }
             await updateInterview.mutateAsync({ id: editingInterview.id, data: interviewData });
+            addToast({ type: 'success', message: 'Interview updated successfully' });
           } catch (e) {
             addToast({
               type: 'error',

@@ -13,6 +13,7 @@ import { Pagination } from '@/components/ui/Pagination';
 import { Spinner } from '@/components/ui/Spinner';
 import { useCreateStudent } from '@/hooks/useStudents';
 import { downloadStudentsCsv } from '@/api/export.api';
+import { toast } from '@/components/ui/Toast';
 
 export default function Students() {
   const [searchParams] = useSearchParams();
@@ -60,7 +61,15 @@ export default function Students() {
   const totalPages = pagination.totalPages || 1;
 
   const handleAddStudent = (formData) => {
-    createStudent.mutate(formData, { onSuccess: () => setModalOpen(false) });
+    createStudent.mutate(formData, {
+      onSuccess: () => {
+        setModalOpen(false);
+        toast.success('Student added successfully!');
+      },
+      onError: (err) => {
+        toast.error(err?.response?.data?.message || 'Failed to add student');
+      },
+    });
   };
 
   const showInitialLoader = isLoading && !students.length;
@@ -70,7 +79,16 @@ export default function Students() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-medium">Students</h1>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => downloadStudentsCsv(listParams).catch(() => {})}>Export CSV</Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              downloadStudentsCsv(listParams)
+                .then(() => toast.success('Students CSV downloaded'))
+                .catch((err) => toast.error(err?.response?.data?.message || 'Failed to download CSV'));
+            }}
+          >
+            Export CSV
+          </Button>
           <Button onClick={() => setModalOpen(true)}>+ Add Student</Button>
         </div>
       </div>
