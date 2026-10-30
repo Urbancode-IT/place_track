@@ -5,9 +5,9 @@ export default function ProtectedRoute({ children, adminOnly = false, trainerOrA
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
   if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
-  if (adminOnly && user?.role !== 'ADMIN') return <Navigate to="/" replace />;
+  if (adminOnly && user?.role !== 'ADMIN') return <Navigate to="/dashboard" replace />;
   if (trainerOrAdmin && user?.role !== 'ADMIN' && user?.role !== 'TRAINER') {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return children;
 }

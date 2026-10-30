@@ -9,6 +9,7 @@ import { AuthLayout } from '@/components/layout/AuthLayout';
 const PublicInterviewFill = lazy(() => import('@/pages/PublicInterviewFill'));
 const PublicInterviewApply = lazy(() => import('@/pages/PublicInterviewApply'));
 const PublicInterviewFinish = lazy(() => import('@/pages/PublicInterviewFinish'));
+const Landing = lazy(() => import('@/pages/Landing'));
 const Login = lazy(() => import('@/pages/Login'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const Students = lazy(() => import('@/pages/Students'));
@@ -52,14 +53,22 @@ function ProtectedRoute({ children, adminOnly, trainerOrAdmin }) {
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: location }} />;
-  if (adminOnly && user?.role !== 'ADMIN') return <Navigate to="/" replace />;
+  if (adminOnly && user?.role !== 'ADMIN') return <Navigate to="/dashboard" replace />;
   if (trainerOrAdmin && user?.role !== 'ADMIN' && user?.role !== 'TRAINER') {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return children;
 }
 
 const routes = [
+  {
+    path: '/',
+    element: (
+      <Lazy>
+        <Landing />
+      </Lazy>
+    ),
+  },
   {
     path: '/interview/apply',
     element: (
@@ -111,7 +120,6 @@ const routes = [
     ),
   },
   {
-    path: '/',
     element: (
       <ProtectedRoute>
         <AppLayout />
@@ -119,7 +127,7 @@ const routes = [
     ),
     children: [
       {
-        index: true,
+        path: 'dashboard',
         element: (
           <Lazy>
             <Dashboard />

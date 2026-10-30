@@ -11,21 +11,26 @@ export function modulePath(pathname, path) {
   const pathOnly = queryIndex === -1 ? raw : raw.slice(0, queryIndex);
   const query = queryIndex === -1 ? '' : raw.slice(queryIndex);
   const normalized = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
-  if (!isAdminPath(pathname)) return `${normalized}${query}`;
-  const base = normalized === '/' ? '/admin' : `/admin${normalized}`;
+  const appHome = normalized === '/' || normalized === '/dashboard';
+  if (!isAdminPath(pathname)) {
+    if (appHome) return `/dashboard${query}`;
+    return `${normalized}${query}`;
+  }
+  const base = appHome ? '/admin' : `/admin${normalized}`;
   return `${base}${query}`;
 }
 
 /** Admins land in /admin. Trainers who aimed at /admin go back to the trainer home. */
 export function landingPath(role, fromPath) {
-  const from = fromPath && fromPath !== '/login' ? fromPath : '';
+  const from =
+    fromPath && fromPath !== '/login' && fromPath !== '/' ? fromPath : '';
   if (role === 'ADMIN') {
-    if (!from || from === '/') return '/admin';
+    if (!from) return '/admin';
     if (isAdminPath(from)) return from;
     return modulePath('/admin', from);
   }
-  if (from && isAdminPath(from)) return '/';
-  return from || '/';
+  if (from && isAdminPath(from)) return '/dashboard';
+  return from || '/dashboard';
 }
 
 export function useModulePath() {

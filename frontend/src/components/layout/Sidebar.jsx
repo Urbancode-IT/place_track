@@ -114,7 +114,7 @@ function Icon({ name, className = 'h-5 w-5' }) {
 }
 
 const mainNav = [
-  { to: '/', icon: 'dashboard', label: 'Dashboard' },
+  { to: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
   { to: '/students', icon: 'students', label: 'Students' },
   { to: '/schedule', icon: 'schedule', label: 'Schedule' },
   { to: '/job-applications', icon: 'jobApplications', label: 'Job Applications', trainerOrAdmin: true },
@@ -409,7 +409,7 @@ export function Sidebar() {
               <NavItem
                 key={item.to}
                 item={item}
-                end={item.to === '/' || item.to === '/admin'}
+                end={item.to === '/dashboard' || item.to === '/admin'}
                 collapsed={railCollapsed}
                 onNavigate={closeSidebarMobile}
                 onExpandRequest={openSidebar}
