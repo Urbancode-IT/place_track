@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,12 +11,12 @@ import { cn } from '@/utils/helpers';
 import { toast } from '@/components/ui/Toast';
 
 const FINISH_STATUSES = [
-  { value: 'SHORTLISTED', label: 'Shortlisted' },
+  { value: 'SHORTLISTED', label: 'Next round / Shortlisted' },
   { value: 'SELECTED', label: 'Selected / Offer' },
-  { value: 'REJECTED', label: 'Rejected' },
+  { value: 'REJECTED', label: 'Not selected / Rejected' },
   { value: 'AWAITING_RESPONSE', label: 'Awaiting response' },
   { value: 'NO_RESPONSE', label: 'No response' },
-  { value: 'RESCHEDULED', label: 'Rescheduled' },
+  { value: 'RESCHEDULED', label: 'Reschedule' },
 ];
 
 const TRAINER_REVIEW_OPTIONS = [
@@ -43,6 +43,8 @@ const schema = z
     trainerIds: z.array(z.string()).max(40).optional(),
     rescheduleDate: z.string().optional(),
     rescheduleTimeSlot: z.string().max(100).optional(),
+    question: z.string().max(2000).optional(),
+    answer: z.string().max(8000).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.proposedStatus === 'RESCHEDULED') {
@@ -72,6 +74,8 @@ const schema = z
   });
 
 export default function PublicInterviewFinish() {
+  const [searchParams] = useSearchParams();
+  const autoLookupDone = useRef(false);
   const [preview, setPreview] = useState(null);
   /** After “Check interview”, we send trainerIds with submit so they save with the outcome */
   const [lookupComplete, setLookupComplete] = useState(false);
@@ -96,11 +100,14 @@ export default function PublicInterviewFinish() {
     mutationFn: (body) => publicSelfInterviewApi.finishApply(body).then((r) => r.data),
   });
 
+  const prefillEmail = (searchParams.get('email') || '').trim();
+  const prefillCompany = (searchParams.get('company') || '').trim();
+
   const { register, handleSubmit, formState: { errors }, getValues, setValue, watch } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      studentEmail: '',
-      company: '',
+      studentEmail: prefillEmail,
+      company: prefillCompany,
       proposedStatus: 'SHORTLISTED',
       feedback: '',
       trainerReviewRating: 'GOOD',
@@ -108,6 +115,8 @@ export default function PublicInterviewFinish() {
       trainerIds: undefined,
       rescheduleDate: '',
       rescheduleTimeSlot: '',
+      question: '',
+      answer: '',
     },
   });
 
@@ -117,6 +126,15 @@ export default function PublicInterviewFinish() {
   useEffect(() => {
     document.title = 'Interview outcome — PlaceTrack';
   }, []);
+
+  useEffect(() => {
+    if (autoLookupDone.current) return;
+    if (!prefillEmail || !prefillCompany) return;
+    autoLookupDone.current = true;
+    setValue('studentEmail', prefillEmail);
+    setValue('company', prefillCompany);
+    previewMut.mutate({ studentEmail: prefillEmail, company: prefillCompany });
+  }, [prefillEmail, prefillCompany, setValue]);
 
   useEffect(() => {
     if (!preview) return;
@@ -180,13 +198,13 @@ export default function PublicInterviewFinish() {
         <div className="flex justify-between items-start">
           <div>
             <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-            <h1 className="mt-1 text-[22px] font-medium">Interview finish</h1>
+            <h1 className="mt-1 text-[22px] font-medium">Interview outcome &amp; questions</h1>
             <div className="flex items-center gap-3 mt-2">
               <p className="text-sm text-[var(--text2)]">
-                Record the outcome of your completed interview.
+                One form: Reschedule / Next round / Not selected, plus interview questions.
               </p>
-              <Link 
-                to="/interview/apply" 
+              <Link
+                to="/interview/apply"
                 className="text-[10px] font-medium text-[var(--violet)] hover:text-white transition-colors bg-[rgba(155,93,255,0.1)] px-2 py-1 rounded-md border border-[rgba(155,93,255,0.2)]"
               >
                 Need to apply? →
@@ -221,6 +239,10 @@ export default function PublicInterviewFinish() {
             if (data.proposedStatus === 'RESCHEDULED') {
               payload.rescheduleDate = data.rescheduleDate?.trim();
               payload.rescheduleTimeSlot = data.rescheduleTimeSlot?.trim();
+            }
+            if (data.question?.trim()) {
+              payload.question = data.question.trim();
+              payload.answer = data.answer?.trim() || undefined;
             }
             submitMut.mutate(payload, {
               onSuccess: () => {
@@ -371,6 +393,34 @@ export default function PublicInterviewFinish() {
             {errors.proposedStatus && (
               <p className="mt-1 text-sm text-danger">{errors.proposedStatus.message}</p>
             )}
+          </div>
+
+          <div
+            className="rounded-xl p-4 space-y-3"
+            style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.35)' }}
+          >
+            <p className="text-sm font-medium text-[var(--text)]">Interview question</p>
+            <p className="text-xs text-[var(--text3)]">
+              Add a question asked in this interview. It is saved to your Q&amp;A bank for trainers to view.
+            </p>
+            <div>
+              <label className="block text-xs text-[var(--text2)] mb-1">Question</label>
+              <textarea
+                className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)]"
+                rows={3}
+                placeholder="e.g. Explain React hooks / What is REST?"
+                {...register('question')}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-[var(--text2)] mb-1">Your answer (optional)</label>
+              <textarea
+                className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)]"
+                rows={3}
+                placeholder="What did you answer / notes…"
+                {...register('answer')}
+              />
+            </div>
           </div>
 
           {proposedStatus === 'RESCHEDULED' && (

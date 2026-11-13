@@ -137,6 +137,29 @@ export async function sendStudentInterviewRescheduled(toEmail, studentName, data
   });
 }
 
+/** After interview start — student gets public finish form link (outcome / reschedule) */
+export async function sendStudentInterviewFinishLink(toEmail, studentName, data) {
+  const html = loadTemplate('interview-finish-student.html');
+  const body = replaceVars(
+    html ||
+      '<p>Hi {{studentName}}, update your {{company}} interview outcome &amp; questions: <a href="{{finishUrl}}">{{finishUrl}}</a></p>',
+    {
+      studentName: studentName || 'there',
+      company: data.company || '',
+      round: data.round || '—',
+      date: data.dateLabel || data.date || '',
+      timeSlot: data.timeSlot || '—',
+      finishUrl: data.finishUrl || '',
+    }
+  );
+  return sendMailSafe({
+    from: getDefaultMailFrom(),
+    to: toEmail,
+    subject: `PlaceTrack: Please update your interview outcome & questions — ${data.company}`,
+    html: body,
+  });
+}
+
 /** ~30 minutes before interview — cron-driven reminder for assigned trainers */
 export async function sendInterviewTrainerReminder(toEmail, toName, data) {
   const html = loadTemplate('interview-trainer-reminder.html');

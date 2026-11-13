@@ -1,6 +1,7 @@
 import { runDailyReminder } from './dailyReminder.job.js';
 import { runWeeklyReport } from './weeklyReport.job.js';
 import { runTrainerInterviewReminder } from './trainerInterviewReminder.job.js';
+import { runStudentInterviewFinishLink } from './studentInterviewFinishLink.job.js';
 import { runGoogleChatBoardJob } from './googleChatBoard.job.js';
 
 export function initCronJobs() {
@@ -8,5 +9,6 @@ export function initCronJobs() {
   runDailyReminder();
   runWeeklyReport();
   runTrainerInterviewReminder();
+  runStudentInterviewFinishLink();
   runGoogleChatBoardJob();
 }

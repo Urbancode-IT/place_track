@@ -49,6 +49,12 @@ export function QABank({ studentId }) {
   const [newQ, setNewQ] = useState('');
   const [newA, setNewA] = useState('');
   const qa = data?.data?.qaEntries || [];
+  const sortedQa = [...qa].sort((a, b) => {
+    const aInt = String(a.category || '').startsWith('Interview:') ? 0 : 1;
+    const bInt = String(b.category || '').startsWith('Interview:') ? 0 : 1;
+    if (aInt !== bInt) return aInt - bInt;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
 
   const handleAdd = () => {
     if (!newQ.trim()) return;
@@ -59,35 +65,54 @@ export function QABank({ studentId }) {
 
   return (
     <div className="space-y-4">
+      <p className="text-xs text-[var(--text3)]">
+        Questions students submit after an interview are saved here (tagged{' '}
+        <span className="text-[var(--cyan)]">Interview: Company</span>). View and update below.
+      </p>
       <div className="flex gap-2">
         <Input placeholder="Question" value={newQ} onChange={(e) => setNewQ(e.target.value)} className="flex-1" />
         <Input placeholder="Answer" value={newA} onChange={(e) => setNewA(e.target.value)} className="flex-1" />
         <Button onClick={handleAdd}>Add</Button>
       </div>
       <ul className="space-y-2">
-        {qa.map((entry) => (
-          <li
-            key={entry.id}
-            className="rounded-lg p-3 border border-[var(--border)]"
-            style={{ background: 'var(--panel)' }}
-          >
-            <p className="font-medium text-[var(--text)]">{entry.question}</p>
-            <p className="text-sm text-[var(--text2)] mt-1">{entry.answer || '—'}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge className={QA_STATUS[entry.status]?.bg}>{entry.status}</Badge>
-              <select
-                value={entry.status}
-                onChange={(e) => updateQa.mutate({ id: entry.id, data: { status: e.target.value } })}
-                className="text-xs rounded px-2 py-1 border border-[var(--border)] bg-[rgba(0,0,0,0.25)] text-[var(--text)]"
+        {sortedQa.length === 0 ? (
+          <li className="text-sm text-[var(--text3)] py-4">No questions saved yet.</li>
+        ) : (
+          sortedQa.map((entry) => {
+            const fromInterview = String(entry.category || '').startsWith('Interview:');
+            return (
+              <li
+                key={entry.id}
+                className="rounded-lg p-3 border border-[var(--border)]"
+                style={{
+                  background: fromInterview ? 'rgba(0,212,255,0.06)' : 'var(--panel)',
+                  borderColor: fromInterview ? 'rgba(0,212,255,0.35)' : 'var(--border)',
+                }}
               >
-                <option value="PENDING">Pending</option>
-                <option value="PREPARED">Prepared</option>
-                <option value="NEEDS_WORK">Needs Work</option>
-              </select>
-              <Button variant="danger" size="sm" onClick={() => deleteQa.mutate(entry.id)}>Delete</Button>
-            </div>
-          </li>
-        ))}
+                {entry.category && (
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--cyan)] mb-1">{entry.category}</p>
+                )}
+                <p className="font-medium text-[var(--text)]">{entry.question}</p>
+                <p className="text-sm text-[var(--text2)] mt-1">{entry.answer || '—'}</p>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <Badge className={QA_STATUS[entry.status]?.bg}>{entry.status}</Badge>
+                  <select
+                    value={entry.status}
+                    onChange={(e) => updateQa.mutate({ id: entry.id, data: { status: e.target.value } })}
+                    className="text-xs rounded px-2 py-1 border border-[var(--border)] bg-[rgba(0,0,0,0.25)] text-[var(--text)]"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="PREPARED">Prepared</option>
+                    <option value="NEEDS_WORK">Needs Work</option>
+                  </select>
+                  <Button variant="danger" size="sm" onClick={() => deleteQa.mutate(entry.id)}>
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            );
+          })
+        )}
       </ul>
     </div>
   );

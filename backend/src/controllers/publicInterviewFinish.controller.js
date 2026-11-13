@@ -65,6 +65,8 @@ export async function applyFinishOpen(req, res, next) {
       trainerIds,
       rescheduleDate,
       rescheduleTimeSlot,
+      question,
+      answer,
     } = req.validated;
     const studentId = await resolveStudentByEmail(studentEmail);
     const interview = await resolveInterviewForFinish(studentId, company);
@@ -126,10 +128,23 @@ export async function applyFinishOpen(req, res, next) {
       ]
     );
 
+    let qaSaved = false;
+    const qText = question?.trim();
+    if (qText) {
+      await query(
+        `INSERT INTO "QAEntry" ("studentId", question, answer, category, status)
+         VALUES ($1, $2, $3, $4, 'PENDING')`,
+        [studentId, qText, answer?.trim() || null, `Interview: ${company.trim()}`]
+      );
+      qaSaved = true;
+    }
+
     return success(
       res,
-      { ok: true, pendingApproval: true },
-      'Submitted. Your placement team will review and update the interview.'
+      { ok: true, pendingApproval: true, qaSaved },
+      qaSaved
+        ? 'Submitted. Outcome is pending review, and your question was saved to the Q&A bank.'
+        : 'Submitted. Your placement team will review and update the interview.'
     );
   } catch (err) {
     // Columns missing if migrate not run — surface clear message

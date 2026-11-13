@@ -9,6 +9,7 @@ import { AuthLayout } from '@/components/layout/AuthLayout';
 const PublicInterviewFill = lazy(() => import('@/pages/PublicInterviewFill'));
 const PublicInterviewApply = lazy(() => import('@/pages/PublicInterviewApply'));
 const PublicInterviewFinish = lazy(() => import('@/pages/PublicInterviewFinish'));
+const PublicInterviewQuestions = lazy(() => import('@/pages/PublicInterviewQuestions'));
 const Landing = lazy(() => import('@/pages/Landing'));
 const Login = lazy(() => import('@/pages/Login'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -82,6 +83,14 @@ const routes = [
     element: (
       <Lazy>
         <PublicInterviewFinish />
+      </Lazy>
+    ),
+  },
+  {
+    path: '/interview/questions',
+    element: (
+      <Lazy>
+        <PublicInterviewQuestions />
       </Lazy>
     ),
   },

@@ -25,6 +25,9 @@ export const publicFinishApplySchema = z
     /** Required when proposedStatus is RESCHEDULED (YYYY-MM-DD from date input) */
     rescheduleDate: z.string().max(40).optional(),
     rescheduleTimeSlot: z.string().max(100).optional(),
+    /** Optional interview Q&A — saved to student QA bank on same submit */
+    question: z.string().trim().max(2000).optional(),
+    answer: z.string().trim().max(8000).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.proposedStatus === 'RESCHEDULED') {

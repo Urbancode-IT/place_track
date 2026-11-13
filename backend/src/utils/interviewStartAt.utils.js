@@ -9,6 +9,30 @@ function pad2(n) {
   return String(n).padStart(2, '0');
 }
 
+function parseClockToken(token) {
+  const t = String(token || '').trim();
+  if (!t) return null;
+
+  const withAmPm = t.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
+  if (withAmPm) {
+    let h = parseInt(withAmPm[1], 10);
+    const min = parseInt(withAmPm[2] || '0', 10);
+    const ap = withAmPm[3].toLowerCase();
+    if (ap === 'pm' && h !== 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
+    if (h >= 0 && h <= 23 && min >= 0 && min <= 59) return { hour: h, minute: min };
+    return null;
+  }
+
+  const h24 = t.match(/^(\d{1,2})(?::(\d{2}))?$/);
+  if (h24) {
+    const h = parseInt(h24[1], 10);
+    const min = parseInt(h24[2] || '0', 10);
+    if (h >= 0 && h <= 23 && min >= 0 && min <= 59) return { hour: h, minute: min };
+  }
+  return null;
+}
+
 /**
  * @param {Date|string|number} dbDate - Interview.date from PostgreSQL
  * @param {string} timeSlot
@@ -68,6 +92,58 @@ export function parseTimeSlotStart(timeSlot) {
 }
 
 /**
+ * End clock from free-text slot when a range is present (e.g. "10:00 AM - 11:00 AM", "10-11").
+ * @returns {{ hour: number, minute: number } | null}
+ */
+export function parseTimeSlotEnd(timeSlot) {
+  const slot = String(timeSlot || '').trim();
+  if (!slot) return null;
+
+  const amPmRange = slot.match(
+    /(\d{1,2}(?::\d{2})?\s*(?:am|pm))\s*[-–—to]+\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i
+  );
+  if (amPmRange) {
+    return parseClockToken(amPmRange[2]);
+  }
+
+  const h24Range = slot.match(/(\d{1,2}:\d{2})\s*[-–—to]+\s*(\d{1,2}:\d{2})/i);
+  if (h24Range) {
+    return parseClockToken(h24Range[2]);
+  }
+
+  const hourRange = slot.match(/(\d{1,2})\s*-\s*(\d{1,2})\b/);
+  if (hourRange) {
+    const a = parseInt(hourRange[1], 10);
+    const b = parseInt(hourRange[2], 10);
+    if (a < 1 || b < 1) return null;
+    if (a >= 8 && b <= 12 && b > a && b - a <= 4) {
+      return { hour: b, minute: 0 };
+    }
+    if (a <= 11 && b <= 23 && b > a) {
+      let h = b;
+      if (a <= 11 && b <= 11) h = b + 12;
+      if (b === 12) h = 12;
+      if (b > 12) h = b;
+      return { hour: h, minute: 0 };
+    }
+    if (a > 12 && b > a && b <= 23) return { hour: b, minute: 0 };
+  }
+
+  return null;
+}
+
+function wallClockOnDate(dbDate, clock) {
+  const d = new Date(dbDate);
+  if (Number.isNaN(d.getTime()) || !clock) return null;
+  const y = d.getUTCFullYear();
+  const mo = d.getUTCMonth() + 1;
+  const day = d.getUTCDate();
+  const iso = `${y}-${pad2(mo)}-${pad2(day)}T${pad2(clock.hour)}:${pad2(clock.minute)}:00${DEFAULT_OFFSET}`;
+  const at = new Date(iso);
+  return Number.isNaN(at.getTime()) ? null : at;
+}
+
+/**
  * @param {Date|string|number} dbDate
  * @param {string} timeSlot
  * @returns {Date|null}
@@ -76,17 +152,43 @@ export function getInterviewStartAt(dbDate, timeSlot) {
   const d = new Date(dbDate);
   if (Number.isNaN(d.getTime())) return null;
 
-  const y = d.getUTCFullYear();
-  const mo = d.getUTCMonth() + 1;
-  const day = d.getUTCDate();
-
   const parsed = parseTimeSlotStart(timeSlot);
   if (!parsed) {
     // Fall back: use stored timestamp as start (e.g. full datetime was saved)
     return d;
   }
 
-  const iso = `${y}-${pad2(mo)}-${pad2(day)}T${pad2(parsed.hour)}:${pad2(parsed.minute)}:00${DEFAULT_OFFSET}`;
-  const start = new Date(iso);
-  return Number.isNaN(start.getTime()) ? null : start;
+  return wallClockOnDate(dbDate, parsed);
+}
+
+/**
+ * Interview end instant: explicit slot end if present, else start + default duration.
+ * Mail / finish reminders must use this so nothing fires before the slot is over.
+ * @param {Date|string|number} dbDate
+ * @param {string} timeSlot
+ * @param {{ defaultDurationMin?: number }} [opts]
+ * @returns {Date|null}
+ */
+export function getInterviewEndAt(dbDate, timeSlot, opts = {}) {
+  const defaultDurationMin = Math.min(
+    240,
+    Math.max(15, Number(opts.defaultDurationMin ?? process.env.INTERVIEW_DEFAULT_DURATION_MIN ?? 60))
+  );
+
+  const startAt = getInterviewStartAt(dbDate, timeSlot);
+  if (!startAt) return null;
+
+  const endClock = parseTimeSlotEnd(timeSlot);
+  if (endClock) {
+    let endAt = wallClockOnDate(dbDate, endClock);
+    if (!endAt) return null;
+    // Overnight / PM wrap: end earlier than start → push end to next day
+    if (endAt.getTime() <= startAt.getTime()) {
+      endAt = new Date(endAt.getTime() + 24 * 60 * 60 * 1000);
+    }
+    // Sanity: if parsed end is before start somehow still, fall back
+    if (endAt.getTime() > startAt.getTime()) return endAt;
+  }
+
+  return new Date(startAt.getTime() + defaultDurationMin * 60 * 1000);
 }

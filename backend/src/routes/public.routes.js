@@ -18,10 +18,13 @@ import * as honestCtrl from '../controllers/publicHonestReview.controller.js';
 import { createStudentSchema } from '../validators/student.validator.js';
 import { publicCreateStudent } from '../controllers/publicStudent.controller.js';
 import { postGoogleChatBoardCron } from '../controllers/cronGoogleChat.controller.js';
+import { publicQaSubmitSchema } from '../validators/publicQa.validator.js';
+import * as publicQaCtrl from '../controllers/publicQa.controller.js';
 
 const router = Router();
 
 router.post('/students', validate(createStudentSchema), publicCreateStudent);
+router.post('/qa/submit', validate(publicQaSubmitSchema), publicQaCtrl.submitPublicQa);
 
 /** Scheduled Google Chat board (secret) — for external cron when host sleeps (e.g. Render free tier) */
 router.get('/cron/google-chat-board', postGoogleChatBoardCron);
