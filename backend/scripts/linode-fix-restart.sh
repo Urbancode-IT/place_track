@@ -20,6 +20,16 @@ if [[ -f "$ENV_FILE" ]]; then
   sed -i 's|^FRONTEND_URL=http://localhost:5173|FRONTEND_URL=https://placetrack.urbancode.in|' "$ENV_FILE"
   # Prefer SMTP 465 if still 587
   sed -i 's|^SMTP_PORT=587|SMTP_PORT=465|' "$ENV_FILE"
+  # Public links in student emails (never localhost on VPS)
+  grep -q '^PUBLIC_FRONTEND_URL=' "$ENV_FILE" || echo 'PUBLIC_FRONTEND_URL=https://placetrack.urbancode.in' >> "$ENV_FILE"
+  # Post-interview finish + 2h reminder mails
+  grep -q '^STUDENT_FINISH_LINK_ENABLED=' "$ENV_FILE" || echo 'STUDENT_FINISH_LINK_ENABLED=true' >> "$ENV_FILE"
+  grep -q '^STUDENT_FINISH_LINK_AFTER_END_MIN=' "$ENV_FILE" || echo 'STUDENT_FINISH_LINK_AFTER_END_MIN=5' >> "$ENV_FILE"
+  grep -q '^STUDENT_FINISH_LINK_CATCHUP_HOURS=' "$ENV_FILE" || echo 'STUDENT_FINISH_LINK_CATCHUP_HOURS=8' >> "$ENV_FILE"
+  grep -q '^STUDENT_FINISH_REMINDER_ENABLED=' "$ENV_FILE" || echo 'STUDENT_FINISH_REMINDER_ENABLED=true' >> "$ENV_FILE"
+  grep -q '^STUDENT_FINISH_REMINDER_HOURS=' "$ENV_FILE" || echo 'STUDENT_FINISH_REMINDER_HOURS=2' >> "$ENV_FILE"
+  grep -q '^STUDENT_FINISH_REMINDER_CATCHUP_HOURS=' "$ENV_FILE" || echo 'STUDENT_FINISH_REMINDER_CATCHUP_HOURS=24' >> "$ENV_FILE"
+  grep -q '^INTERVIEW_DEFAULT_DURATION_MIN=' "$ENV_FILE" || echo 'INTERVIEW_DEFAULT_DURATION_MIN=60' >> "$ENV_FILE"
 fi
 
 cd "$BACKEND"
