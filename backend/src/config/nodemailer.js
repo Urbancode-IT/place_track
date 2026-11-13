@@ -43,12 +43,65 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/** Default From: Gmail often rejects if From domain does not match SMTP_USER */
+/**
+ * Strip tags for multipart/alternative plain text (HTML-only mail is a common spam signal).
+ */
+export function htmlToPlainText(html) {
+  return String(html || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, '$2 ($1)')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * Default From — always uses SMTP_USER as the address (Gmail + spam filters reject mismatches).
+ * SMTP_FROM may set display name, e.g. PlaceTrack <same@gmail.com> or just PlaceTrack.
+ */
 export function getDefaultMailFrom() {
+  if (!user) return 'PlaceTrack <noreply@localhost>';
+
   const fromEnv = trimEnv('SMTP_FROM');
-  if (fromEnv) return fromEnv;
-  if (user) return `PlaceTrack <${user}>`;
-  return 'PlaceTrack <noreply@localhost>';
+  let display = 'PlaceTrack';
+
+  if (fromEnv) {
+    const angled = fromEnv.match(/^(.*?)\s*<([^>]+)>\s*$/);
+    if (angled) {
+      const namePart = angled[1].trim().replace(/^["']|["']$/g, '');
+      const addr = angled[2].trim().toLowerCase();
+      if (namePart) display = namePart;
+      if (addr && addr !== user.toLowerCase()) {
+        console.warn(
+          `[mail] SMTP_FROM address (${addr}) ≠ SMTP_USER (${user}) — forcing SMTP_USER to reduce spam`
+        );
+      }
+    } else if (fromEnv.includes('@')) {
+      if (fromEnv.toLowerCase() !== user.toLowerCase()) {
+        console.warn(
+          `[mail] SMTP_FROM address ≠ SMTP_USER — forcing SMTP_USER to reduce spam`
+        );
+      }
+    } else {
+      display = fromEnv;
+    }
+  }
+
+  return `${display} <${user}>`;
 }
 
 if (smtpConfigured) {
@@ -63,7 +116,9 @@ if (smtpConfigured) {
       smtpVerified = false;
       smtpVerifyError = e?.message || String(e);
       console.error('[mail] SMTP verify FAILED:', smtpVerifyError);
-      console.error('[mail] Gmail: use an App Password (2FA), not your normal password. Match SMTP_FROM to SMTP_USER.');
+      console.error(
+        '[mail] Gmail: use an App Password (2FA), not your normal password. SMTP_FROM must use the same address as SMTP_USER.'
+      );
     });
 }
 
@@ -75,6 +130,7 @@ export function getSmtpHealth() {
     host,
     port,
     user: user ? `${user.slice(0, 2)}***` : null,
+    from: getDefaultMailFrom(),
   };
 }
 
@@ -89,7 +145,26 @@ export async function sendMailSafe(options) {
     return null;
   }
   try {
-    const info = await transporter.sendMail(options);
+    const from = options.from || getDefaultMailFrom();
+    const payload = {
+      ...options,
+      from,
+      replyTo: options.replyTo || user,
+      // Envelope MAIL FROM must match authenticated Gmail user
+      envelope: options.envelope || {
+        from: user,
+        to: options.to,
+      },
+      headers: {
+        'X-Auto-Response-Suppress': 'OOF, AutoReply',
+        ...(options.headers || {}),
+      },
+    };
+    if (payload.html && !payload.text) {
+      payload.text = htmlToPlainText(payload.html);
+    }
+
+    const info = await transporter.sendMail(payload);
     console.log('[mail] sent →', options.to, '·', options.subject, info?.messageId ? `(${info.messageId})` : '');
     return info;
   } catch (e) {

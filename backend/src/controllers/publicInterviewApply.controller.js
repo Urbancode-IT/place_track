@@ -3,6 +3,7 @@ import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { scheduleDayBoundsFromInput } from '../utils/date.utils.js';
 import { attachStudentMeetingLink } from '../services/jobApplicationSlots.service.js';
+import { notifyGoogleChatSelfSubmitPendingApproval } from '../services/googleChatInterviewNotify.service.js';
 
 /**
  * Shared form URL — any student posts once; row goes to SUBMITTED queue (no per-student token).
@@ -46,10 +47,11 @@ export async function applyOpen(req, res, next) {
       studentId = r.rows[0].id;
     }
 
-    await query(
+    const inserted = await query(
       `INSERT INTO "StudentInterviewRequest" (
         token, "studentId", company, round, date, "timeSlot", "hrNumber", room, comments, status, "submittedAt"
-      ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, 'SUBMITTED', now())`,
+      ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, 'SUBMITTED', now())
+       RETURNING id`,
       [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null]
     );
     await attachStudentMeetingLink({
@@ -59,6 +61,12 @@ export async function applyOpen(req, res, next) {
       timeSlot,
       meetingLink: room,
     });
+    const requestId = inserted.rows[0]?.id;
+    if (requestId) {
+      notifyGoogleChatSelfSubmitPendingApproval(requestId).catch((e) =>
+        console.error('[google-chat] self-submit pending:', e)
+      );
+    }
     return success(res, { ok: true }, 'Submitted. Your placement team will review it.');
   } catch (err) {
     console.error('[PublicApply Error]', err);

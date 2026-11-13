@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { attachStudentMeetingLink } from '../services/jobApplicationSlots.service.js';
+import { notifyGoogleChatSelfSubmitPendingApproval } from '../services/googleChatInterviewNotify.service.js';
 
 export async function getByToken(req, res, next) {
   try {
@@ -60,6 +61,9 @@ export async function submitByToken(req, res, next) {
       timeSlot,
       meetingLink: room,
     });
+    notifyGoogleChatSelfSubmitPendingApproval(claim.rows[0].id).catch((e) =>
+      console.error('[google-chat] self-submit pending:', e)
+    );
     return success(res, { ok: true }, 'Submitted. Your placement team will review it.');
   } catch (err) {
     next(err);

@@ -1,13 +1,13 @@
 /**
- * Google Chat incoming webhook — POST JSON `{ text: "..." }`.
+ * Google Chat incoming webhook — text or cardsV2 (Approve/Reject buttons via openLink).
  * Env is loaded by server `loadEnv.js` before any route/service import.
  */
 
 /**
- * @param {string} text - Message content (markdown supported)
+ * @param {object} body - Full webhook JSON body
  * @returns {Promise<{ ok: boolean, error?: string, statusCode?: number }>}
  */
-export async function sendToGoogleChat(text) {
+export async function sendGoogleChatPayload(body) {
   const webhookUrl = process.env.GOOGLE_CHAT_WEBHOOK_URL?.trim();
   if (!webhookUrl) {
     console.warn('[google-chat] GOOGLE_CHAT_WEBHOOK_URL not configured');
@@ -18,7 +18,7 @@ export async function sendToGoogleChat(text) {
     const res = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify(body),
     });
     const raw = await res.text();
     if (!res.ok) {
@@ -35,4 +35,63 @@ export async function sendToGoogleChat(text) {
     console.error('[google-chat] Failed to send message:', message);
     return { ok: false, error: message };
   }
+}
+
+/**
+ * @param {string} text - Message content (markdown supported)
+ */
+export async function sendToGoogleChat(text) {
+  return sendGoogleChatPayload({ text });
+}
+
+/**
+ * @param {{ cardId: string, headerTitle: string, headerSubtitle?: string, bodyLines: string[], approveUrl: string, rejectUrl: string }} opts
+ */
+export async function sendGoogleChatApprovalCard(opts) {
+  const {
+    cardId,
+    headerTitle,
+    headerSubtitle,
+    bodyLines = [],
+    approveUrl,
+    rejectUrl,
+  } = opts;
+
+  const widgets = [];
+  if (bodyLines.length) {
+    widgets.push({
+      textParagraph: {
+        text: bodyLines.filter(Boolean).join('<br>'),
+      },
+    });
+  }
+  widgets.push({
+    buttonList: {
+      buttons: [
+        {
+          text: 'Approve',
+          onClick: { openLink: { url: approveUrl } },
+        },
+        {
+          text: 'Reject',
+          onClick: { openLink: { url: rejectUrl } },
+        },
+      ],
+    },
+  });
+
+  return sendGoogleChatPayload({
+    cardsV2: [
+      {
+        cardId: String(cardId).slice(0, 64),
+        card: {
+          header: {
+            title: headerTitle,
+            ...(headerSubtitle ? { subtitle: headerSubtitle } : {}),
+          },
+          sections: [{ widgets }],
+        },
+      },
+    ],
+  });
 }

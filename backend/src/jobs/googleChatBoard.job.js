@@ -178,7 +178,7 @@ export async function runGoogleChatBoardOnce() {
 
   const todayLabel = todayStart.toLocaleDateString('en-IN', { timeZone: TZ });
   const tomorrowLabel = tomorrowStart.toLocaleDateString('en-IN', { timeZone: TZ });
-  const frontendUrl = 'https://placetrack.urbancode.in';
+  const frontendUrl = 'https://placetrack.urbancode.in'; // email digest only
 
   const [todayApproved, todayPending, tomApproved, tomPending] = await Promise.all([
     query(
@@ -240,13 +240,12 @@ export async function runGoogleChatBoardOnce() {
     trainersByInterviewId
   );
 
-  const footer = `View more on PlaceTrack: ${frontendUrl}`;
-  const plain = `${todayPart.plain}${tomorrowPart.plain}${footer}`;
+  const plain = `${todayPart.plain}${tomorrowPart.plain}`.trimEnd();
   const html = `
 <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111;">
   ${todayPart.html}
   ${tomorrowPart.html}
-  <p style="margin-top: 16px;"><a href="${esc(frontendUrl)}">${esc(footer)}</a></p>
+  <p style="margin-top: 16px;"><a href="${esc(frontendUrl)}">Open PlaceTrack</a></p>
 </div>`;
 
   const chatResult = await sendToGoogleChat(plain);

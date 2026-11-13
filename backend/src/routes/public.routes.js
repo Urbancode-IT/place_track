@@ -20,8 +20,12 @@ import { publicCreateStudent } from '../controllers/publicStudent.controller.js'
 import { postGoogleChatBoardCron } from '../controllers/cronGoogleChat.controller.js';
 import { publicQaSubmitSchema, publicQaMetaSchema } from '../validators/publicQa.validator.js';
 import * as publicQaCtrl from '../controllers/publicQa.controller.js';
+import { handleChatAction } from '../controllers/publicChatAction.controller.js';
 
 const router = Router();
+
+/** Google Chat Approve / Reject (signed token — no login) */
+router.get('/chat-actions/:kind/:id/:action', handleChatAction);
 
 router.post('/students', validate(createStudentSchema), publicCreateStudent);
 router.post('/qa/meta', validate(publicQaMetaSchema), publicQaCtrl.getPublicQaMeta);

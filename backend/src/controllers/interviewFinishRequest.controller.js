@@ -1,8 +1,9 @@
-import { query, withTransaction } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
-import { AppError } from '../middleware/errorHandler.js';
-import { applyInterviewFinishOutcome } from '../services/interviewFinishApply.service.js';
-import { notifyGoogleChatInterviewOutcomeApproved } from '../services/googleChatInterviewNotify.service.js';
+import { query } from '../config/db.js';
+import {
+  approveInterviewFinishRequest,
+  rejectInterviewFinishRequest,
+} from '../services/interviewFinishApproval.service.js';
 
 export async function list(req, res, next) {
   try {
@@ -46,50 +47,8 @@ export async function list(req, res, next) {
 export async function approve(req, res, next) {
   try {
     const { id } = req.validated;
-
-    const { u, proposedStatus, interviewId } = await withTransaction(async (client) => {
-      const locked = await client.query(
-        `SELECT * FROM "InterviewFinishRequest" WHERE id = $1 FOR UPDATE`,
-        [id]
-      );
-      const row = locked.rows[0];
-      if (!row) throw new AppError('Request not found', 404);
-      if (row.status !== 'SUBMITTED') {
-        throw new AppError('Only submitted requests can be approved', 400);
-      }
-
-      // applyInterviewFinishOutcome uses pool query — run outside client would break atomicity.
-      // Mark approved only after apply; hold lock until commit.
-      const applied = await applyInterviewFinishOutcome(row.interviewId, {
-        proposedStatus: row.proposedStatus,
-        feedback: row.feedback,
-        trainerReviewRating: row.trainerReviewRating,
-        trainerReviewNotes: row.trainerReviewNotes,
-        proposedTrainerIds: row.proposedTrainerIds,
-        rescheduleDate: row.rescheduleDate,
-        rescheduleTimeSlot: row.rescheduleTimeSlot,
-        dbQuery: (text, params) => client.query(text, params),
-      });
-
-      await client.query(
-        `UPDATE "InterviewFinishRequest"
-         SET status = 'APPROVED', "reviewedAt" = now(), "reviewedByUserId" = $1, "updatedAt" = now()
-         WHERE id = $2 AND status = 'SUBMITTED'`,
-        [req.user.id, id]
-      );
-
-      return {
-        u: applied.interview,
-        proposedStatus: applied.proposedStatus,
-        interviewId: row.interviewId,
-      };
-    });
-
-    notifyGoogleChatInterviewOutcomeApproved(interviewId, proposedStatus).catch((e) =>
-      console.error('[google-chat] interview outcome approve notify:', e)
-    );
-
-    return success(res, { interview: u, proposedStatus }, 'Approved — interview status updated');
+    const result = await approveInterviewFinishRequest(id, req.user.id);
+    return success(res, result, 'Approved — interview status updated');
   } catch (err) {
     next(err);
   }
@@ -98,18 +57,7 @@ export async function approve(req, res, next) {
 export async function reject(req, res, next) {
   try {
     const { id } = req.validated;
-    const claim = await query(
-      `UPDATE "InterviewFinishRequest"
-       SET status = 'REJECTED', "reviewedAt" = now(), "reviewedByUserId" = $1, "updatedAt" = now()
-       WHERE id = $2 AND status = 'SUBMITTED'
-       RETURNING id`,
-      [req.user.id, id]
-    );
-    if (!claim.rows[0]) {
-      const fr = await query('SELECT status FROM "InterviewFinishRequest" WHERE id = $1', [id]);
-      if (!fr.rows[0]) throw new AppError('Request not found', 404);
-      throw new AppError('Only submitted requests can be rejected', 400);
-    }
+    await rejectInterviewFinishRequest(id, req.user.id);
     return success(res, null, 'Request rejected — interview unchanged');
   } catch (err) {
     next(err);

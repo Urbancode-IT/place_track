@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { getTrainersForInterview, resolveInterviewForFinish } from '../services/interviewFinishLookup.service.js';
+import { notifyGoogleChatFinishPendingApproval } from '../services/googleChatInterviewNotify.service.js';
 
 async function resolveStudentByEmail(studentEmail) {
   const norm = studentEmail.trim().toLowerCase();
@@ -109,12 +110,13 @@ export async function applyFinishOpen(req, res, next) {
         : null;
     const rescheduleOk = rescheduleTs && !Number.isNaN(rescheduleTs.getTime());
 
-    await query(
+    const inserted = await query(
       `INSERT INTO "InterviewFinishRequest" (
          "studentId", "interviewId", "proposedStatus", feedback, "proposedTrainerIds",
          "trainerReviewRating", "trainerReviewNotes", "rescheduleDate", "rescheduleTimeSlot",
          status, "submittedAt"
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'SUBMITTED', now())`,
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'SUBMITTED', now())
+       RETURNING id`,
       [
         studentId,
         interviewId,
@@ -127,6 +129,12 @@ export async function applyFinishOpen(req, res, next) {
         proposedStatus === 'RESCHEDULED' ? rescheduleTimeSlot || null : null,
       ]
     );
+    const finishRequestId = inserted.rows[0]?.id;
+    if (finishRequestId) {
+      notifyGoogleChatFinishPendingApproval(finishRequestId).catch((e) =>
+        console.error('[google-chat] finish pending:', e)
+      );
+    }
 
     let qaSaved = false;
     const qText = question?.trim();
