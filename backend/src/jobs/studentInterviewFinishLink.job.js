@@ -76,8 +76,13 @@ export function runStudentInterviewFinishLink() {
     process.env.STUDENT_FINISH_LINK_ENABLED === '0' ||
     process.env.STUDENT_FINISH_LINK_ENABLED === 'false'
   ) {
+    console.warn('[finish-link] disabled (STUDENT_FINISH_LINK_ENABLED=false)');
     return;
   }
+
+  console.log(
+    `[finish-link] cron every minute — after end +${AFTER_END_MIN}m, default duration ${process.env.INTERVIEW_DEFAULT_DURATION_MIN || 60}m, catchup ${CATCHUP_HOURS}h`
+  );
 
   cron.schedule('* * * * *', async () => {
     try {
@@ -132,27 +137,47 @@ async function sendFirstFinishLinks() {
     const finishUrl = buildPublicUrl('/interview/finish', email, interview.company);
     const questionsUrl = buildPublicUrl('/interview/questions', email, interview.company);
 
-    await sendStudentInterviewFinishLink(email, interview.studentName, {
-      company: interview.company,
-      round: interview.round,
-      date: (startAt || endAt).toISOString(),
-      dateLabel,
-      timeSlot: interview.timeSlot,
-      finishUrl,
-      questionsUrl,
-    }).catch((e) => console.error('Student finish-link email:', e?.message || e));
+    let info = null;
+    try {
+      info = await sendStudentInterviewFinishLink(email, interview.studentName, {
+        company: interview.company,
+        round: interview.round,
+        date: (startAt || endAt).toISOString(),
+        dateLabel,
+        timeSlot: interview.timeSlot,
+        finishUrl,
+        questionsUrl,
+      });
+    } catch (e) {
+      console.error('Student finish-link email:', e?.message || e);
+      continue;
+    }
+    // Do not mark as sent if SMTP failed — otherwise cron never retries
+    if (!info) {
+      console.warn(
+        `[finish-link] SMTP failed for ${email} / ${interview.company} — will retry`
+      );
+      continue;
+    }
 
-    await query(
-      `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status)
-       VALUES ($1, $2, $3, NULL, $4, $5)`,
-      [
-        NOTIF_TYPE,
-        `Finish link mailed: ${interview.company} — ${interview.studentName}`,
-        'EMAIL',
-        interview.id,
-        'SENT',
-      ]
-    );
+    try {
+      await query(
+        `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status)
+         VALUES ($1, $2, $3, NULL, $4, $5)`,
+        [
+          NOTIF_TYPE,
+          `Finish link mailed: ${interview.company} — ${interview.studentName}`,
+          'EMAIL',
+          interview.id,
+          'SENT',
+        ]
+      );
+      console.log(
+        `[finish-link] sent → ${email} · ${interview.company} · end=${endAt.toISOString()}`
+      );
+    } catch (e) {
+      console.error('[finish-link] Notification insert failed (mail already sent):', e?.message || e);
+    }
   }
 }
 
@@ -200,25 +225,40 @@ async function sendFinishReminders() {
     const finishUrl = buildPublicUrl('/interview/finish', email, row.company);
     const questionsUrl = buildPublicUrl('/interview/questions', email, row.company);
 
-    await sendStudentInterviewFinishReminder(email, row.studentName, {
-      company: row.company,
-      round: row.round,
-      dateLabel,
-      timeSlot: row.timeSlot,
-      finishUrl,
-      questionsUrl,
-    }).catch((e) => console.error('Student finish reminder email:', e?.message || e));
+    let info = null;
+    try {
+      info = await sendStudentInterviewFinishReminder(email, row.studentName, {
+        company: row.company,
+        round: row.round,
+        dateLabel,
+        timeSlot: row.timeSlot,
+        finishUrl,
+        questionsUrl,
+      });
+    } catch (e) {
+      console.error('Student finish reminder email:', e?.message || e);
+      continue;
+    }
+    if (!info) {
+      console.warn(`[finish-link] reminder SMTP failed for ${email} — will retry`);
+      continue;
+    }
 
-    await query(
-      `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status)
-       VALUES ($1, $2, $3, NULL, $4, $5)`,
-      [
-        REMINDER_TYPE,
-        `Finish reminder mailed: ${row.company} — ${row.studentName}`,
-        'EMAIL',
-        row.interviewId,
-        'SENT',
-      ]
-    );
+    try {
+      await query(
+        `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status)
+         VALUES ($1, $2, $3, NULL, $4, $5)`,
+        [
+          REMINDER_TYPE,
+          `Finish reminder mailed: ${row.company} — ${row.studentName}`,
+          'EMAIL',
+          row.interviewId,
+          'SENT',
+        ]
+      );
+      console.log(`[finish-link] reminder sent → ${email} · ${row.company}`);
+    } catch (e) {
+      console.error('[finish-link] reminder Notification insert failed:', e?.message || e);
+    }
   }
 }
