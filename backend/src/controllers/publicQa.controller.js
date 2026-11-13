@@ -20,9 +20,12 @@ async function resolveStudentByEmail(studentEmail) {
 /** Student public form — save interview Q&A into their QA bank (PENDING). */
 export async function submitPublicQa(req, res, next) {
   try {
-    const { studentEmail, company, question, answer } = req.validated;
+    const { studentEmail, company, question, answer, questionTopic } = req.validated;
     const student = await resolveStudentByEmail(studentEmail);
-    const category = company?.trim() ? `Interview: ${company.trim()}` : 'Interview';
+    const topic = questionTopic?.trim() || 'Other';
+    const category = company?.trim()
+      ? `Interview: ${company.trim()} · ${topic}`
+      : `Interview · ${topic}`;
 
     const r = await query(
       `INSERT INTO "QAEntry" ("studentId", question, answer, category, status)

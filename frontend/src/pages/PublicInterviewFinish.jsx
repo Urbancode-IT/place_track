@@ -25,6 +25,16 @@ const TRAINER_REVIEW_OPTIONS = [
   { value: 'EXCELLENT', label: 'Excellent' },
 ];
 
+/** Full-stack style topics for interview Q&A tagging */
+const QUESTION_TOPICS = [
+  { value: 'Frontend', label: 'Frontend' },
+  { value: 'Backend', label: 'Backend' },
+  { value: 'Database', label: 'Database' },
+  { value: 'Full Stack', label: 'Full Stack' },
+  { value: 'DevOps', label: 'DevOps' },
+  { value: 'Other', label: 'Other' },
+];
+
 const schema = z
   .object({
     studentEmail: z.string().email('Enter a valid email'),
@@ -43,6 +53,7 @@ const schema = z
     trainerIds: z.array(z.string()).max(40).optional(),
     rescheduleDate: z.string().optional(),
     rescheduleTimeSlot: z.string().max(100).optional(),
+    questionTopic: z.enum(['Frontend', 'Backend', 'Database', 'Full Stack', 'DevOps', 'Other']).optional(),
     question: z.string().max(2000).optional(),
     answer: z.string().max(8000).optional(),
   })
@@ -115,6 +126,7 @@ export default function PublicInterviewFinish() {
       trainerIds: undefined,
       rescheduleDate: '',
       rescheduleTimeSlot: '',
+      questionTopic: 'Frontend',
       question: '',
       answer: '',
     },
@@ -243,6 +255,7 @@ export default function PublicInterviewFinish() {
             if (data.question?.trim()) {
               payload.question = data.question.trim();
               payload.answer = data.answer?.trim() || undefined;
+              payload.questionTopic = data.questionTopic || 'Other';
             }
             submitMut.mutate(payload, {
               onSuccess: () => {
@@ -401,14 +414,30 @@ export default function PublicInterviewFinish() {
           >
             <p className="text-sm font-medium text-[var(--text)]">Interview question</p>
             <p className="text-xs text-[var(--text3)]">
-              Add a question asked in this interview. It is saved to your Q&amp;A bank for trainers to view.
+              Pick a topic (Frontend / Backend / Database…), then add the question. Saved to Q&amp;A bank for trainers.
             </p>
+            <div>
+              <label className="block text-xs text-[var(--text2)] mb-1">Topic</label>
+              <select
+                {...register('questionTopic')}
+                className={cn(
+                  'w-full px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-primary',
+                  'glass-input text-[var(--text)]'
+                )}
+              >
+                {QUESTION_TOPICS.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="block text-xs text-[var(--text2)] mb-1">Question</label>
               <textarea
                 className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)]"
                 rows={3}
-                placeholder="e.g. Explain React hooks / What is REST?"
+                placeholder="e.g. Explain React hooks / What is REST? / SQL joins…"
                 {...register('question')}
               />
             </div>

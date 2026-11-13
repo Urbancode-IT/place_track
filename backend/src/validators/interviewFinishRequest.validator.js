@@ -26,6 +26,7 @@ export const publicFinishApplySchema = z
     rescheduleDate: z.string().max(40).optional(),
     rescheduleTimeSlot: z.string().max(100).optional(),
     /** Optional interview Q&A — saved to student QA bank on same submit */
+    questionTopic: z.enum(['Frontend', 'Backend', 'Database', 'Full Stack', 'DevOps', 'Other']).optional(),
     question: z.string().trim().max(2000).optional(),
     answer: z.string().trim().max(8000).optional(),
   })
