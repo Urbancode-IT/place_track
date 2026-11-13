@@ -70,38 +70,39 @@ export function htmlToPlainText(html) {
 }
 
 /**
- * Default From — always uses SMTP_USER as the address (Gmail + spam filters reject mismatches).
- * SMTP_FROM may set display name, e.g. PlaceTrack <same@gmail.com> or just PlaceTrack.
+ * Default From header.
+ * Prefer SMTP_FROM when set (e.g. PlaceTrack <admin@urbancode.in>).
+ * If SMTP_FROM is only a display name, pair it with SMTP_USER.
+ * Alias From (≠ SMTP_USER) needs Gmail/Workspace “Send mail as” or same-account login — else spam/reject.
  */
 export function getDefaultMailFrom() {
   if (!user) return 'PlaceTrack <noreply@localhost>';
 
   const fromEnv = trimEnv('SMTP_FROM');
-  let display = 'PlaceTrack';
+  if (!fromEnv) return `PlaceTrack <${user}>`;
 
-  if (fromEnv) {
-    const angled = fromEnv.match(/^(.*?)\s*<([^>]+)>\s*$/);
-    if (angled) {
-      const namePart = angled[1].trim().replace(/^["']|["']$/g, '');
-      const addr = angled[2].trim().toLowerCase();
-      if (namePart) display = namePart;
-      if (addr && addr !== user.toLowerCase()) {
-        console.warn(
-          `[mail] SMTP_FROM address (${addr}) ≠ SMTP_USER (${user}) — forcing SMTP_USER to reduce spam`
-        );
-      }
-    } else if (fromEnv.includes('@')) {
-      if (fromEnv.toLowerCase() !== user.toLowerCase()) {
-        console.warn(
-          `[mail] SMTP_FROM address ≠ SMTP_USER — forcing SMTP_USER to reduce spam`
-        );
-      }
-    } else {
-      display = fromEnv;
+  const angled = fromEnv.match(/^(.*?)\s*<([^>]+)>\s*$/);
+  if (angled) {
+    const display = angled[1].trim().replace(/^["']|["']$/g, '') || 'PlaceTrack';
+    const addr = angled[2].trim();
+    if (addr.toLowerCase() !== user.toLowerCase()) {
+      console.warn(
+        `[mail] From ${addr} ≠ SMTP_USER ${user} — ensure Send mail as / Workspace allows this alias`
+      );
     }
+    return `${display} <${addr}>`;
   }
 
-  return `${display} <${user}>`;
+  if (fromEnv.includes('@')) {
+    if (fromEnv.toLowerCase() !== user.toLowerCase()) {
+      console.warn(
+        `[mail] From ${fromEnv} ≠ SMTP_USER ${user} — ensure Send mail as / Workspace allows this alias`
+      );
+    }
+    return fromEnv;
+  }
+
+  return `${fromEnv} <${user}>`;
 }
 
 if (smtpConfigured) {

@@ -1,30 +1,20 @@
-<div style="font-family: Arial, sans-serif; line-height: 1.55; color: #111;">
-  <h2 style="margin: 0 0 12px;">Reminder: please update your interview</h2>
-  <p>Hi {{studentName}},</p>
-  <p>
-    You have not submitted your update yet for the interview with
-    <strong>{{company}}</strong> ({{round}}) — {{date}} ({{timeSlot}}).
-  </p>
-  <p>
-    Please take a minute to submit:
-  </p>
-  <ol style="margin: 12px 0; padding-left: 20px;">
-    <li><strong>Outcome</strong> — Reschedule / Next round / Not selected</li>
-    <li><strong>Questions</strong> — question + answer by topic</li>
-  </ol>
-  <p style="margin: 20px 0;">
-    <a href="{{finishUrl}}"
-       style="display: inline-block; background: #6d28d9; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; margin-right: 8px;">
-      Update interview outcome
-    </a>
-    <a href="{{questionsUrl}}"
-       style="display: inline-block; background: #0e7490; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: 600;">
-      Update your questions
-    </a>
-  </p>
-  <p style="font-size: 13px; color: #555;">
-    Outcome: <a href="{{finishUrl}}" style="color: #6d28d9; word-break: break-all;">{{finishUrl}}</a><br/>
-    Questions: <a href="{{questionsUrl}}" style="color: #0e7490; word-break: break-all;">{{questionsUrl}}</a>
-  </p>
-  <p style="margin-top: 16px;">Regards,<br/>PlaceTrack</p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;color:#222222;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;">
+  <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
+    <p style="margin:0 0 16px;">Hi {{studentName}},</p>
+    <p style="margin:0 0 16px;">
+      We have not received your update for the {{company}} interview ({{round}}) on {{date}} at {{timeSlot}}.
+      You can submit it here:
+    </p>
+    <p style="margin:0 0 8px;">Outcome form:<br>
+      <a href="{{finishUrl}}" style="color:#1a56db;word-break:break-all;">{{finishUrl}}</a>
+    </p>
+    <p style="margin:0 0 16px;">Questions form:<br>
+      <a href="{{questionsUrl}}" style="color:#1a56db;word-break:break-all;">{{questionsUrl}}</a>
+    </p>
+    <p style="margin:24px 0 0;color:#555555;font-size:13px;">PlaceTrack · Urbancode</p>
+  </div>
+</body>
+</html>

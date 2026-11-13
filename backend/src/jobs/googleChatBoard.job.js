@@ -258,7 +258,7 @@ export async function runGoogleChatBoardOnce() {
       await sendTomorrowBoardDigest(
         recipients,
         html,
-        `PlaceTrack: Interview board — today ${todayLabel}, tomorrow ${tomorrowLabel}`
+        `[PlaceTrack] Interview board - today ${todayLabel}, tomorrow ${tomorrowLabel}`
       );
       mailCount = recipients.length;
       console.log(`[cron] Daily board email queued for ${mailCount} address(es)`);

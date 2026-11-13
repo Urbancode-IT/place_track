@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Trainer Assigned</title></head>
-<body style="font-family: 'Segoe UI', sans-serif; padding: 20px;">
-  <h2>PlaceTrack – You are assigned</h2>
-  <p>Hi {{trainerName}},</p>
-  <p>You have been assigned to support <strong>{{studentName}}</strong> for the interview at <strong>{{company}}</strong>.</p>
-  <p><strong>Round:</strong> {{round}} | <strong>Date:</strong> {{date}} | <strong>Time:</strong> {{timeSlot}}</p>
-  <p>— PlaceTrack</p>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;color:#222222;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;">
+  <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
+    <p style="margin:0 0 16px;">Hi {{trainerName}},</p>
+    <p style="margin:0 0 16px;">You are assigned to support {{studentName}} for the {{company}} interview.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;margin:0 0 16px;">
+      <tr><td style="padding:4px 0;width:120px;color:#555555;">Round</td><td style="padding:4px 0;">{{round}}</td></tr>
+      <tr><td style="padding:4px 0;color:#555555;">Date</td><td style="padding:4px 0;">{{date}}</td></tr>
+      <tr><td style="padding:4px 0;color:#555555;">Time</td><td style="padding:4px 0;">{{timeSlot}}</td></tr>
+    </table>
+    <p style="margin:24px 0 0;color:#555555;font-size:13px;">PlaceTrack · Urbancode</p>
+  </div>
 </body>
 </html>
