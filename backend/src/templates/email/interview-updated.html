@@ -1,18 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"></head>
-<body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#000;line-height:1.45;">
-<p>Hi {{trainerName}},</p>
-<p>The schedule for this interview was updated.</p>
-<p>
-Student: {{studentName}}<br>
-Company: {{company}}<br>
-Round: {{round}}<br>
-Date: {{date}}<br>
-Time: {{timeSlot}}<br>
-HR: {{hrNumber}}<br>
-Room: {{room}}
-</p>
-<p>Urbancode placement</p>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+        <tr>
+          <td style="background:#0f766e;padding:16px 24px;">
+            <p style="margin:0;color:#ffffff;font-size:16px;font-weight:700;">PlaceTrack</p>
+            <p style="margin:4px 0 0;color:#ccfbf1;font-size:12px;">Urbancode · Schedule updated</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px;">
+            <p style="margin:0 0 12px;font-size:15px;color:#111827;">Hi {{trainerName}},</p>
+            <p style="margin:0 0 20px;font-size:15px;color:#374151;">The date or time for this interview was updated.</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;">
+              <tr>
+                <td style="padding:10px 14px;font-size:13px;color:#6b7280;width:110px;border-bottom:1px solid #e5e7eb;">Student</td>
+                <td style="padding:10px 14px;font-size:14px;color:#111827;font-weight:600;border-bottom:1px solid #e5e7eb;">{{studentName}}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-size:13px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Company</td>
+                <td style="padding:10px 14px;font-size:14px;color:#111827;border-bottom:1px solid #e5e7eb;">{{company}}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-size:13px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Round</td>
+                <td style="padding:10px 14px;font-size:14px;color:#111827;border-bottom:1px solid #e5e7eb;">{{round}}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-size:13px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Date</td>
+                <td style="padding:10px 14px;font-size:14px;color:#111827;border-bottom:1px solid #e5e7eb;">{{date}}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-size:13px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Time</td>
+                <td style="padding:10px 14px;font-size:14px;color:#111827;font-weight:600;border-bottom:1px solid #e5e7eb;">{{timeSlot}}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-size:13px;color:#6b7280;border-bottom:1px solid #e5e7eb;">HR</td>
+                <td style="padding:10px 14px;font-size:14px;color:#111827;border-bottom:1px solid #e5e7eb;">{{hrNumber}}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-size:13px;color:#6b7280;">Room</td>
+                <td style="padding:10px 14px;font-size:14px;color:#111827;">{{room}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr><td style="padding:0 24px 20px;"><p style="margin:0;font-size:12px;color:#9ca3af;">Urbancode Placement · PlaceTrack</p></td></tr>
+      </table>
+    </td></tr>
+  </table>
 </body>
 </html>

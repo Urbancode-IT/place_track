@@ -3,12 +3,18 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getDefaultMailFrom, sendMailSafe } from '../config/nodemailer.js';
 
+/** Calendar date only (timeSlot is shown separately — avoid “12:00 am” noise). */
 function formatDateForMail(d) {
   if (d == null) return '';
   try {
     const x = d instanceof Date ? d : new Date(d);
     if (Number.isNaN(x.getTime())) return String(d);
-    return x.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    return x.toLocaleDateString('en-IN', {
+      timeZone: process.env.INTERVIEW_SCHEDULE_TZ || 'Asia/Kolkata',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   } catch {
     return String(d);
   }
@@ -235,11 +241,17 @@ export async function sendTomorrowBoardDigest(toEmails, htmlBody, subject) {
 
 function taskMailHtml(toName, { taskTitle, deadline, message }) {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head>
-<body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#000;line-height:1.45;">
-<p>Hi ${toName || 'Trainer'},</p>
-<p>${message}</p>
-<p>Task: ${taskTitle}<br>Deadline: ${deadline}</p>
-<p>Urbancode placement</p>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px;"><tr><td align="center">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+<tr><td style="background:#0f766e;padding:16px 24px;"><p style="margin:0;color:#fff;font-size:16px;font-weight:700;">PlaceTrack</p></td></tr>
+<tr><td style="padding:24px;">
+<p style="margin:0 0 12px;font-size:15px;color:#111827;">Hi ${toName || 'Trainer'},</p>
+<p style="margin:0 0 16px;font-size:15px;color:#374151;">${message}</p>
+<p style="margin:0;font-size:14px;color:#111827;"><strong>Task:</strong> ${taskTitle}<br><strong>Deadline:</strong> ${deadline}</p>
+</td></tr>
+<tr><td style="padding:0 24px 20px;"><p style="margin:0;font-size:12px;color:#9ca3af;">Urbancode Placement · PlaceTrack</p></td></tr>
+</table></td></tr></table>
 </body></html>`;
 }
 

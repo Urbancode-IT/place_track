@@ -1,9 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"></head>
-<body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#000;line-height:1.45;">
-<p>Hello,</p>
-<p>Interview status for {{studentName}} at {{company}} is now {{status}}.</p>
-<p>Urbancode placement</p>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+        <tr>
+          <td style="background:#0f766e;padding:16px 24px;">
+            <p style="margin:0;color:#ffffff;font-size:16px;font-weight:700;">PlaceTrack</p>
+            <p style="margin:4px 0 0;color:#ccfbf1;font-size:12px;">Urbancode · Status update</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px;">
+            <p style="margin:0 0 16px;font-size:15px;color:#111827;">Hello,</p>
+            <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.5;">
+              Interview status for <strong>{{studentName}}</strong> at <strong>{{company}}</strong>:
+            </p>
+            <p style="margin:0;display:inline-block;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:6px;padding:8px 14px;font-size:14px;font-weight:700;">{{status}}</p>
+          </td>
+        </tr>
+        <tr><td style="padding:0 24px 20px;"><p style="margin:0;font-size:12px;color:#9ca3af;">Urbancode Placement · PlaceTrack</p></td></tr>
+      </table>
+    </td></tr>
+  </table>
 </body>
 </html>
