@@ -29,10 +29,12 @@ const company = 'Dummy Corp';
 const base = getPublicFrontendUrl().replace(/\/$/, '');
 const qs = `email=${encodeURIComponent(to)}&company=${encodeURIComponent(company)}`;
 const finishUrl = `${base}/interview/finish?${qs}`;
+const questionsUrl = `${base}/interview/questions?${qs}`;
 
 console.log('Sending dummy finish-link mail…');
 console.log('  to:', to);
 console.log('  finishUrl:', finishUrl);
+console.log('  questionsUrl:', questionsUrl);
 console.log('  smtp:', health.host, health.user, 'verified=', health.verified);
 
 const info = await sendStudentInterviewFinishLink(to, 'Test Student', {
@@ -45,6 +47,7 @@ const info = await sendStudentInterviewFinishLink(to, 'Test Student', {
   }),
   timeSlot: '10:00 AM – 11:00 AM',
   finishUrl,
+  questionsUrl,
 });
 
 if (!info) {

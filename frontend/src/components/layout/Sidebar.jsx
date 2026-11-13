@@ -118,6 +118,7 @@ const mainNav = [
   { to: '/students', icon: 'students', label: 'Students' },
   { to: '/schedule', icon: 'schedule', label: 'Schedule' },
   { to: '/job-applications', icon: 'jobApplications', label: 'Job Applications', trainerOrAdmin: true },
+  { to: '/questions', icon: 'reference', label: 'Questions', trainerOrAdmin: true },
   { to: '/trainers', icon: 'trainers', label: 'Trainers', adminOnly: true },
 ];
 
@@ -135,6 +136,7 @@ const adminMainNav = [
   { to: '/admin/students', icon: 'students', label: 'Students' },
   { to: '/admin/schedule', icon: 'schedule', label: 'Schedule' },
   { to: '/admin/job-applications', icon: 'jobApplications', label: 'Job Applications' },
+  { to: '/admin/questions', icon: 'reference', label: 'Questions' },
   { to: '/admin/trainers', icon: 'trainers', label: 'Trainers' },
 ];
 

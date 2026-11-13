@@ -67,7 +67,6 @@ export async function applyFinishOpen(req, res, next) {
       rescheduleTimeSlot,
       question,
       answer,
-      questionTopic,
     } = req.validated;
     const studentId = await resolveStudentByEmail(studentEmail);
     const interview = await resolveInterviewForFinish(studentId, company);
@@ -132,12 +131,10 @@ export async function applyFinishOpen(req, res, next) {
     let qaSaved = false;
     const qText = question?.trim();
     if (qText) {
-      const topic = questionTopic?.trim() || 'Other';
-      const category = `Interview: ${company.trim()} · ${topic}`;
       await query(
         `INSERT INTO "QAEntry" ("studentId", question, answer, category, status)
          VALUES ($1, $2, $3, $4, 'PENDING')`,
-        [studentId, qText, answer?.trim() || null, category]
+        [studentId, qText, answer?.trim() || null, `Interview: ${company.trim()}`]
       );
       qaSaved = true;
     }

@@ -25,16 +25,6 @@ const TRAINER_REVIEW_OPTIONS = [
   { value: 'EXCELLENT', label: 'Excellent' },
 ];
 
-/** Full-stack style topics for interview Q&A tagging */
-const QUESTION_TOPICS = [
-  { value: 'Frontend', label: 'Frontend' },
-  { value: 'Backend', label: 'Backend' },
-  { value: 'Database', label: 'Database' },
-  { value: 'Full Stack', label: 'Full Stack' },
-  { value: 'DevOps', label: 'DevOps' },
-  { value: 'Other', label: 'Other' },
-];
-
 const schema = z
   .object({
     studentEmail: z.string().email('Enter a valid email'),
@@ -53,9 +43,6 @@ const schema = z
     trainerIds: z.array(z.string()).max(40).optional(),
     rescheduleDate: z.string().optional(),
     rescheduleTimeSlot: z.string().max(100).optional(),
-    questionTopic: z.enum(['Frontend', 'Backend', 'Database', 'Full Stack', 'DevOps', 'Other']).optional(),
-    question: z.string().max(2000).optional(),
-    answer: z.string().max(8000).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.proposedStatus === 'RESCHEDULED') {
@@ -126,9 +113,6 @@ export default function PublicInterviewFinish() {
       trainerIds: undefined,
       rescheduleDate: '',
       rescheduleTimeSlot: '',
-      questionTopic: 'Frontend',
-      question: '',
-      answer: '',
     },
   });
 
@@ -210,11 +194,24 @@ export default function PublicInterviewFinish() {
         <div className="flex justify-between items-start">
           <div>
             <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
-            <h1 className="mt-1 text-[22px] font-medium">Interview outcome &amp; questions</h1>
-            <div className="flex items-center gap-3 mt-2">
+            <h1 className="mt-1 text-[22px] font-medium">Interview outcome</h1>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
               <p className="text-sm text-[var(--text2)]">
-                One form: Reschedule / Next round / Not selected, plus interview questions.
+                Record outcome — Reschedule, Next round, Not selected, or another status.
               </p>
+              <Link
+                to={`/interview/questions${
+                  prefillEmail || prefillCompany
+                    ? `?${new URLSearchParams({
+                        ...(prefillEmail ? { email: prefillEmail } : {}),
+                        ...(prefillCompany ? { company: prefillCompany } : {}),
+                      }).toString()}`
+                    : ''
+                }`}
+                className="text-[10px] font-medium text-[var(--cyan)] hover:text-white transition-colors bg-[rgba(0,212,255,0.1)] px-2 py-1 rounded-md border border-[rgba(0,212,255,0.2)]"
+              >
+                Add questions (topics) →
+              </Link>
               <Link
                 to="/interview/apply"
                 className="text-[10px] font-medium text-[var(--violet)] hover:text-white transition-colors bg-[rgba(155,93,255,0.1)] px-2 py-1 rounded-md border border-[rgba(155,93,255,0.2)]"
@@ -251,11 +248,6 @@ export default function PublicInterviewFinish() {
             if (data.proposedStatus === 'RESCHEDULED') {
               payload.rescheduleDate = data.rescheduleDate?.trim();
               payload.rescheduleTimeSlot = data.rescheduleTimeSlot?.trim();
-            }
-            if (data.question?.trim()) {
-              payload.question = data.question.trim();
-              payload.answer = data.answer?.trim() || undefined;
-              payload.questionTopic = data.questionTopic || 'Other';
             }
             submitMut.mutate(payload, {
               onSuccess: () => {
@@ -409,47 +401,23 @@ export default function PublicInterviewFinish() {
           </div>
 
           <div
-            className="rounded-xl p-4 space-y-3"
+            className="rounded-xl p-4 space-y-2"
             style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.35)' }}
           >
-            <p className="text-sm font-medium text-[var(--text)]">Interview question</p>
+            <p className="text-sm font-medium text-[var(--text)]">Interview questions</p>
             <p className="text-xs text-[var(--text3)]">
-              Pick a topic (Frontend / Backend / Database…), then add the question. Saved to Q&amp;A bank for trainers.
+              Add Frontend / Backend / Database (or your course topics) on a separate page — then come back here for
+              outcome if needed.
             </p>
-            <div>
-              <label className="block text-xs text-[var(--text2)] mb-1">Topic</label>
-              <select
-                {...register('questionTopic')}
-                className={cn(
-                  'w-full px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-primary',
-                  'glass-input text-[var(--text)]'
-                )}
-              >
-                {QUESTION_TOPICS.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-[var(--text2)] mb-1">Question</label>
-              <textarea
-                className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)]"
-                rows={3}
-                placeholder="e.g. Explain React hooks / What is REST? / SQL joins…"
-                {...register('question')}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-[var(--text2)] mb-1">Your answer (optional)</label>
-              <textarea
-                className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)]"
-                rows={3}
-                placeholder="What did you answer / notes…"
-                {...register('answer')}
-              />
-            </div>
+            <Link
+              to={`/interview/questions?${new URLSearchParams({
+                email: getValues('studentEmail') || prefillEmail || '',
+                company: getValues('company') || prefillCompany || '',
+              }).toString()}`}
+              className="inline-flex text-sm font-medium text-[var(--cyan)] hover:underline"
+            >
+              Open questions page →
+            </Link>
           </div>
 
           {proposedStatus === 'RESCHEDULED' && (

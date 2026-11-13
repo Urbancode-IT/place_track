@@ -50,8 +50,8 @@ export function QABank({ studentId }) {
   const [newA, setNewA] = useState('');
   const qa = data?.data?.qaEntries || [];
   const sortedQa = [...qa].sort((a, b) => {
-    const aInt = String(a.category || '').startsWith('Interview:') ? 0 : 1;
-    const bInt = String(b.category || '').startsWith('Interview:') ? 0 : 1;
+    const aInt = /·|Interview:/i.test(String(a.category || '')) ? 0 : 1;
+    const bInt = /·|Interview:/i.test(String(b.category || '')) ? 0 : 1;
     if (aInt !== bInt) return aInt - bInt;
     return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
   });
@@ -67,7 +67,7 @@ export function QABank({ studentId }) {
     <div className="space-y-4">
       <p className="text-xs text-[var(--text3)]">
         Questions students submit after an interview are saved here (tagged{' '}
-        <span className="text-[var(--cyan)]">Interview: Company</span>). View and update below.
+        <span className="text-[var(--cyan)]">Company · Topic</span>, e.g. TCS · Frontend). View and update below.
       </p>
       <div className="flex gap-2">
         <Input placeholder="Question" value={newQ} onChange={(e) => setNewQ(e.target.value)} className="flex-1" />
@@ -79,7 +79,7 @@ export function QABank({ studentId }) {
           <li className="text-sm text-[var(--text3)] py-4">No questions saved yet.</li>
         ) : (
           sortedQa.map((entry) => {
-            const fromInterview = String(entry.category || '').startsWith('Interview:');
+            const fromInterview = /·|Interview:/i.test(String(entry.category || ''));
             return (
               <li
                 key={entry.id}

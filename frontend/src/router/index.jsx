@@ -27,6 +27,7 @@ const HonestReviewLinkPage = lazy(() => import('@/pages/HonestReviewLinkPage'));
 const PublicHonestReview = lazy(() => import('@/pages/PublicHonestReview'));
 const PublicHonestReviewCommon = lazy(() => import('@/pages/PublicHonestReviewCommon'));
 const JobApplications = lazy(() => import('@/pages/JobApplications'));
+const Questions = lazy(() => import('@/pages/Questions'));
 
 function PageLoader() {
   return (
@@ -198,6 +199,16 @@ const routes = [
         ),
       },
       {
+        path: 'questions',
+        element: (
+          <ProtectedRoute trainerOrAdmin>
+            <Lazy>
+              <Questions />
+            </Lazy>
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'notifications',
         element: (
           <Lazy>
@@ -270,6 +281,7 @@ const routes = [
           { path: 'job-applications', element: <Lazy><JobApplications /></Lazy> },
           { path: 'job-applications/history', element: <Lazy><JobApplications /></Lazy> },
           { path: 'trainers', element: <Lazy><TrainerView /></Lazy> },
+          { path: 'questions', element: <Lazy><Questions /></Lazy> },
           { path: 'pending-self-submits', element: <Lazy><PendingSelfSubmits /></Lazy> },
           { path: 'pending-interview-finishes', element: <Lazy><PendingInterviewFinishes /></Lazy> },
           { path: 'honest-review-link', element: <Lazy><HonestReviewLinkPage /></Lazy> },

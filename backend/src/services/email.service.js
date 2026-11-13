@@ -142,7 +142,7 @@ export async function sendStudentInterviewFinishLink(toEmail, studentName, data)
   const html = loadTemplate('interview-finish-student.html');
   const body = replaceVars(
     html ||
-      '<p>Hi {{studentName}}, update your {{company}} interview outcome &amp; questions: <a href="{{finishUrl}}">{{finishUrl}}</a></p>',
+      '<p>Hi {{studentName}}, outcome: <a href="{{finishUrl}}">{{finishUrl}}</a> · questions: <a href="{{questionsUrl}}">{{questionsUrl}}</a></p>',
     {
       studentName: studentName || 'there',
       company: data.company || '',
@@ -150,12 +150,37 @@ export async function sendStudentInterviewFinishLink(toEmail, studentName, data)
       date: data.dateLabel || data.date || '',
       timeSlot: data.timeSlot || '—',
       finishUrl: data.finishUrl || '',
+      questionsUrl: data.questionsUrl || '',
     }
   );
   return sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
     subject: `PlaceTrack: Please update your interview outcome & questions — ${data.company}`,
+    html: body,
+  });
+}
+
+/** ~2h after first finish-link mail if student still has not submitted */
+export async function sendStudentInterviewFinishReminder(toEmail, studentName, data) {
+  const html = loadTemplate('interview-finish-reminder-student.html');
+  const body = replaceVars(
+    html ||
+      '<p>Hi {{studentName}}, reminder — update {{company}}: <a href="{{finishUrl}}">{{finishUrl}}</a></p>',
+    {
+      studentName: studentName || 'there',
+      company: data.company || '',
+      round: data.round || '—',
+      date: data.dateLabel || data.date || '',
+      timeSlot: data.timeSlot || '—',
+      finishUrl: data.finishUrl || '',
+      questionsUrl: data.questionsUrl || '',
+    }
+  );
+  return sendMailSafe({
+    from: getDefaultMailFrom(),
+    to: toEmail,
+    subject: `PlaceTrack reminder: please update your interview — ${data.company}`,
     html: body,
   });
 }
