@@ -53,7 +53,7 @@ export async function sendInterviewScheduleUpdated(toEmail, toName, data) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Interview time updated - ${data.company} - ${data.studentName}`,
+    subject: `Interview time updated: ${data.company} / ${data.studentName}`,
     html: body,
   });
 }
@@ -74,7 +74,7 @@ export async function sendInterviewScheduled(toEmail, toName, data) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Interview scheduled - ${data.company} - ${data.studentName}`,
+    subject: `Interview scheduled: ${data.company} / ${data.studentName}`,
     html: body,
   });
 }
@@ -92,7 +92,7 @@ export async function sendTrainerAssigned(toEmail, toName, data) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Trainer assigned - ${data.company}`,
+    subject: `Trainer assigned: ${data.company}`,
     html: body,
   });
 }
@@ -107,7 +107,7 @@ export async function sendStatusUpdate(toEmail, studentName, company, status) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Interview status - ${company}`,
+    subject: `Interview status: ${company}`,
     html: body,
   });
 }
@@ -132,7 +132,7 @@ export async function sendStudentInterviewRescheduled(toEmail, studentName, data
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Interview rescheduled - ${data.company}`,
+    subject: `Interview rescheduled: ${data.company}`,
     html: body,
   });
 }
@@ -156,7 +156,7 @@ export async function sendStudentInterviewFinishLink(toEmail, studentName, data)
   return sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Interview outcome form - ${data.company}`,
+    subject: `Interview outcome form: ${data.company}`,
     html: body,
   });
 }
@@ -180,7 +180,7 @@ export async function sendStudentInterviewFinishReminder(toEmail, studentName, d
   return sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Interview update still pending - ${data.company}`,
+    subject: `Interview update pending: ${data.company}`,
     html: body,
   });
 }
@@ -201,7 +201,7 @@ export async function sendInterviewTrainerReminder(toEmail, toName, data) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Interview in 30 min - ${data.company} - ${data.studentName}`,
+    subject: `Interview in 30 min: ${data.company} / ${data.studentName}`,
     html: body,
   });
 }
@@ -210,7 +210,7 @@ export async function sendDailySummary(toEmail, htmlContent) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: '[PlaceTrack] Tomorrow interview schedule',
+    subject: 'Tomorrow interview schedule',
     html: htmlContent,
   });
 }
@@ -235,14 +235,11 @@ export async function sendTomorrowBoardDigest(toEmails, htmlBody, subject) {
 
 function taskMailHtml(toName, { taskTitle, deadline, message }) {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#ffffff;color:#222;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;">
-  <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
-    <p style="margin:0 0 16px;">Hi ${toName || 'Trainer'},</p>
-    <p style="margin:0 0 16px;">${message}</p>
-    <p style="margin:0 0 4px;color:#555;">Task: ${taskTitle}</p>
-    <p style="margin:0 0 16px;color:#555;">Deadline: ${deadline}</p>
-    <p style="margin:24px 0 0;color:#555;font-size:13px;">PlaceTrack · Urbancode</p>
-  </div>
+<body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#000;line-height:1.45;">
+<p>Hi ${toName || 'Trainer'},</p>
+<p>${message}</p>
+<p>Task: ${taskTitle}<br>Deadline: ${deadline}</p>
+<p>Urbancode placement</p>
 </body></html>`;
 }
 
@@ -250,7 +247,7 @@ export async function sendTaskNotificationEmail(toEmail, toName, data) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] New task - ${data.taskTitle}`,
+    subject: `New task: ${data.taskTitle}`,
     html: taskMailHtml(toName, data),
   });
 }
@@ -259,7 +256,7 @@ export async function sendTaskDeadlineReminderEmail(toEmail, toName, data) {
   await sendMailSafe({
     from: getDefaultMailFrom(),
     to: toEmail,
-    subject: `[PlaceTrack] Task deadline - ${data.taskTitle}`,
+    subject: `Task deadline: ${data.taskTitle}`,
     html: taskMailHtml(toName, data),
   });
 }

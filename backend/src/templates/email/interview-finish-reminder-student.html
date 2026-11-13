@@ -1,20 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#ffffff;color:#222222;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;">
-  <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
-    <p style="margin:0 0 16px;">Hi {{studentName}},</p>
-    <p style="margin:0 0 16px;">
-      We have not received your update for the {{company}} interview ({{round}}) on {{date}} at {{timeSlot}}.
-      You can submit it here:
-    </p>
-    <p style="margin:0 0 8px;">Outcome form:<br>
-      <a href="{{finishUrl}}" style="color:#1a56db;word-break:break-all;">{{finishUrl}}</a>
-    </p>
-    <p style="margin:0 0 16px;">Questions form:<br>
-      <a href="{{questionsUrl}}" style="color:#1a56db;word-break:break-all;">{{questionsUrl}}</a>
-    </p>
-    <p style="margin:24px 0 0;color:#555555;font-size:13px;">PlaceTrack · Urbancode</p>
-  </div>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#000;line-height:1.45;">
+<p>Hi {{studentName}},</p>
+<p>We have not received your update for {{company}} ({{round}}) on {{date}} at {{timeSlot}}.</p>
+<p>Outcome: {{finishUrl}}</p>
+<p>Questions: {{questionsUrl}}</p>
+<p>Urbancode placement</p>
 </body>
 </html>
