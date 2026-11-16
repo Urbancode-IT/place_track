@@ -118,6 +118,31 @@ export async function sendStatusUpdate(toEmail, studentName, company, status) {
   });
 }
 
+/** Student inbox — interview on schedule with no trainer assigned */
+export async function sendStudentInterviewScheduled(toEmail, studentName, data) {
+  const html = loadTemplate('interview-scheduled-student.html');
+  const dateLabel = formatDateForMail(data.date);
+  const body = replaceVars(
+    html ||
+      '<p>Hi {{studentName}}, you have an interview at {{company}} on {{date}} at {{timeSlot}}.</p>',
+    {
+      studentName: studentName || 'there',
+      company: data.company || '',
+      round: data.round || '—',
+      date: dateLabel || String(data.date ?? ''),
+      timeSlot: data.timeSlot || '',
+      hrNumber: data.hrNumber || 'N/A',
+      room: data.room || 'N/A',
+    }
+  );
+  return sendMailSafe({
+    from: getDefaultMailFrom(),
+    to: toEmail,
+    subject: `You have an interview: ${data.company} at ${data.timeSlot || dateLabel}`,
+    html: body,
+  });
+}
+
 /** Student inbox — rescheduled / new slot (public finish or admin schedule) */
 export async function sendStudentInterviewRescheduled(toEmail, studentName, data) {
   const html = loadTemplate('interview-rescheduled-student.html');

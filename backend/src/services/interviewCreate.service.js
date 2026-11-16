@@ -1,6 +1,9 @@
 import { query } from '../config/db.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { notifyTrainersForInterview } from './notification.service.js';
+import {
+  notifyTrainersForInterview,
+  notifyStudentInterviewScheduled,
+} from './notification.service.js';
 import { emitNewInterview } from './socket.service.js';
 import { notifyGoogleChatInterviewScheduled } from './googleChatInterviewNotify.service.js';
 
@@ -18,7 +21,9 @@ export async function assertTrainersAllowed(trainerIds, dbQuery = query) {
 
 /**
  * Creates an Interview row + optional trainer links. Used by admin/trainer API and self-submit approve flow.
- * @param {boolean} [broadcastEmailToAllTrainersIfUnassigned=false] — If true and trainerIds is empty, still email/push/notify every TRAINER (assignment rows stay empty). Used when approving student self-submits without picking trainers.
+ * Notify rules:
+ *  - Trainers selected → only those assigned get email/push
+ *  - None selected → student only gets “you have an interview at this time”
  */
 export async function createInterviewWithTrainers({
   studentId,
@@ -30,7 +35,6 @@ export async function createInterviewWithTrainers({
   room,
   comments,
   trainerIds = [],
-  broadcastEmailToAllTrainersIfUnassigned = false,
   dbQuery = query,
 }) {
   const q = dbQuery;
@@ -60,15 +64,15 @@ export async function createInterviewWithTrainers({
     room: interview.room,
   };
 
-  let notifyTrainerIds = ids;
-  if (!notifyTrainerIds.length && broadcastEmailToAllTrainersIfUnassigned) {
-    const allT = await q(`SELECT id FROM "User" WHERE role IN ('TRAINER', 'ADMIN')`);
-    notifyTrainerIds = allT.rows.map((row) => row.id);
+  if (ids.length) {
+    notifyTrainersForInterview(interview.id, ids, interviewData).catch((e) =>
+      console.error('[notify] Background trainer notification failed:', e)
+    );
+  } else {
+    notifyStudentInterviewScheduled(interview.id, student, interviewData).catch((e) =>
+      console.error('[notify] Background student notification failed:', e)
+    );
   }
-  // Run notifications in background - don't block the API response
-  notifyTrainersForInterview(interview.id, notifyTrainerIds, interviewData).catch((e) =>
-    console.error('[notify] Background notification failed:', e)
-  );
   emitNewInterview({ ...interview, student, trainers: ids.map((tid) => ({ trainerId: tid })) });
 
   notifyGoogleChatInterviewScheduled(interview.id).catch((e) =>

@@ -1,7 +1,45 @@
 import { query } from '../config/db.js';
-import { sendInterviewScheduled, sendInterviewScheduleUpdated } from './email.service.js';
+import {
+  sendInterviewScheduled,
+  sendInterviewScheduleUpdated,
+  sendStudentInterviewScheduled,
+} from './email.service.js';
 import { getIO } from '../config/socket.js';
 import { sendPushToUsers } from './push.service.js';
+
+/**
+ * When no trainers are assigned — email only the student with date/time.
+ */
+export async function notifyStudentInterviewScheduled(interviewId, student, interviewData) {
+  const email = student?.email && String(student.email).trim();
+  if (!email) {
+    console.warn(
+      `[mail] notifyStudentInterviewScheduled: interview ${interviewId} — student has no email`
+    );
+    return null;
+  }
+  const info = await sendStudentInterviewScheduled(email, student.name || 'there', interviewData).catch(
+    (e) => {
+      console.error('[mail] student interview scheduled failed:', e?.message || e);
+      return null;
+    }
+  );
+  if (info) {
+    await query(
+      `INSERT INTO "Notification" (type, message, channel, "toUserId", "interviewId", status)
+       VALUES ($1, $2, $3, NULL, $4, $5)`,
+      [
+        'STUDENT_INTERVIEW_SCHEDULED',
+        `Student notified: ${interviewData.company} — ${student.name || email}`,
+        'EMAIL',
+        interviewId,
+        'SENT',
+      ]
+    ).catch((e) => console.error('[mail] student schedule Notification insert:', e?.message || e));
+    console.log(`[mail] student interview scheduled → ${email} · ${interviewData.company}`);
+  }
+  return info;
+}
 
 export async function notifyTrainersForInterview(interviewId, trainerIds, interviewData) {
   if (!trainerIds?.length) return;

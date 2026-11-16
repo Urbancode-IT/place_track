@@ -44,7 +44,6 @@ export async function approveStudentInterviewRequest(id, reviewerUserId = null, 
       room: finalRoom,
       comments: mergedComments,
       trainerIds,
-      broadcastEmailToAllTrainersIfUnassigned: true,
       dbQuery: (text, params) => client.query(text, params),
     });
 

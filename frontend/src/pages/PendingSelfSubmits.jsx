@@ -218,15 +218,15 @@ export default function PendingSelfSubmits() {
         <p className="text-sm text-[var(--text2)] mb-4">
           Creates {approveTargets?.length > 1 ? 'the interviews' : 'the interview'} and lists {approveTargets?.length > 1 ? 'them' : 'it'} on{' '}
           <strong className="text-[var(--text)]">Today&apos;s Live Interview Board</strong>{' '}
-          right away. Trainers receive the &quot;Interview scheduled&quot; email (and app notification). If you pick none below,
-          <strong className="text-[var(--text)]"> all trainers</strong> are notified; if you pick specific trainers, only they get the email and are linked to {approveTargets?.length > 1 ? 'these interviews' : 'this interview'}.
+          right away. If you assign trainers below, <strong className="text-[var(--text)]">only they</strong> get the email.
+          If you pick none, <strong className="text-[var(--text)]">only the student</strong> is emailed that they have an interview at that time.
         </p>
         <MultiSelect
           label="Assign trainers (optional)"
           options={trainers}
           value={trainerIds}
           onChange={setTrainerIds}
-          placeholder="Leave empty to notify all trainers, or select…"
+          placeholder="Leave empty to email student only, or select trainers…"
         />
         <div className="flex justify-end gap-2 mt-6">
           <Button variant="secondary" onClick={() => { setApproveTargets(null); setTrainerIds([]); }}>
