@@ -21,11 +21,16 @@ import { postGoogleChatBoardCron } from '../controllers/cronGoogleChat.controlle
 import { publicQaSubmitSchema, publicQaMetaSchema } from '../validators/publicQa.validator.js';
 import * as publicQaCtrl from '../controllers/publicQa.controller.js';
 import { handleChatAction } from '../controllers/publicChatAction.controller.js';
+import { triggerDeploy } from '../controllers/deploy.controller.js';
 
 const router = Router();
 
 /** Google Chat Approve / Reject (signed token — no login) */
 router.get('/chat-actions/:kind/:id/:action', handleChatAction);
+
+/** Linode auto-deploy (secret) — GitHub Action / manual curl */
+router.get('/deploy', triggerDeploy);
+router.post('/deploy', triggerDeploy);
 
 router.post('/students', validate(createStudentSchema), publicCreateStudent);
 router.post('/qa/meta', validate(publicQaMetaSchema), publicQaCtrl.getPublicQaMeta);

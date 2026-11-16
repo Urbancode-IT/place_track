@@ -1,0 +1,31 @@
+name: Deploy Linode
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Linode deploy webhook
+        env:
+          DEPLOY_URL: ${{ secrets.LINODE_DEPLOY_URL }}
+          DEPLOY_SECRET: ${{ secrets.LINODE_DEPLOY_SECRET }}
+        run: |
+          if [ -z "$DEPLOY_URL" ] || [ -z "$DEPLOY_SECRET" ]; then
+            echo "Missing secrets LINODE_DEPLOY_URL or LINODE_DEPLOY_SECRET"
+            exit 1
+          fi
+          # Prefer header; also works with ?secret=
+          code=$(curl -sS -o /tmp/deploy-body.json -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-deploy-secret: ${DEPLOY_SECRET}" \
+            "$DEPLOY_URL")
+          echo "HTTP $code"
+          cat /tmp/deploy-body.json || true
+          echo
+          if [ "$code" != "202" ] && [ "$code" != "200" ]; then
+            exit 1
+          fi

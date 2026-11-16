@@ -38,6 +38,36 @@ If your Render URL changes, update the `destination` URLs in `vercel.json` and r
 - `GOOGLE_CHAT_CRON_SECRET`
 - cron-job.org → `GET https://place-track-1.onrender.com/api/public/cron/google-chat-board?secret=YOUR_SECRET` at 08:00 IST
 
+## 4) Linode auto-deploy (GitHub → VPS)
+
+On each push to `main`, GitHub Actions calls the API deploy webhook.
+
+**Linode `backend/.env`:**
+```
+DEPLOY_SECRET=long-random-string-here
+```
+
+**One-time on server:**
+```bash
+cd ~/place_track && git pull --ff-only
+chmod +x backend/scripts/linode-auto-deploy.sh
+# add DEPLOY_SECRET to backend/.env
+pm2 restart Place-track-backend --update-env
+```
+
+**GitHub repo → Settings → Secrets and variables → Actions:**
+| Secret | Value |
+|--------|--------|
+| `LINODE_DEPLOY_URL` | `https://api.placetrack.urbancode.in/api/public/deploy` |
+| `LINODE_DEPLOY_SECRET` | same as `DEPLOY_SECRET` |
+
+Manual test:
+```bash
+curl -X POST -H "x-deploy-secret: YOUR_SECRET" https://api.placetrack.urbancode.in/api/public/deploy
+# expect HTTP 202
+tail -f ~/place_track/backend/logs/auto-deploy.log
+```
+
 ## Quick test
 
 1. `https://place-track-1.onrender.com/health` → OK  
