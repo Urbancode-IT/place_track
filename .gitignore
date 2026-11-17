@@ -16,11 +16,20 @@ logs/
 *.log
 npm-debug.log*
 
-# IDE
+# IDE / local agent
 .idea/
 .vscode/
+.cursor/
+.playwright-mcp/
 *.swp
 *.swo
+
+# Env (keep examples only)
+.env
+**/.env
+!.env.example
+!**/.env.example
+!**/.env.production
 
 # OS
 .DS_Store
