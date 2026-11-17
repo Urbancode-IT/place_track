@@ -187,7 +187,7 @@ export async function notifyGoogleChatSelfSubmitPendingApproval(requestId) {
   if (row.room) bodyLines.push(`<b>Room/Link:</b> ${row.room}`);
   if (row.hrNumber) bodyLines.push(`<b>HR:</b> ${row.hrNumber}`);
   bodyLines.push(
-    '<i>Approve: assigned trainers get mail; if none picked, only the student is emailed.</i>'
+    '<i>Approve once — buttons expire after use. Assigned trainers get mail; if none picked, student only.</i>'
   );
 
   try {

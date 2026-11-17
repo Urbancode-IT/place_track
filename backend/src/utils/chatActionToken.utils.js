@@ -1,6 +1,10 @@
 import crypto from 'crypto';
 
-const DEFAULT_TTL_SEC = 7 * 24 * 60 * 60; // 7 days
+/** Default 24h — Chat Approve/Reject links should not live for days. */
+const DEFAULT_TTL_SEC = Math.min(
+  7 * 24 * 60 * 60,
+  Math.max(3600, Number(process.env.GOOGLE_CHAT_ACTION_TTL_SEC || 24 * 60 * 60))
+);
 
 function secret() {
   const s =
@@ -32,6 +36,7 @@ export function signChatAction(payload, ttlSec = DEFAULT_TTL_SEC) {
     kind: payload.kind,
     id: payload.id,
     action: payload.action,
+    jti: crypto.randomBytes(12).toString('hex'),
     exp: payload.exp || Math.floor(Date.now() / 1000) + ttlSec,
   };
   const payloadPart = b64url(JSON.stringify(body));
@@ -40,7 +45,7 @@ export function signChatAction(payload, ttlSec = DEFAULT_TTL_SEC) {
 }
 
 /**
- * @returns {{ kind: 'finish'|'self', id: string, action: 'approve'|'reject', exp: number }}
+ * @returns {{ kind: 'finish'|'self', id: string, action: 'approve'|'reject', jti?: string, exp: number }}
  */
 export function verifyChatAction(token) {
   if (!token || typeof token !== 'string' || !token.includes('.')) {
