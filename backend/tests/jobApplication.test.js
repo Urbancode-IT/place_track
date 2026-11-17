@@ -249,14 +249,28 @@ describe('Job Applications API — unauthorized', () => {
   });
 });
 
-const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'admin@kattraan.com';
-const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'admin123';
-const TRAINER1_EMAIL = process.env.TEST_TRAINER_EMAIL || 'trainer1@kattraan.com';
-const TRAINER2_EMAIL = process.env.TEST_TRAINER2_EMAIL || 'trainer2@kattraan.com';
-const TRAINER_PASSWORD = process.env.TEST_TRAINER_PASSWORD || 'trainer123';
+/** Credentials only from env — never commit real passwords in this file. */
+const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || '';
+const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || '';
+const TRAINER1_EMAIL = process.env.TEST_TRAINER_EMAIL || '';
+const TRAINER2_EMAIL = process.env.TEST_TRAINER2_EMAIL || '';
+const TRAINER_PASSWORD = process.env.TEST_TRAINER_PASSWORD || '';
 
 const TEST_DATE = '2024-06-15';
 const TEST_DATE_B = '2024-06-16';
+
+function requireTestAuthEnv() {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !TRAINER1_EMAIL || !TRAINER2_EMAIL || !TRAINER_PASSWORD) {
+    throw new Error(
+      'Set TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_TRAINER_EMAIL, TEST_TRAINER2_EMAIL, TEST_TRAINER_PASSWORD in backend/.env'
+    );
+  }
+}
+
+/** Ephemeral password for trainers created inside a test (not seed accounts). */
+function ephemeralPassword() {
+  return `Tp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function auth(token) {
   return { Authorization: `Bearer ${token}` };
@@ -283,10 +297,11 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
   let createdIds = [];
 
   beforeAll(async () => {
+    requireTestAuthEnv();
     const adminLogin = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
     if (adminLogin.status !== 200) {
       throw new Error(
-        `Admin login failed (${adminLogin.status}): ${adminLogin.body?.message || 'seed admin@kattraan.com / admin123'}`
+        `Admin login failed (${adminLogin.status}): ${adminLogin.body?.message || 'check TEST_ADMIN_* in backend/.env'}`
       );
     }
     adminToken = adminLogin.body.data.accessToken;
@@ -297,7 +312,7 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
     const t1row = trainerRows.find((t) => t.email === TRAINER1_EMAIL);
     const t2row = trainerRows.find((t) => t.email === TRAINER2_EMAIL);
     if (!t1row || !t2row) {
-      throw new Error('Seed trainers trainer1@kattraan.com and trainer2@kattraan.com are required');
+      throw new Error('Seed trainers from TEST_TRAINER_EMAIL / TEST_TRAINER2_EMAIL are required');
     }
     trainer1Id = t1row.id;
     trainer2Id = t2row.id;
@@ -564,7 +579,7 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
 
   it('isolates trainer rows from other trainers', async () => {
     if (!trainer1Token || !trainer2Token) {
-      throw new Error('Seed trainers trainer1@kattraan.com and trainer2@kattraan.com are required');
+      throw new Error('Seed trainers from TEST_TRAINER_EMAIL / TEST_TRAINER2_EMAIL are required');
     }
 
     const created = await request(app)
@@ -612,7 +627,7 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
 
   it('rejects trainer create/update for a student they are not assigned to', async () => {
     if (!trainer1Token || !unassignedStudentId) {
-      throw new Error('Seed trainer1@kattraan.com and an unassigned student are required');
+      throw new Error('Seed trainer from TEST_TRAINER_EMAIL and an unassigned student are required');
     }
 
     const createDenied = await request(app)
@@ -1042,7 +1057,7 @@ describe('Job Applications API — create, uniqueness, isolation, totals, histor
 
   it('keeps trainer history isolated and accepts a future calendar date', async () => {
     if (!trainer1Token || !trainer2Token) {
-      throw new Error('Seed trainers trainer1@kattraan.com and trainer2@kattraan.com are required');
+      throw new Error('Seed trainers from TEST_TRAINER_EMAIL / TEST_TRAINER2_EMAIL are required');
     }
 
     const created = await request(app)
@@ -1157,7 +1172,7 @@ describe('Trainer allowed gate, SPOC list, and typed students', () => {
   it('admits a trainer when an admin registers them, then rejects the account', async () => {
     const stamp = Date.now();
     trainerEmail = `allowed-gate-${stamp}@example.com`;
-    trainerPassword = 'trainer123';
+    trainerPassword = ephemeralPassword();
 
     const selfRegister = await request(app).post('/api/auth/register').send({
       name: `Self Register ${stamp}`,
@@ -1174,7 +1189,7 @@ describe('Trainer allowed gate, SPOC list, and typed students', () => {
         name: `Gate Trainer ${stamp}`,
         email: trainerEmail,
         password: trainerPassword,
-        phone: '+919800000001',
+        phone: '+910000000001',
       });
     expect(created.status).toBe(201);
     expect(created.body.data.allowed).toBe(true);
@@ -1326,8 +1341,8 @@ describe('Deleting a trainer keeps job application history', () => {
       .send({
         name,
         email: `delete-me-${stamp}@example.com`,
-        password: 'trainer123',
-        phone: '+919800000099',
+        password: ephemeralPassword(),
+        phone: '+910000000099',
       });
     expect(created.status).toBe(201);
     trainerId = created.body.data.id;
