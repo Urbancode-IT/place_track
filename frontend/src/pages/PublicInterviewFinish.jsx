@@ -205,14 +205,7 @@ export default function PublicInterviewFinish() {
             <p className="text-sm text-[var(--text2)] mt-2">
               Record outcome — Reschedule, Next round, Not selected, or another status.
             </p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <Link
-                to={questionsHref}
-                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-                style={{ background: 'var(--cyan)', color: '#041016' }}
-              >
-                Add questions
-              </Link>
+            <div className="mt-3">
               <Link
                 to="/interview/apply"
                 className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
@@ -383,13 +376,6 @@ export default function PublicInterviewFinish() {
                   <span className="text-[var(--text3)] text-xs">No trainers in the directory — contact placement.</span>
                 )}
               </div>
-              <Link
-                to={questionsHref}
-                className="mt-2 inline-flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{ background: 'var(--cyan)', color: '#041016' }}
-              >
-                Add questions (topics)
-              </Link>
             </div>
           )}
 
