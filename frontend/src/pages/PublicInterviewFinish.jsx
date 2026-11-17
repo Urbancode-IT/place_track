@@ -118,6 +118,13 @@ export default function PublicInterviewFinish() {
 
   const selectedTrainerIds = watch('trainerIds');
   const proposedStatus = watch('proposedStatus');
+  const watchedEmail = watch('studentEmail');
+  const watchedCompany = watch('company');
+
+  const questionsHref = `/interview/questions?${new URLSearchParams({
+    email: (watchedEmail || prefillEmail || '').trim(),
+    company: (watchedCompany || prefillCompany || '').trim(),
+  }).toString()}`;
 
   useEffect(() => {
     document.title = 'Interview outcome — PlaceTrack';
@@ -195,28 +202,27 @@ export default function PublicInterviewFinish() {
           <div>
             <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
             <h1 className="mt-1 text-[22px] font-medium">Interview outcome</h1>
-            <div className="flex flex-wrap items-center gap-3 mt-2">
-              <p className="text-sm text-[var(--text2)]">
-                Record outcome — Reschedule, Next round, Not selected, or another status.
-              </p>
+            <p className="text-sm text-[var(--text2)] mt-2">
+              Record outcome — Reschedule, Next round, Not selected, or another status.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-3">
               <Link
-                to={`/interview/questions${
-                  prefillEmail || prefillCompany
-                    ? `?${new URLSearchParams({
-                        ...(prefillEmail ? { email: prefillEmail } : {}),
-                        ...(prefillCompany ? { company: prefillCompany } : {}),
-                      }).toString()}`
-                    : ''
-                }`}
-                className="text-[10px] font-medium text-[var(--cyan)] hover:text-white transition-colors bg-[rgba(0,212,255,0.1)] px-2 py-1 rounded-md border border-[rgba(0,212,255,0.2)]"
+                to={questionsHref}
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                style={{ background: 'var(--cyan)', color: '#041016' }}
               >
-                Add questions (topics) →
+                Add questions
               </Link>
               <Link
                 to="/interview/apply"
-                className="text-[10px] font-medium text-[var(--violet)] hover:text-white transition-colors bg-[rgba(155,93,255,0.1)] px-2 py-1 rounded-md border border-[rgba(155,93,255,0.2)]"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
+                style={{
+                  color: 'var(--violet)',
+                  border: '1px solid rgba(155,93,255,0.45)',
+                  background: 'rgba(155,93,255,0.12)',
+                }}
               >
-                Need to apply? →
+                Need to apply?
               </Link>
             </div>
           </div>
@@ -377,6 +383,13 @@ export default function PublicInterviewFinish() {
                   <span className="text-[var(--text3)] text-xs">No trainers in the directory — contact placement.</span>
                 )}
               </div>
+              <Link
+                to={questionsHref}
+                className="mt-2 inline-flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
+                style={{ background: 'var(--cyan)', color: '#041016' }}
+              >
+                Add questions (topics)
+              </Link>
             </div>
           )}
 
@@ -401,22 +414,20 @@ export default function PublicInterviewFinish() {
           </div>
 
           <div
-            className="rounded-xl p-4 space-y-2"
+            className="rounded-xl p-4 space-y-3"
             style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.35)' }}
           >
             <p className="text-sm font-medium text-[var(--text)]">Interview questions</p>
             <p className="text-xs text-[var(--text3)]">
-              Add Frontend / Backend / Database (or your course topics) on a separate page — then come back here for
+              Add Frontend / Backend / Database (or your course topics) on the questions page — then come back here for
               outcome if needed.
             </p>
             <Link
-              to={`/interview/questions?${new URLSearchParams({
-                email: getValues('studentEmail') || prefillEmail || '',
-                company: getValues('company') || prefillCompany || '',
-              }).toString()}`}
-              className="inline-flex text-sm font-medium text-[var(--cyan)] hover:underline"
+              to={questionsHref}
+              className="inline-flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
+              style={{ background: 'var(--cyan)', color: '#041016' }}
             >
-              Open questions page →
+              Add questions
             </Link>
           </div>
 
