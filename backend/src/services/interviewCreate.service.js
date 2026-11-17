@@ -35,6 +35,7 @@ export async function createInterviewWithTrainers({
   room,
   comments,
   trainerIds = [],
+  skipGoogleChatNotify = false,
   dbQuery = query,
 }) {
   const q = dbQuery;
@@ -75,9 +76,11 @@ export async function createInterviewWithTrainers({
   }
   emitNewInterview({ ...interview, student, trainers: ids.map((tid) => ({ trainerId: tid })) });
 
-  notifyGoogleChatInterviewScheduled(interview.id).catch((e) =>
-    console.error('[google-chat] interview schedule notify:', e)
-  );
+  if (!skipGoogleChatNotify) {
+    notifyGoogleChatInterviewScheduled(interview.id).catch((e) =>
+      console.error('[google-chat] interview schedule notify:', e)
+    );
+  }
 
   return { interview, student, trainerIds: ids };
 }

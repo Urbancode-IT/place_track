@@ -12,6 +12,7 @@ import {
   isChatActionTokenUsed,
   markChatActionUsed,
 } from '../services/chatActionUse.service.js';
+import { sendToGoogleChat } from '../services/googleChat.service.js';
 import { query } from '../config/db.js';
 import { AppError } from '../middleware/errorHandler.js';
 
@@ -62,9 +63,38 @@ async function requestStillPending(kind, id) {
   return r.rows[0]?.status === 'SUBMITTED';
 }
 
+async function loadFinishLabel(id) {
+  const r = await query(
+    `SELECT f."proposedStatus", s.name as "studentName", i.company
+     FROM "InterviewFinishRequest" f
+     JOIN "Student" s ON s.id = f."studentId"
+     JOIN "Interview" i ON i.id = f."interviewId"
+     WHERE f.id = $1`,
+    [id]
+  );
+  return r.rows[0] || null;
+}
+
+async function loadSelfLabel(id) {
+  const r = await query(
+    `SELECT r.company, r.round, r."timeSlot", s.name as "studentName"
+     FROM "StudentInterviewRequest" r
+     JOIN "Student" s ON s.id = r."studentId"
+     WHERE r.id = $1`,
+    [id]
+  );
+  return r.rows[0] || null;
+}
+
+/** One Chat confirmation only (no second schedule/outcome ping). */
+async function postOneChatResult(text) {
+  const result = await sendToGoogleChat(text);
+  if (!result.ok) console.error('[chat-action] result notify failed:', result.error);
+}
+
 /**
  * GET /api/public/chat-actions/:kind/:id/:action?t=...
- * One-click Approve / Reject from Google Chat — single-use; both buttons expire after either is used.
+ * Approve/Reject from Chat — single-use; one confirmation message in Chat after click.
  */
 export async function handleChatAction(req, res) {
   const { kind, id, action } = req.params;
@@ -72,10 +102,10 @@ export async function handleChatAction(req, res) {
 
   try {
     if (!['finish', 'self'].includes(kind) || !['approve', 'reject'].includes(action)) {
-      return sendHtml(res, 400, 'Invalid action', 'This approval link is not valid.', false);
+      return sendHtml(res, 400, 'Invalid', 'This link is not valid.', false);
     }
     if (!token) {
-      return sendHtml(res, 400, 'Missing token', 'Open Approve or Reject from the Google Chat card.', false);
+      return sendHtml(res, 400, 'Missing token', 'Use Approve or Reject from the Google Chat card.', false);
     }
 
     let payload;
@@ -86,83 +116,63 @@ export async function handleChatAction(req, res) {
       return sendHtml(
         res,
         403,
-        expired ? 'Link expired' : 'Link invalid',
+        expired ? 'Expired' : 'Invalid',
         expired
-          ? 'This Chat Approve/Reject link has expired. Use PlaceTrack admin if still needed.'
-          : 'Ask for a fresh Chat card, or approve from PlaceTrack admin.',
+          ? 'This Chat link has expired.'
+          : 'This Chat link is invalid.',
         false
       );
     }
 
     if (payload.kind !== kind || payload.id !== id || payload.action !== action) {
-      return sendHtml(res, 403, 'Token mismatch', 'This approval link does not match the request.', false);
+      return sendHtml(res, 403, 'Invalid', 'This link does not match the request.', false);
     }
 
     if (await isChatActionTokenUsed(token) || (await isChatActionRequestUsed(kind, id))) {
-      return sendHtml(
-        res,
-        410,
-        'Link expired',
-        'This Chat action was already used. Approve and Reject buttons on that message no longer work.',
-        false
-      );
+      return sendHtml(res, 410, 'Expired', 'Already used. Chat buttons for this request are expired.', false);
     }
 
     if (!(await requestStillPending(kind, id))) {
       await markChatActionUsed(token, kind, id, action).catch(() => {});
-      return sendHtml(
-        res,
-        410,
-        'Link expired',
-        'This request was already approved or rejected. The Chat buttons are expired.',
-        false
-      );
+      return sendHtml(res, 410, 'Expired', 'Already handled. Chat buttons are expired.', false);
     }
 
     if (kind === 'finish') {
+      const meta = await loadFinishLabel(id);
       if (action === 'approve') {
-        const result = await approveInterviewFinishRequest(id, null);
+        const result = await approveInterviewFinishRequest(id, null, { skipGoogleChatNotify: true });
         await markChatActionUsed(token, kind, id, action);
-        const label = result.proposedStatus || 'updated';
-        return sendHtml(
-          res,
-          200,
-          'Approved',
-          `Interview outcome set to ${label}. This Chat link is now expired — you can close this tab.`,
-          true
-        );
+        const label = result.proposedStatus || meta?.proposedStatus || 'updated';
+        const who = meta ? `${meta.studentName} · ${meta.company}` : id;
+        await postOneChatResult(`*Approved* — ${who}\nOutcome: ${label}`);
+        return sendHtml(res, 200, 'Approved', `Approved — ${label}. You can close this tab.`, true);
       }
       await rejectInterviewFinishRequest(id, null);
       await markChatActionUsed(token, kind, id, action);
-      return sendHtml(
-        res,
-        200,
-        'Rejected',
-        'Finish request rejected. This Chat link is now expired — you can close this tab.',
-        true
-      );
+      const who = meta ? `${meta.studentName} · ${meta.company}` : id;
+      await postOneChatResult(`*Rejected* — ${who}\nFinish request not applied.`);
+      return sendHtml(res, 200, 'Rejected', 'Rejected. You can close this tab.', true);
     }
 
+    const meta = await loadSelfLabel(id);
+    const who = meta
+      ? `${meta.studentName} · ${meta.company}${meta.timeSlot ? ` · ${meta.timeSlot}` : ''}`
+      : id;
+
     if (action === 'approve') {
-      await approveStudentInterviewRequest(id, null, { trainerIds: [] });
+      await approveStudentInterviewRequest(id, null, {
+        trainerIds: [],
+        skipGoogleChatNotify: true,
+      });
       await markChatActionUsed(token, kind, id, action);
-      return sendHtml(
-        res,
-        200,
-        'Approved',
-        'Interview added to the schedule. This Chat link is now expired — you can close this tab.',
-        true
-      );
+      await postOneChatResult(`*Approved* — ${who}\nAdded to the interview schedule.`);
+      return sendHtml(res, 200, 'Approved', 'Approved — on the schedule. You can close this tab.', true);
     }
+
     await rejectStudentInterviewRequest(id, null);
     await markChatActionUsed(token, kind, id, action);
-    return sendHtml(
-      res,
-      200,
-      'Rejected',
-      'Self-submit rejected. This Chat link is now expired — you can close this tab.',
-      true
-    );
+    await postOneChatResult(`*Rejected* — ${who}\nSelf-submit not added to the schedule.`);
+    return sendHtml(res, 200, 'Rejected', 'Rejected. You can close this tab.', true);
   } catch (err) {
     const status = err instanceof AppError ? err.statusCode || 400 : 500;
     const already =
@@ -170,19 +180,13 @@ export async function handleChatAction(req, res) {
       /only submitted|already|not found/i.test(String(err.message || ''));
     if (already && token && kind && id) {
       await markChatActionUsed(token, kind, id, action).catch(() => {});
-      return sendHtml(
-        res,
-        410,
-        'Link expired',
-        'This Chat action is no longer valid. The request was already handled.',
-        false
-      );
+      return sendHtml(res, 410, 'Expired', 'Already handled. Chat buttons are expired.', false);
     }
     const msg =
       err instanceof AppError
         ? err.message
-        : 'Something went wrong. Try again from PlaceTrack admin if needed.';
+        : 'Something went wrong. Try PlaceTrack admin if needed.';
     console.error('[chat-action]', err);
-    return sendHtml(res, status, status >= 500 ? 'Error' : 'Could not complete', msg, false);
+    return sendHtml(res, status, status >= 500 ? 'Error' : 'Failed', msg, false);
   }
 }

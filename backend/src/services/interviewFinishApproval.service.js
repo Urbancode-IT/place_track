@@ -6,8 +6,9 @@ import { notifyGoogleChatInterviewOutcomeApproved } from './googleChatInterviewN
 /**
  * @param {string} id - InterviewFinishRequest id
  * @param {string|null} reviewerUserId
+ * @param {{ skipGoogleChatNotify?: boolean }} [opts]
  */
-export async function approveInterviewFinishRequest(id, reviewerUserId = null) {
+export async function approveInterviewFinishRequest(id, reviewerUserId = null, opts = {}) {
   const { u, proposedStatus, interviewId } = await withTransaction(async (client) => {
     const locked = await client.query(
       `SELECT * FROM "InterviewFinishRequest" WHERE id = $1 FOR UPDATE`,
@@ -44,9 +45,11 @@ export async function approveInterviewFinishRequest(id, reviewerUserId = null) {
     };
   });
 
-  notifyGoogleChatInterviewOutcomeApproved(interviewId, proposedStatus).catch((e) =>
-    console.error('[google-chat] interview outcome approve notify:', e)
-  );
+  if (!opts.skipGoogleChatNotify) {
+    notifyGoogleChatInterviewOutcomeApproved(interviewId, proposedStatus).catch((e) =>
+      console.error('[google-chat] interview outcome approve notify:', e)
+    );
+  }
 
   return { interview: u, proposedStatus, interviewId };
 }

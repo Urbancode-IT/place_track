@@ -9,7 +9,7 @@ import { attachStudentMeetingLink } from './jobApplicationSlots.service.js';
  * @param {{ trainerIds?: string[], room?: string|null }} [opts]
  */
 export async function approveStudentInterviewRequest(id, reviewerUserId = null, opts = {}) {
-  const { trainerIds = [], room: roomFromApprove } = opts;
+  const { trainerIds = [], room: roomFromApprove, skipGoogleChatNotify = false } = opts;
 
   const result = await withTransaction(async (client) => {
     const locked = await client.query(
@@ -44,6 +44,7 @@ export async function approveStudentInterviewRequest(id, reviewerUserId = null, 
       room: finalRoom,
       comments: mergedComments,
       trainerIds,
+      skipGoogleChatNotify,
       dbQuery: (text, params) => client.query(text, params),
     });
 
