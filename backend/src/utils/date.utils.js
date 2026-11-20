@@ -57,6 +57,27 @@ export function scheduleDayBoundsFromInput(dateInput) {
   return scheduleDayBoundsFromInput(cal);
 }
 
+/**
+ * Inclusive calendar-day range in schedule TZ.
+ * Missing `from` → today; missing `to` → `from` + `defaultSpanDays` (14).
+ */
+export function scheduleRangeBoundsFromInput(fromInput, toInput, defaultSpanDays = 14) {
+  const fromDay = scheduleDayBoundsFromInput(fromInput || undefined);
+  if (!toInput) {
+    const startCal = calendarDateInScheduleTz(fromDay.start);
+    const [y, m, d] = startCal.split('-').map(Number);
+    const endCal = new Date(Date.UTC(y, m - 1, d + Math.max(0, defaultSpanDays)));
+    const toStr = `${endCal.getUTCFullYear()}-${pad2(endCal.getUTCMonth() + 1)}-${pad2(endCal.getUTCDate())}`;
+    const toDay = scheduleDayBoundsFromInput(toStr);
+    return { start: fromDay.start, end: toDay.end };
+  }
+  const toDay = scheduleDayBoundsFromInput(toInput);
+  if (toDay.end < fromDay.start) {
+    return { start: toDay.start, end: fromDay.end };
+  }
+  return { start: fromDay.start, end: toDay.end };
+}
+
 /** Local process TZ helpers (legacy). Prefer schedule-TZ helpers for interview windows. */
 export function startOfDay(d) {
   const date = new Date(d);

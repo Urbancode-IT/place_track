@@ -1,9 +1,41 @@
 import { query } from '../config/db.js';
 import { success } from '../utils/response.utils.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { scheduleDayBoundsFromInput } from '../utils/date.utils.js';
+import {
+  calendarDateInScheduleTz,
+  scheduleDayBoundsFromInput,
+  scheduleRangeBoundsFromInput,
+} from '../utils/date.utils.js';
+import { normalizeTimeSlot } from '../utils/jobApplication.utils.js';
 import { attachStudentMeetingLink } from '../services/jobApplicationSlots.service.js';
 import { notifyGoogleChatSelfSubmitPendingApproval } from '../services/googleChatInterviewNotify.service.js';
+
+/** Reject when another interview/pending request already uses the same day + start time. */
+async function assertNoTimeSlotConflict({ date, timeSlot }) {
+  const timeKey = normalizeTimeSlot(timeSlot);
+  if (!timeKey) return;
+
+  const { start, end } = scheduleDayBoundsFromInput(date);
+  const r = await query(
+    `SELECT x."timeSlot" FROM (
+       SELECT i."timeSlot" FROM "Interview" i
+       WHERE i.date >= $1 AND i.date <= $2
+       UNION ALL
+       SELECT r."timeSlot" FROM "StudentInterviewRequest" r
+       WHERE r.date >= $1 AND r.date <= $2
+         AND r.status = 'SUBMITTED'
+     ) x`,
+    [start.toISOString(), end.toISOString()]
+  );
+
+  const clash = r.rows.find((row) => normalizeTimeSlot(row.timeSlot) === timeKey);
+  if (clash) {
+    throw new AppError(
+      `Time slot "${timeSlot}" is already taken on this date. Choose a different time to avoid conflicts.`,
+      409
+    );
+  }
+}
 
 /**
  * Shared form URL — any student posts once; row goes to SUBMITTED queue (no per-student token).
@@ -11,7 +43,9 @@ import { notifyGoogleChatSelfSubmitPendingApproval } from '../services/googleCha
 export async function applyOpen(req, res, next) {
   try {
     const { name, studentEmail, studentPhone, company, round, date, timeSlot, hrNumber, room, comments, course } = req.validated;
-    
+
+    await assertNoTimeSlotConflict({ date, timeSlot });
+
     let studentId = null;
     if (studentEmail) {
       const norm = studentEmail.trim().toLowerCase();
@@ -75,8 +109,12 @@ export async function applyOpen(req, res, next) {
 }
 
 /**
- * List interviews for a date (public). Course is optional — when omitted, returns
- * interviews across all courses so the "view schedule" button shows everything.
+ * List interviews for a date or upcoming range (public). Course is optional — when
+ * omitted, returns interviews across all courses so the "view schedule" button shows everything.
+ *
+ * Query:
+ *  - date=YYYY-MM-DD → one calendar day (default: today)
+ *  - from=&to= → inclusive range; if only from, spans 14 days
  *
  * Pulls from two sources so it matches the real Today's Live Interview Board:
  *  - "Interview": the actual schedule — covers both approved self-submissions and
@@ -88,8 +126,11 @@ export async function applyOpen(req, res, next) {
  */
 export async function listInterviews(req, res, next) {
   try {
-    const { course, date } = req.query;
-    const { start, end } = scheduleDayBoundsFromInput(date);
+    const { course, date, from, to } = req.query;
+    const { start, end } =
+      from || to
+        ? scheduleRangeBoundsFromInput(from || date, to)
+        : scheduleDayBoundsFromInput(date);
 
     const params = [start.toISOString(), end.toISOString()];
     let courseFilter = '';
@@ -99,7 +140,7 @@ export async function listInterviews(req, res, next) {
     }
 
     const r = await query(
-      `SELECT i.id, i.company, i.round, i."timeSlot", i.status::text, false as pending,
+      `SELECT i.id, i.company, i.round, i.date, i."timeSlot", i.status::text, false as pending,
               s.name as "studentName", s.course as "studentCourse"
        FROM "Interview" i
        JOIN "Student" s ON s.id = i."studentId"
@@ -108,7 +149,7 @@ export async function listInterviews(req, res, next) {
 
        UNION ALL
 
-       SELECT r.id, r.company, r.round, r."timeSlot", r.status::text, true as pending,
+       SELECT r.id, r.company, r.round, r.date, r."timeSlot", r.status::text, true as pending,
               s.name as "studentName", s.course as "studentCourse"
        FROM "StudentInterviewRequest" r
        JOIN "Student" s ON s.id = r."studentId"
@@ -116,11 +157,16 @@ export async function listInterviews(req, res, next) {
          AND r.status = 'SUBMITTED'
          ${courseFilter}
 
-       ORDER BY "timeSlot" ASC`,
+       ORDER BY date ASC, "timeSlot" ASC`,
       params
     );
 
-    return success(res, r.rows);
+    const rows = r.rows.map((row) => ({
+      ...row,
+      date: row.date ? calendarDateInScheduleTz(row.date) : null,
+    }));
+
+    return success(res, rows);
   } catch (err) {
     next(err);
   }

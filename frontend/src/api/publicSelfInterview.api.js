@@ -12,5 +12,13 @@ export const publicSelfInterviewApi = {
   getMeta: (token) => publicApi.get(`/public/self-interview/${token}`),
   submit: (token, body) => publicApi.put(`/public/self-interview/${token}`, body),
   registerStudent: (body) => publicApi.post('/public/students', body),
-  listInterviews: (course, date) => publicApi.get('/public/interviews', { params: { course, date } }),
+  listInterviews: (course, date, range) =>
+    publicApi.get('/public/interviews', {
+      params: {
+        course,
+        ...(range?.from || range?.to
+          ? { from: range.from, to: range.to }
+          : { date }),
+      },
+    }),
 };

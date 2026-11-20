@@ -13,6 +13,16 @@ export function isDateOnly(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
 }
 
+/** Compare interview times by start ("10:00 AM – 11:00 AM" → "10:00 am"). */
+export function normalizeTimeSlot(raw) {
+  const value = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+  if (!value) return '';
+  return value.split(/\s*[–-]\s*/)[0].trim();
+}
+
 export function normalizePortalName(raw) {
   const trimmed = String(raw || '').trim().replace(/\s+/g, ' ');
   if (!trimmed) return '';
