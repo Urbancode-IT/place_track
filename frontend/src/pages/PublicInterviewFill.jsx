@@ -20,7 +20,7 @@ const schema = z
     customRound: z.string().optional(),
     date: z.string().min(1, 'Interview date is required'),
     timeSlot: z.string().min(1, 'Time slot is required'),
-    hrNumber: z.string().optional(),
+    hrNumber: z.string().trim().min(1, 'HR / contact is required').max(80),
     room: z
       .string()
       .optional()
@@ -173,7 +173,12 @@ export default function PublicInterviewFill() {
             {...register('timeSlot')}
             error={errors.timeSlot?.message}
           />
-          <Input label="HR / contact (optional)" {...register('hrNumber')} />
+          <Input
+            label="HR / contact"
+            placeholder="HR name / phone / email"
+            {...register('hrNumber')}
+            error={errors.hrNumber?.message}
+          />
           <Input
             label="Meeting link (optional)"
             type="url"

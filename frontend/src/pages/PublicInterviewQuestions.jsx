@@ -16,7 +16,7 @@ const schema = z.object({
   company: z.string().max(200).optional(),
   topic: z.string().min(1, 'Choose a topic'),
   question: z.string().trim().min(1, 'Enter the question').max(2000),
-  answer: z.string().trim().min(1, 'Enter your answer').max(8000),
+  answer: z.string().trim().max(8000).optional().or(z.literal('')),
 });
 
 export default function PublicInterviewQuestions() {
@@ -108,12 +108,12 @@ export default function PublicInterviewQuestions() {
         company: data.company?.trim() || undefined,
         topic: data.topic,
         question: data.question.trim(),
-        answer: data.answer.trim(),
+        answer: data.answer?.trim() || undefined,
       },
       {
         onSuccess: () => {
           setSavedCount((n) => n + 1);
-          toast.success('Question & answer saved. Add another if you want.');
+          toast.success('Question saved. Add another if you want.');
           reset({
             studentEmail: data.studentEmail.trim(),
             company: data.company?.trim() || '',
@@ -151,8 +151,8 @@ export default function PublicInterviewQuestions() {
           <p className="text-[9px] tracking-[0.18em] uppercase text-[var(--violet)]">PlaceTrack</p>
           <h1 className="mt-1 text-[22px] font-medium">Please update your questions</h1>
           <p className="mt-2 text-sm text-[var(--text2)]">
-            Enter <strong className="text-[var(--text)]">question and answer together</strong>, pick a topic, then
-            save. Both are stored as one entry for admin / trainers to view.
+            Add the <strong className="text-[var(--text)]">question</strong> (answer optional), pick a topic, then
+            save. Entries go to admin / trainers to review.
           </p>
           {studentLabel && <p className="mt-2 text-xs text-[var(--cyan)]">{studentLabel}</p>}
           <div className="flex flex-wrap gap-3 mt-3">
@@ -219,7 +219,7 @@ export default function PublicInterviewQuestions() {
             className="rounded-xl p-4 space-y-3"
             style={{ background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.28)' }}
           >
-            <p className="text-xs font-medium text-[var(--cyan)] uppercase tracking-wide">Q &amp; A (both required)</p>
+            <p className="text-xs font-medium text-[var(--cyan)] uppercase tracking-wide">Question (required) · Answer optional</p>
             <div>
               <label className="block text-xs text-[var(--text2)] mb-1">Question</label>
               <textarea
@@ -231,18 +231,18 @@ export default function PublicInterviewQuestions() {
               {errors.question && <p className="mt-1 text-sm text-danger">{errors.question.message}</p>}
             </div>
             <div>
-              <label className="block text-xs text-[var(--text2)] mb-1">Answer</label>
+              <label className="block text-xs text-[var(--text2)] mb-1">Answer (optional)</label>
               <textarea
                 className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(0,0,0,0.25)] border border-[var(--border)] text-[var(--text)]"
                 rows={4}
-                placeholder="Write what you answered…"
+                placeholder="Write what you answered… (optional)"
                 {...register('answer')}
               />
               {errors.answer && <p className="mt-1 text-sm text-danger">{errors.answer.message}</p>}
             </div>
           </div>
           <Button type="submit" className="w-full" loading={submitMut.isPending}>
-            Save question &amp; answer
+            Save question
           </Button>
         </form>
       </div>

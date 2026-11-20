@@ -6,7 +6,7 @@ export const publicQaSubmitSchema = z.object({
   /** e.g. Frontend / Backend / Database — course-specific list from meta */
   topic: z.string().trim().min(1, 'Choose a topic').max(80),
   question: z.string().trim().min(1, 'Question is required').max(2000),
-  answer: z.string().trim().min(1, 'Answer is required').max(8000),
+  answer: z.string().trim().max(8000).optional().or(z.literal('')),
 });
 
 export const publicQaMetaSchema = z.object({

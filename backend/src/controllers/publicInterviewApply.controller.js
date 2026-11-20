@@ -86,7 +86,7 @@ export async function applyOpen(req, res, next) {
         token, "studentId", company, round, date, "timeSlot", "hrNumber", room, comments, status, "submittedAt"
       ) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, 'SUBMITTED', now())
        RETURNING id`,
-      [studentId, company, round, date, timeSlot, hrNumber || null, room || null, comments || null]
+      [studentId, company, round, date, timeSlot, hrNumber.trim(), room || null, comments || null]
     );
     await attachStudentMeetingLink({
       studentId,

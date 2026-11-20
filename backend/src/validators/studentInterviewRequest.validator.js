@@ -28,7 +28,7 @@ export const publicSubmitSchema = z.object({
   round: z.string().min(1).max(100),
   date: z.coerce.date(),
   timeSlot: z.string().min(1).max(80),
-  hrNumber: z.string().optional(),
+  hrNumber: z.string().trim().min(1, 'HR / contact is required').max(80),
   room: meetingLinkSchema,
   comments: z.string().optional(),
   course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT']).optional(),

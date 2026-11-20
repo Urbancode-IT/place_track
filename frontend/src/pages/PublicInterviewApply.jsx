@@ -93,7 +93,7 @@ const schema = z.object({
   course: z.enum(['FSD', 'SDET', 'BI_DS', 'NETWORKING', 'AWS', 'JAVA', 'REACT'], {
     errorMap: () => ({ message: 'Select your course' })
   }),
-  hrNumber: z.string().optional(),
+  hrNumber: z.string().trim().min(1, 'HR / contact is required').max(80),
   room: z
     .string()
     .optional()
@@ -508,7 +508,12 @@ export default function PublicInterviewApply() {
                 Paste the link from your invite (if available). Match the company, date, and time your SPOC logged.
               </p>
 
-              <Input label="HR / contact (optional)" {...register('hrNumber')} />
+              <Input
+                label="HR / contact"
+                placeholder="HR name / phone / email"
+                {...register('hrNumber')}
+                error={errors.hrNumber?.message}
+              />
               <div>
                 <label className="block text-xs text-[var(--text2)] mb-1">Notes (optional)</label>
                 <textarea
